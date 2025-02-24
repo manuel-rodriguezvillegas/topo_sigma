@@ -13,10 +13,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ros',
+    maintainer='Manuel Rodriguez',
     maintainer_email='manuel.rodriguezvillegas09@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Handles odometry measurements',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
