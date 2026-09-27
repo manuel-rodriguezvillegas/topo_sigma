@@ -1,0 +1,135 @@
+\begin{tikzpicture}[x=1cm,y=1cm,line cap=round,line join=round]
+    \definecolor{vmfsphere}{RGB}{226,237,244}
+    \definecolor{vmfedge}{RGB}{55,79,101}
+    \definecolor{vmfgrid}{RGB}{126,151,169}
+    \definecolor{vmfdensity}{RGB}{225,112,70}
+    \definecolor{vmfsample}{RGB}{82,64,143}
+    \definecolor{vmfmean}{RGB}{25,91,148}
+
+    % Orthographic view. The unit mean direction is shared by both panels.
+    \def\vmfRadius{1.48}
+    \def\vmfMuX{0.28}
+    \def\vmfMuY{0.18}
+    \pgfmathsetmacro{\vmfMuZ}{sqrt(1-\vmfMuX*\vmfMuX-\vmfMuY*\vmfMuY)}
+    \pgfmathsetmacro{\vmfMuScreen}{sqrt(\vmfMuX*\vmfMuX+\vmfMuY*\vmfMuY)}
+    \pgfmathsetmacro{\vmfEllipseAngle}{atan2(\vmfMuY,\vmfMuX)+90}
+
+    % An orthonormal basis of the tangent plane at mu.
+    \pgfmathsetmacro{\vmfEoneX}{-\vmfMuY/\vmfMuScreen}
+    \pgfmathsetmacro{\vmfEoneY}{ \vmfMuX/\vmfMuScreen}
+    \pgfmathsetmacro{\vmfEtwoX}{-\vmfMuZ*\vmfMuX/\vmfMuScreen}
+    \pgfmathsetmacro{\vmfEtwoY}{-\vmfMuZ*\vmfMuY/\vmfMuScreen}
+
+    \newcommand{\drawVmfSphereBase}{%
+        \shade[inner color=white,outer color=vmfsphere]
+            (0,0) circle[radius=\vmfRadius];
+    }
+
+    % For q=p(x)/p(mu), mu^T x=1+ln(q)/kappa. Its orthographic
+    % projection is the exact ellipse below. Every displayed cap remains
+    % entirely on the visible hemisphere for this view.
+    \newcommand{\drawVmfDensityBand}[3]{%
+        \pgfmathsetmacro{\vmfLevel}{1+ln(#2)/(#1)}
+        \pgfmathsetmacro{\vmfCapRadius}{\vmfRadius*sqrt(1-\vmfLevel*\vmfLevel)}
+        \pgfmathsetmacro{\vmfCapMinor}{\vmfCapRadius*\vmfMuZ}
+        \pgfmathsetmacro{\vmfCapX}{\vmfRadius*\vmfLevel*\vmfMuX}
+        \pgfmathsetmacro{\vmfCapY}{\vmfRadius*\vmfLevel*\vmfMuY}
+        \fill[vmfdensity!#3]
+            (\vmfCapX,\vmfCapY)
+            ellipse[x radius=\vmfCapRadius,
+                    y radius=\vmfCapMinor,
+                    rotate=\vmfEllipseAngle];
+    }
+
+    \newcommand{\drawVmfGrid}{%
+        \draw[vmfgrid!42,line width=0.38pt]
+            (-\vmfRadius,0)
+            arc[start angle=180,end angle=360,
+                x radius=\vmfRadius,y radius=0.35];
+        \draw[vmfgrid!32,densely dashed,line width=0.38pt]
+            (\vmfRadius,0)
+            arc[start angle=0,end angle=180,
+                x radius=\vmfRadius,y radius=0.35];
+        \draw[vmfgrid!38,line width=0.38pt]
+            (0,-\vmfRadius)
+            arc[start angle=-90,end angle=90,
+                x radius=0.46,y radius=\vmfRadius];
+        \draw[vmfgrid!30,densely dashed,line width=0.38pt]
+            (0,\vmfRadius)
+            arc[start angle=90,end angle=270,
+                x radius=0.46,y radius=\vmfRadius];
+    }
+
+    % A sample has polar cosine c and tangent-plane azimuth phi. Drawing the
+    % opposite tangent direction as well makes the pair sum to 2c*mu.
+    \newcommand{\drawVmfSamplePair}[2]{%
+        \pgfmathsetmacro{\vmfSinTheta}{sqrt(1-(#1)*(#1))}
+        \pgfmathsetmacro{\vmfTangentX}{cos(#2)*\vmfEoneX+sin(#2)*\vmfEtwoX}
+        \pgfmathsetmacro{\vmfTangentY}{cos(#2)*\vmfEoneY+sin(#2)*\vmfEtwoY}
+        \foreach \vmfSide in {-1,1}{
+            \pgfmathsetmacro{\vmfPointX}{\vmfRadius*((#1)*\vmfMuX+\vmfSide*\vmfSinTheta*\vmfTangentX)}
+            \pgfmathsetmacro{\vmfPointY}{\vmfRadius*((#1)*\vmfMuY+\vmfSide*\vmfSinTheta*\vmfTangentY)}
+            \filldraw[fill=vmfsample,draw=white,line width=0.30pt]
+                (\vmfPointX,\vmfPointY) circle[radius=0.025];
+        }
+    }
+
+    \newcommand{\finishVmfSphere}{%
+        \pgfmathsetmacro{\vmfMeanX}{\vmfRadius*\vmfMuX}
+        \pgfmathsetmacro{\vmfMeanY}{\vmfRadius*\vmfMuY}
+        \draw[-{Latex[length=1.9mm,width=1.25mm]},vmfmean,line width=1.25pt]
+            (0,0)--(\vmfMeanX,\vmfMeanY);
+        \draw[vmfedge,line width=0.85pt]
+            (0,0) circle[radius=\vmfRadius];
+    }
+
+    % Broad fit. The ten polar cosines average to
+    % coth(2)-1/2 = 0.5373147207275482. The varied azimuths avoid a ring.
+    \begin{scope}[xshift=1.80cm]
+        \drawVmfSphereBase
+        \drawVmfDensityBand{2}{0.35}{13}
+        \drawVmfDensityBand{2}{0.50}{22}
+        \drawVmfDensityBand{2}{0.70}{36}
+        \drawVmfDensityBand{2}{0.85}{58}
+        \drawVmfGrid
+        \foreach \vmfCos/\vmfAzimuth in {
+            0.350000000000000/10,
+            0.390000000000000/160,
+            0.430000000000000/35,
+            0.470000000000000/225,
+            0.510000000000000/70,
+            0.560000000000000/110,
+            0.600000000000000/145,
+            0.640000000000000/200,
+            0.690000000000000/260,
+            0.733147207275482/310}{
+            \drawVmfSamplePair{\vmfCos}{\vmfAzimuth}
+        }
+        \finishVmfSphere
+    \end{scope}
+
+    % Concentrated fit. These ten polar cosines average to
+    % coth(16)-1/16 = 0.9375000000000253.
+    \begin{scope}[xshift=5.55cm]
+        \drawVmfSphereBase
+        \drawVmfDensityBand{16}{0.35}{13}
+        \drawVmfDensityBand{16}{0.50}{22}
+        \drawVmfDensityBand{16}{0.70}{36}
+        \drawVmfDensityBand{16}{0.85}{58}
+        \drawVmfGrid
+        \foreach \vmfCos/\vmfAzimuth in {
+            0.880000000000000/10,
+            0.895000000000000/160,
+            0.910000000000000/35,
+            0.922000000000000/225,
+            0.934000000000000/70,
+            0.945000000000000/110,
+            0.955000000000000/145,
+            0.964000000000000/200,
+            0.973000000000000/260,
+            0.997000000000252/310}{
+            \drawVmfSamplePair{\vmfCos}{\vmfAzimuth}
+        }
+        \finishVmfSphere
+    \end{scope}
+\end{tikzpicture}

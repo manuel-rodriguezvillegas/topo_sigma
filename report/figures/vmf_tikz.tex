@@ -1,0 +1,106 @@
+\begin{tikzpicture}[
+    x=0.95cm,
+    y=0.95cm,
+    font=\footnotesize,
+    >={Latex[length=2mm]},
+    axis/.style={draw=black!18, line width=0.45pt},
+    sphere/.style={draw=blue!30!black, line width=0.7pt},
+    resultant/.style={-Latex, line width=1.25pt},
+    captionlabel/.style={font=\footnotesize\bfseries, align=center},
+    note/.style={font=\scriptsize, text=black!72, align=center},
+    gate/.style={draw=orange!65!black, fill=orange!9, rounded corners=2pt,
+        minimum width=3.2cm, minimum height=0.95cm, align=center},
+    compare/.style={draw=violet!65!black, fill=violet!8, rounded corners=2pt,
+        minimum width=4.15cm, minimum height=0.95cm, align=center}
+]
+
+% Every point below is placed with a polar coordinate at exactly the radius of
+% its circle.  Each arrow ends at the arithmetic mean of those unit points:
+% xbar = (1/m) sum_i x_i = rbar mu.
+\node[note, text=black] at (4.35,5.15)
+    {Dots: unit descriptors $\mathbf{x}_i\in S^{383}$};
+\node[note, text=black] at (4.35,4.78)
+    {Arrow: $\bar{\mathbf{x}}=\frac{1}{m}\sum_i\mathbf{x}_i=\bar r\,\boldsymbol{\mu}$;
+     direction $=\boldsymbol{\mu}$, relative length $=\bar r$};
+
+\coordinate (coherent) at (2.25,2.95);
+\coordinate (variable) at (6.35,2.95);
+\foreach \c in {coherent,variable}{
+    \draw[sphere] (\c) circle (1.25);
+    \draw[axis] ($(\c)+(-1.25,0)$) -- ($(\c)+(1.25,0)$);
+    \draw[axis] ($(\c)+(0,-1.25)$) -- ($(\c)+(0,1.25)$);
+}
+
+% Coherent sample: angles 15 degrees +/- {0, 7, 14}; rbar = 0.985.
+\pgfmathsetmacro{\coherentx}{(cos(1)+cos(8)+cos(15)+cos(22)+cos(29))/5}
+\pgfmathsetmacro{\coherenty}{(sin(1)+sin(8)+sin(15)+sin(22)+sin(29))/5}
+\foreach \a in {1,8,15,22,29}
+    \fill[blue!67] ($(coherent)+(\a:1.25)$) circle (1.65pt);
+\draw[resultant, blue!68!black] (coherent) --
+    ($(coherent)+({1.25*\coherentx},{1.25*\coherenty})$);
+
+% Dispersed sample: angles symmetric about 15 degrees; rbar = 0.394.
+\pgfmathsetmacro{\variablex}{(cos(-90)+cos(-45)+cos(-5)+cos(35)+cos(75)+cos(120))/6}
+\pgfmathsetmacro{\variabley}{(sin(-90)+sin(-45)+sin(-5)+sin(35)+sin(75)+sin(120))/6}
+\foreach \a in {-90,-45,-5,35,75,120}
+    \fill[orange!82] ($(variable)+(\a:1.25)$) circle (1.65pt);
+\draw[resultant, orange!82!black] (variable) --
+    ($(variable)+({1.25*\variablex},{1.25*\variabley})$);
+
+\node[captionlabel] at (2.25,1.30) {Aligned views};
+\node[note] at (2.25,0.93) {$\angle\boldsymbol{\mu}=15^\circ$ \quad $\bar r=0.985$};
+\node[captionlabel] at (6.35,1.30) {Dispersed views};
+\node[note] at (6.35,0.93) {$\angle\boldsymbol{\mu}=15^\circ$ \quad $\bar r=0.394$};
+\node[gate] (maha) at (11.15,4.85) {\textbf{Mahalanobis gate}\\[-1pt]\scriptsize candidates A and B};
+\node[compare] (overlap) at (15.65,4.85) {\textbf{vMF overlap (Eq.~\ref{eq:vmf-overlap})}\\[-1pt]
+    \scriptsize $s_{ij}=\log\!\left(\int p_i p_j\,d\mathbf{x}\,/\,C_d(0)\right)$};
+\draw[-Latex, line width=0.7pt, orange!75!black] (maha) -- (overlap);
+
+\coordinate (candA) at (10.65,2.55);
+\coordinate (query) at (13.75,2.55);
+\coordinate (candB) at (16.85,2.55);
+\foreach \c in {candA,query,candB}{
+    \draw[sphere] (\c) circle (1.03);
+    \draw[axis] ($(\c)+(-1.03,0)$) -- ($(\c)+(1.03,0)$);
+    \draw[axis] ($(\c)+(0,-1.03)$) -- ($(\c)+(0,1.03)$);
+}
+
+% Candidate A: concentrated around 28 degrees; rbar = 0.989.
+\pgfmathsetmacro{\candax}{(cos(16)+cos(22)+cos(28)+cos(34)+cos(40))/5}
+\pgfmathsetmacro{\canday}{(sin(16)+sin(22)+sin(28)+sin(34)+sin(40))/5}
+\foreach \a in {16,22,28,34,40}
+    \fill[green!62!black] ($(candA)+(\a:1.03)$) circle (1.55pt);
+\draw[resultant, green!62!black] (candA) --
+    ($(candA)+({1.03*\candax},{1.03*\canday})$);
+
+% Query: concentrated around 25 degrees; rbar = 0.989.
+\pgfmathsetmacro{\queryx}{(cos(13)+cos(19)+cos(25)+cos(31)+cos(37))/5}
+\pgfmathsetmacro{\queryy}{(sin(13)+sin(19)+sin(25)+sin(31)+sin(37))/5}
+\foreach \a in {13,19,25,31,37}
+    \fill[blue!67] ($(query)+(\a:1.03)$) circle (1.55pt);
+\draw[resultant, blue!68!black] (query) --
+    ($(query)+({1.03*\queryx},{1.03*\queryy})$);
+
+% Candidate B: dispersed around -25 degrees; rbar = 0.446.
+\pgfmathsetmacro{\candbx}{(cos(-125)+cos(-80)+cos(-45)+cos(-5)+cos(30)+cos(75))/6}
+\pgfmathsetmacro{\candby}{(sin(-125)+sin(-80)+sin(-45)+sin(-5)+sin(30)+sin(75))/6}
+\foreach \a in {-125,-80,-45,-5,30,75}
+    \fill[red!66] ($(candB)+(\a:1.03)$) circle (1.55pt);
+\draw[resultant, orange!82!black] (candB) --
+    ($(candB)+({1.03*\candbx},{1.03*\candby})$);
+
+\draw[-Latex, line width=1pt, green!60!black] (13.75,3.82) --
+    node[above, note, text=green!48!black] {strong overlap} (10.65,3.82);
+\draw[-Latex, line width=1pt, red!65!black] (13.75,3.82) --
+    node[above, note, text=red!58!black] {weak overlap} (16.85,3.82);
+
+\node[captionlabel] at (10.65,1.08) {Candidate A};
+\node[note] at (10.65,0.72) {$\angle\boldsymbol{\mu}_A=28^\circ$};
+\node[note] at (10.65,0.42) {$\bar r_A=0.989$};
+\node[captionlabel] at (13.75,1.08) {Query node};
+\node[note] at (13.75,0.72) {$\angle\boldsymbol{\mu}_q=25^\circ$};
+\node[note] at (13.75,0.42) {$\bar r_q=0.989$};
+\node[captionlabel] at (16.85,1.08) {Candidate B};
+\node[note] at (16.85,0.72) {$\angle\boldsymbol{\mu}_B=-25^\circ$};
+\node[note] at (16.85,0.42) {$\bar r_B=0.446$};
+\end{tikzpicture}

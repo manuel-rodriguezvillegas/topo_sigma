@@ -1,0 +1,24 @@
+\begin{tikzpicture}[x=1cm,y=1cm,line cap=round,line join=round,font=\scriptsize]
+    \definecolor{gateblue}{RGB}{57,106,177}
+    \definecolor{acceptgreen}{RGB}{34,139,74}
+    \definecolor{rejectred}{RGB}{204,54,54}
+
+    % One illustrative isotropic budget; actual candidates can have different s.
+    \fill[gateblue!10] (0,0) circle[radius=1.65];
+    \draw[gateblue,very thick] (0,0) circle[radius=1.65];
+    \coordinate (query) at (0,0);
+    \coordinate (acceptedOne) at (0.90,0.65);
+    \coordinate (acceptedTwo) at (-1.05,0.35);
+    \coordinate (rejected) at (1.78,1.05);
+    \draw[black!30,densely dotted] (query)--(acceptedOne);
+    \draw[black!30,densely dotted] (query)--(acceptedTwo);
+    \draw[black!30,densely dotted] (query)--(rejected);
+    \draw[-{Latex[length=1.5mm]},gateblue] (query)--(0,-1.65)
+        node[midway,right,text=gateblue] {$\sqrt{5.991}\,s$};
+    \fill[black!82] (query) ++(0,0.13)--++(0.13,-0.13)--++(-0.13,-0.13)--++(-0.13,0.13)--cycle;
+    \filldraw[fill=acceptgreen,draw=white,line width=0.8pt] (acceptedOne) circle[radius=0.115];
+    \filldraw[fill=acceptgreen,draw=white,line width=0.8pt] (acceptedTwo) circle[radius=0.115];
+    \filldraw[fill=rejectred,draw=white,line width=0.8pt] (rejected) circle[radius=0.125];
+    \draw[white,line width=0.85pt] ($(rejected)+(-0.055,-0.055)$)--($(rejected)+(0.055,0.055)$);
+    \draw[white,line width=0.85pt] ($(rejected)+(-0.055,0.055)$)--($(rejected)+(0.055,-0.055)$);
+\end{tikzpicture}
