@@ -5,7 +5,7 @@
 # runner creates four additional adaptive variants and one fixed-prominence
 # baseline across all seven sequences (35 new maps). Every variant uses an
 # explicit output suffix, and the underlying runners reject detector overrides
-# without one, so output/revised/<environment>/ cannot be overwritten.
+# without one, so output/submission/<environment>/ cannot be overwritten.
 #
 # Existing completed variants are reused by default. Set FORCE=1 only to
 # intentionally rebuild every sensitivity map.
@@ -22,10 +22,16 @@ run_adaptive() {
 }
 
 run_fixed() {
-    # Calibrated without labels on Freiburg A to match the 30 nodes produced
-    # by adaptive k=2, then frozen for every other sequence.
-    local delta="0.1301148376011585"
-    local suffix="_node_fixed_d0p130"
+    # Read fresh label-free calibration against the adaptive k=2 node count.
+    local delta
+    delta="$(python3 - "${OUTPUT_ROOT:-output/submission}/node_segmentation_experiment.json" <<'PYCODE'
+import json
+import sys
+with open(sys.argv[1]) as stream:
+    print(json.load(stream)["fixed_baseline_calibration"]["delta"])
+PYCODE
+)"
+    local suffix="_node_fixed"
     echo "=== Node sensitivity: fixed delta=${delta} ==="
     VALLEY_MODE=fixed VALLEY_DELTA="${delta}" VARIANT_SUFFIX="${suffix}" \
         RUN_ABLATIONS=0 ./run_experiments.sh

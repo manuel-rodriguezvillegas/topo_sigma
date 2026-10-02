@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
@@ -62,6 +63,38 @@ def _connect_sequence(mapper: TopologicalMapper) -> None:
 
 
 class RevisitSelectionTest(unittest.TestCase):
+    def test_short_return_can_close_at_third_node(self) -> None:
+        for mode in ("both", "geometric", "threshold"):
+            with self.subTest(mode=mode):
+                mapper = TopologicalMapper(gate_mode=mode)
+                mapper.graph.add_node(_node(0, 1.0, 0.0, 0.1))
+                mapper.graph.add_node(_node(1, 0.0, 10.0, 0.1))
+                _connect_sequence(mapper)
+                mapper.current_node_id = 1
+                accepted, proposed, _, reason = mapper._find_revisit(_node(2, 1.0, 0.0, 0.1))
+                self.assertEqual((accepted, proposed, reason), (0, 0, "accepted"))
+                mapper.close()
+
+    def test_immediate_predecessor_is_still_excluded(self) -> None:
+        mapper = TopologicalMapper()
+        mapper.graph.add_node(_node(0, 1.0, 0.0, 0.1))
+        mapper.current_node_id = 0
+        self.assertEqual(
+            mapper._find_revisit(_node(1, 1.0, 0.0, 0.1)),
+            (None, None, None, "no_eligible_candidate"),
+        )
+        mapper.close()
+
+    def test_visual_search_has_no_map_warmup(self) -> None:
+        mapper = TopologicalMapper(gate_mode="visual", visual_model="vmf")
+        for i in range(3):
+            mapper.graph.add_node(_node(i, 1.0, float(i), 0.1))
+        mapper.current_node_id = 2
+        # Isolate candidate eligibility from the appearance model.
+        with patch.object(mapper, "_sequence_vmf_evidence", side_effect=[10.0, 0.0]):
+            self.assertEqual(mapper._find_revisit(_node(3, 1.0, 0.0, 0.1))[0], 0)
+        mapper.close()
+
     def test_unknown_visual_model_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "visual_model"):
             TopologicalMapper(visual_model="unknown")
@@ -80,13 +113,11 @@ class RevisitSelectionTest(unittest.TestCase):
         self.assertLess(partial, complete)
 
     def test_sequence_similarity_supports_reverse_traversal(self) -> None:
-        mapper = TopologicalMapper(optimize=False)
+        mapper = TopologicalMapper()
         # Historical traversal around node 2: node 2 -> 3 -> 4.
         bases = [5, 4, 1, 2, 3, 3, 2]
         for node_id, basis in enumerate(bases):
-            mapper.graph.add_node(
-                _basis_node(node_id, basis, float(node_id), 0.05 * (node_id + 1))
-            )
+            mapper.graph.add_node(_basis_node(node_id, basis, float(node_id), 0.05 * (node_id + 1)))
         _connect_sequence(mapper)
         mapper.current_node_id = 6
 
@@ -100,15 +131,18 @@ class RevisitSelectionTest(unittest.TestCase):
         self.assertAlmostEqual(direct, 0.0)
         self.assertAlmostEqual(sequence, 2.0 / 3.0)
 
-    def test_odometry_first_recovers_match_outside_visual_top_five(self) -> None:
-        mapper = TopologicalMapper(optimize=False, visual_outlier_k=1.0)
+    def test_odometry_proposes_match_outside_visual_top_five_but_defers_weak_evidence(self) -> None:
+        mapper = TopologicalMapper(visual_outlier_k=1.0, verification_threshold=0.7, require_visual_verification=True)
 
         # Six appearance aliases outrank the true place by direct similarity.
         for node_id in range(6):
             mapper.graph.add_node(
                 _node(
-                    node_id, 0.8, float(node_id),
-                    0.05 * (node_id + 1), dimension=16,
+                    node_id,
+                    0.8,
+                    float(node_id),
+                    0.05 * (node_id + 1),
+                    dimension=16,
                 )
             )
         # Historical context 6 -> 7 -> target 8.
@@ -124,8 +158,7 @@ class RevisitSelectionTest(unittest.TestCase):
         candidate = _basis_node(11, 0, 8.0, 0.60)
         eligible = list(range(9))
         direct = [
-            mapper._node_similarity(candidate, mapper.graph.nodes[node_id])
-            for node_id in eligible
+            mapper._node_similarity(candidate, mapper.graph.nodes[node_id]) for node_id in eligible
         ]
         direct_rank = list(np.argsort(-np.asarray(direct))).index(8)
         self.assertGreaterEqual(direct_rank, 5)
@@ -133,20 +166,18 @@ class RevisitSelectionTest(unittest.TestCase):
         accepted, proposed, similarity, reason = mapper._find_revisit(candidate)
 
         self.assertEqual(proposed, 8)
-        self.assertEqual(accepted, 8)
+        self.assertIsNone(accepted)
         self.assertIsNotNone(similarity)
         self.assertGreater(float(similarity), 0.0)
-        self.assertEqual(reason, "accepted")
+        self.assertEqual(reason, "deferred_visual_verification")
 
-    def test_unique_geometric_candidate_does_not_require_visual_outlier(self) -> None:
-        mapper = TopologicalMapper(optimize=False, visual_outlier_k=2.0)
+    def test_unique_geometric_candidate_with_indistinctive_appearance_is_deferred(self) -> None:
+        mapper = TopologicalMapper(visual_outlier_k=2.0, require_visual_verification=True)
 
         # Every node looks identical, so no candidate can be a visual outlier.
         # Geometry nevertheless identifies node 0 unambiguously.
         for node_id in range(7):
-            mapper.graph.add_node(
-                _basis_node(node_id, 0, 10.0 * node_id, 0.1)
-            )
+            mapper.graph.add_node(_basis_node(node_id, 0, 10.0 * node_id, 0.1))
         _connect_sequence(mapper)
         mapper.current_node_id = 6
 
@@ -154,10 +185,10 @@ class RevisitSelectionTest(unittest.TestCase):
         accepted, proposed, similarity, reason = mapper._find_revisit(candidate)
 
         self.assertEqual(proposed, 0)
-        self.assertEqual(accepted, 0)
+        self.assertIsNone(accepted)
         self.assertIsNotNone(similarity)
         self.assertGreater(float(similarity), 0.0)
-        self.assertEqual(reason, "accepted")
+        self.assertEqual(reason, "deferred_visual_verification")
 
     def test_interval_covariance_uses_only_new_uncertainty(self) -> None:
         earlier = np.diag([1.0, 2.0, 3.0])
@@ -166,7 +197,7 @@ class RevisitSelectionTest(unittest.TestCase):
         np.testing.assert_allclose(interval, np.diag([0.2, 0.5, 0.1]))
 
     def test_node_extent_is_not_treated_as_localization_uncertainty(self) -> None:
-        mapper = TopologicalMapper(optimize=False)
+        mapper = TopologicalMapper()
         matched = _node(0, 1.0, 0.0, 0.0)
         candidate = _node(1, 1.0, 3.0, 0.001)
         matched.extent_covariance = np.eye(2) * 100.0
@@ -174,12 +205,8 @@ class RevisitSelectionTest(unittest.TestCase):
 
         covariance = mapper._revisit_covariance(candidate, matched)
 
-        np.testing.assert_allclose(
-            covariance, np.eye(2) * 0.251, atol=1e-12
-        )
-        self.assertFalse(
-            mapper._passes_gates(np.array([3.0, 0.0]), covariance)
-        )
+        np.testing.assert_allclose(covariance, np.eye(2) * 0.251, atol=1e-12)
+        self.assertFalse(mapper._passes_gates(np.array([3.0, 0.0]), covariance))
 
     def test_gaussian_score_penalizes_uninformative_covariance(self) -> None:
         delta = np.array([0.4, 0.0])

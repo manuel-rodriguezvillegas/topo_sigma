@@ -15,6 +15,7 @@ from typing import Any
 
 import numpy as np
 
+from vts_core.artifacts import atomic_json, file_digest
 from vts_core.retrieval import PlaceRetriever, SemanticEncoder
 from vts_core.topo_graph import TopoGraph
 
@@ -43,9 +44,7 @@ def _present_metrics(rows: list[dict[str, Any]]) -> dict[str, float | int]:
         "recall_at_3": _round(_mean([row["top3_correct"] for row in rows])),
         "mrr": _round(_mean(reciprocal_ranks)),
         "answer_coverage": _round(len(answered) / len(rows)) if rows else 0.0,
-        "precision_at_1_when_answered": _round(
-            _mean([row["top1_correct"] for row in answered])
-        ),
+        "precision_at_1_when_answered": _round(_mean([row["top1_correct"] for row in answered])),
         "successful_answer_rate": _round(
             _mean([row["confident"] and row["top1_correct"] for row in rows])
         ),
@@ -55,9 +54,7 @@ def _present_metrics(rows: list[dict[str, Any]]) -> dict[str, float | int]:
 def _absent_metrics(rows: list[dict[str, Any]]) -> dict[str, float | int]:
     return {
         "n": len(rows),
-        "correct_rejection_rate": _round(
-            _mean([not row["confident"] for row in rows])
-        ),
+        "correct_rejection_rate": _round(_mean([not row["confident"] for row in rows])),
         "false_answer_rate": _round(_mean([row["confident"] for row in rows])),
     }
 
@@ -75,7 +72,7 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "n_map_query_pairs": len(rows),
         "present": _present_metrics(present),
         "absent": _absent_metrics(absent),
-        "safe_decision_accuracy": _round(_mean(safe_outcomes)),
+        "heuristic_decision_accuracy": _round(_mean(safe_outcomes)),
     }
 
 
@@ -83,14 +80,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--benchmark", required=True)
     parser.add_argument("--maps-root", required=True)
-    parser.add_argument("--graph-name", default="graph_0_noopt.pkl")
-    parser.add_argument(
-        "--semantic-model", default="openai/clip-vit-base-patch32"
-    )
+    parser.add_argument("--graph-name", default="final_graph.pkl")
+    parser.add_argument("--semantic-model", default="openai/clip-vit-base-patch32")
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--semantic-revision", default="")
     args = parser.parse_args()
 
+    if args.top_k < 3:
+        raise ValueError("this R@3 benchmark requires top_k >= 3")
     with open(args.benchmark, encoding="utf-8") as stream:
         benchmark: dict[str, Any] = json.load(stream)
 
@@ -98,12 +96,14 @@ def main() -> None:
     if len(queries) != 100:
         raise ValueError(f"Expected 100 queries, found {len(queries)}")
 
-    encoder = SemanticEncoder(args.semantic_model)
+    encoder = SemanticEncoder(args.semantic_model, args.semantic_revision or None)
+    graph_identities: dict[str, str] = {}
     all_rows: list[dict[str, Any]] = []
     environment_reports: dict[str, Any] = {}
 
     for environment, labels in benchmark["environments"].items():
         graph_path = Path(args.maps_root) / environment / args.graph_name
+        graph_identities[environment] = file_digest(graph_path)
         graph = TopoGraph.load(str(graph_path))
         retriever = PlaceRetriever(encoder, graph)
         expected_labels = set(labels)
@@ -118,15 +118,11 @@ def main() -> None:
                 **query,
                 "present": query["label"] in expected_labels,
                 "ranked_labels": ranked_labels,
-                "top1_correct": bool(
-                    ranked_labels and ranked_labels[0] == query["label"]
-                ),
+                "top1_correct": bool(ranked_labels and ranked_labels[0] == query["label"]),
                 "top3_correct": query["label"] in ranked_labels[:3],
                 "confident": bool(confident),
                 "posterior_margin": _round(
-                    posterior[0] - posterior[1]
-                    if len(posterior) >= 2
-                    else 1.0
+                    posterior[0] - posterior[1] if len(posterior) >= 2 else 1.0
                 ),
             }
             rows.append(row)
@@ -157,6 +153,10 @@ def main() -> None:
             "n_environments": len(benchmark["environments"]),
         },
         "semantic_model": args.semantic_model,
+        "encoder_identity": encoder.identity,
+        "benchmark_sha256": file_digest(args.benchmark),
+        "graph_sha256": graph_identities,
+        "decision_policy": "diagnostic relative-margin heuristic; navigation requires explicit confirmation",
         "overall": {
             **_summarize(all_rows),
             "present_by_category": {
@@ -170,8 +170,7 @@ def main() -> None:
 
     output_path = Path(args.out)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as stream:
-        json.dump(report, stream, indent=2)
+    atomic_json(output_path, report)
     print(json.dumps({"overall": report["overall"], "environments": environment_reports}, indent=2))
 
 

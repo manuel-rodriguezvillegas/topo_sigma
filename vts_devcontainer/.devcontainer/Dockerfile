@@ -40,7 +40,7 @@ RUN usermod --login $USERNAME --home /home/$USERNAME --move-home ubuntu \
 # managed Python or isolated virtual environment would be ABI-incompatible.
 WORKDIR /opt/vts-python
 COPY pyproject.toml uv.lock ./
-RUN uv export --quiet --frozen --no-dev --no-emit-project --emit-index-url \
+RUN uv export --quiet --frozen --no-emit-project --emit-index-url \
         --output-file requirements.lock \
     && uv pip sync --system --break-system-packages \
         --index-strategy unsafe-best-match --require-hashes requirements.lock \

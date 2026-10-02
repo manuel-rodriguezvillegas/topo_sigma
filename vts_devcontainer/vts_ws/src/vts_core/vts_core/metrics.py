@@ -81,9 +81,7 @@ def _connected_components(graph: TopoGraph) -> int:
     return components
 
 
-def trajectory_metrics(
-    estimated: np.ndarray, ground_truth: np.ndarray
-) -> TrajectoryMetrics:
+def trajectory_metrics(estimated: np.ndarray, ground_truth: np.ndarray) -> TrajectoryMetrics:
     """ATE-style metrics between aligned, same-length (N, 2) trajectories.
 
     Args:
@@ -134,16 +132,12 @@ def graph_metrics(
         else graph.positions()
     )
     tolerance: float = (
-        spatial_tolerance
-        if spatial_tolerance is not None
-        else median_spacing(positions)
+        spatial_tolerance if spatial_tolerance is not None else median_spacing(positions)
     )
 
     # Coverage: every GT sample should be near some node.
     if positions.size and ground_truth_xy.size:
-        deltas: np.ndarray = (
-            ground_truth_xy[:, None, :] - positions[None, :, :]
-        )
+        deltas: np.ndarray = ground_truth_xy[:, None, :] - positions[None, :, :]
         distances: np.ndarray = np.linalg.norm(deltas, axis=2)
         nearest: np.ndarray = distances.min(axis=1)
         coverage: float = float(np.mean(nearest <= tolerance))
@@ -158,7 +152,7 @@ def graph_metrics(
         coverage_2m = 0.0
 
     # Placement: internal map distortion. With node_gt available, compare the
-    # graph's own (odometry-frame, post-optimization) node layout against the
+    # graph's own (recorded odometry-frame) node layout against the
     # GT layout after a best-fit SE(2) alignment. Comparing node_gt positions
     # to the trajectory they were sampled from would be circular and always
     # return 0, so the map-frame layout must be the source of the fit.
@@ -166,9 +160,7 @@ def graph_metrics(
     if node_gt_xy is not None and len(graph.nodes) >= 3:
         ids_for_fit: list[int] = sorted(graph.nodes)
         source: np.ndarray = graph.positions()
-        target: np.ndarray = np.array(
-            [node_gt_xy[i] for i in ids_for_fit], dtype=np.float64
-        )
+        target: np.ndarray = np.array([node_gt_xy[i] for i in ids_for_fit], dtype=np.float64)
         fit: tuple[np.ndarray, np.ndarray] | None = fit_se2(source, target)
         if fit is not None:
             rotation, translation = fit
@@ -197,9 +189,7 @@ def graph_metrics(
         edge_lengths.append(gt_dist)
 
     edge_types = getattr(graph, "edge_types", {})
-    sequential_edges = sum(
-        edge_types.get(edge, "odometry") == "odometry" for edge in graph.edges()
-    )
+    sequential_edges = sum(edge_types.get(edge, "odometry") == "odometry" for edge in graph.edges())
     loop_edges = sum(edge_types.get(edge) == "loop" for edge in graph.edges())
     accepted = rejected = true_positives = false_positives = false_negatives = 0
     semantic_evaluable = semantic_correct = semantic_shortcuts = 0
@@ -210,16 +200,13 @@ def graph_metrics(
             continue
         query_index = index_of[query_id]
         prior_ids = [
-            node_id for node_id in ids_sorted
-            if (
-                node_id < query_id - LOOP_TEMPORAL_EXCLUSION_NODES
-                and node_id in index_of
-            )
+            node_id
+            for node_id in ids_sorted
+            if (node_id < query_id - LOOP_TEMPORAL_EXCLUSION_NODES and node_id in index_of)
         ]
         has_opportunity = any(
-            float(np.linalg.norm(
-                positions[query_index] - positions[index_of[node_id]]
-            )) <= loop_tolerance
+            float(np.linalg.norm(positions[query_index] - positions[index_of[node_id]]))
+            <= loop_tolerance
             for node_id in prior_ids
         )
         accepted += int(event.accepted)
@@ -233,10 +220,11 @@ def graph_metrics(
                 same_semantic_place = query_label == match_label
                 semantic_correct += int(same_semantic_place)
                 semantic_shortcuts += int(not same_semantic_place)
-            match_distance = float(np.linalg.norm(
-                positions[query_index]
-                - positions[index_of[int(event.matched_node_id)]]
-            ))
+            match_distance = float(
+                np.linalg.norm(
+                    positions[query_index] - positions[index_of[int(event.matched_node_id)]]
+                )
+            )
             accepted_true = match_distance <= loop_tolerance
             true_positives += int(accepted_true)
             false_positives += int(not accepted_true)
@@ -246,16 +234,16 @@ def graph_metrics(
 
     precision = (
         true_positives / (true_positives + false_positives)
-        if true_positives + false_positives else 0.0
+        if true_positives + false_positives
+        else 0.0
     )
     recall = (
         true_positives / (true_positives + false_negatives)
-        if true_positives + false_negatives else 0.0
+        if true_positives + false_negatives
+        else 0.0
     )
     f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
-    semantic_precision = (
-        semantic_correct / semantic_evaluable if semantic_evaluable else 0.0
-    )
+    semantic_precision = semantic_correct / semantic_evaluable if semantic_evaluable else 0.0
 
     # Pairwise shortest-path distortion in the estimated map against direct
     # GT displacement. This is a topology-sensitive diagnostic: false
@@ -330,18 +318,14 @@ def descriptor_separation(graph: TopoGraph) -> dict[str, float]:
         the labelled-node / room counts. Empty if fewer than two labelled
         nodes. ``separation`` near zero (or negative) is a red flag.
     """
-    ids: list[int] = [
-        i for i in sorted(graph.nodes) if graph.nodes[i].room_label
-    ]
+    ids: list[int] = [i for i in sorted(graph.nodes) if graph.nodes[i].room_label]
     if len(ids) < 2:
         return {}
     labels: list[str] = [str(graph.nodes[i].room_label) for i in ids]
-    features: np.ndarray = np.stack(
-        [graph.nodes[i].visual_features for i in ids]
-    ).astype(np.float64)
-    features = features / np.maximum(
-        np.linalg.norm(features, axis=1, keepdims=True), 1e-12
+    features: np.ndarray = np.stack([graph.nodes[i].visual_features for i in ids]).astype(
+        np.float64
     )
+    features = features / np.maximum(np.linalg.norm(features, axis=1, keepdims=True), 1e-12)
     similarity: np.ndarray = features @ features.T
 
     intra: list[float] = []
@@ -349,9 +333,7 @@ def descriptor_separation(graph: TopoGraph) -> dict[str, float]:
     nn_same: int = 0
     for a in range(len(ids)):
         for b in range(a + 1, len(ids)):
-            (intra if labels[a] == labels[b] else inter).append(
-                float(similarity[a, b])
-            )
+            (intra if labels[a] == labels[b] else inter).append(float(similarity[a, b]))
         row: np.ndarray = similarity[a].copy()
         row[a] = -np.inf
         if labels[int(np.argmax(row))] == labels[a]:
@@ -373,22 +355,14 @@ def directional_model_statistics(
     graph: TopoGraph,
 ) -> dict[str, float | int]:
     """Summarize the fitted hyperspherical uncertainty of map nodes."""
-    nodes = [
-        node
-        for node in graph.nodes.values()
-        if getattr(node, "visual_sample_count", 0) > 0
-    ]
+    nodes = [node for node in graph.nodes.values() if getattr(node, "visual_sample_count", 0) > 0]
     if not nodes:
         return {}
     resultant_lengths = np.asarray(
         [node.visual_resultant_length for node in nodes], dtype=np.float64
     )
-    concentrations = np.asarray(
-        [node.visual_concentration for node in nodes], dtype=np.float64
-    )
-    sample_counts = np.asarray(
-        [node.visual_sample_count for node in nodes], dtype=np.float64
-    )
+    concentrations = np.asarray([node.visual_concentration for node in nodes], dtype=np.float64)
+    sample_counts = np.asarray([node.visual_sample_count for node in nodes], dtype=np.float64)
     return {
         "n_fitted_nodes": len(nodes),
         "mean_resultant_length": round(float(np.mean(resultant_lengths)), 4),
@@ -401,61 +375,35 @@ def directional_model_statistics(
 
 
 def map_footprint(graph: TopoGraph) -> dict[str, float]:
-    """Full and descriptors-only map footprint.
+    """Named NumPy payload sizes and a reloadable compact map's pickle size.
 
-    Reports both the full in-memory footprint (descriptors + stored RGB views)
-    and the serialized size of a descriptors-only map (no images). VTS keeps RGB
-    views for the downstream text-to-node module, so both footprints are
-    reported explicitly.
-
-    Returns:
-        Dict of byte counts: ``descriptor_bytes``, ``view_bytes``,
-        ``in_memory_bytes`` (their sum) and ``descriptors_only_pickle_bytes``.
+    Array payload is not resident memory: Python, models and temporary buffers
+    require separate peak-RSS measurement. Compact maps retain means and views'
+    descriptors, poses, uncertainty budgets, edge types and semantic embeddings.
     """
     import pickle
 
-    descriptor_bytes: int = 0
-    view_bytes: int = 0
-    descriptors_only: dict[int, dict[str, object]] = {}
-    for node_id, node in graph.nodes.items():
-        features: np.ndarray = np.asarray(node.visual_features)
-        descriptor_bytes += int(features.nbytes)
-        view_features = getattr(node, "view_features", None)
-        if view_features is not None:
-            compact_features = np.asarray(view_features, dtype=np.float32)
-            descriptor_bytes += int(compact_features.nbytes)
-        else:
-            compact_features = features.astype(np.float32)[None, :]
-        # ``compact_features`` already contains the stored visual directions;
-        # avoid duplicating the mean direction in this diagnostic payload.
-        descriptors_only[node_id] = {
-            "view_features": compact_features,
-            "concentration": float(
-                getattr(node, "visual_concentration", 0.0)
-            ),
-            "mean_resultant_length": float(
-                getattr(node, "visual_resultant_length", 0.0)
-            ),
-            "sample_count": int(getattr(node, "visual_sample_count", 0)),
-        }
-        for view in node.views:
-            if view is not None:
-                view_bytes += int(np.asarray(view).nbytes)
-    payload: dict[str, object] = {
-        "descriptors": descriptors_only,
-        "adjacency": graph.adjacency,
-        "edges": graph.edges(),
-        "edge_measurements": graph.edge_measurements,
+    sizes = {
+        "descriptor_bytes": 0,
+        "view_bytes": 0,
+        "semantic_embedding_bytes": 0,
+        "covariance_bytes": 0,
     }
-    serialized: int = len(
-        pickle.dumps(payload, protocol=pickle.HIGHEST_PROTOCOL)
-    )
+    for node in graph.nodes.values():
+        sizes["descriptor_bytes"] += node.visual_features.nbytes
+        if node.view_features is not None:
+            sizes["descriptor_bytes"] += node.view_features.nbytes
+        if node.view_embeddings is not None:
+            sizes["semantic_embedding_bytes"] += node.view_embeddings.nbytes
+        sizes["covariance_bytes"] += node.pose_covariance.nbytes + node.extent_covariance.nbytes
+        sizes["view_bytes"] += sum(view.nbytes for view in node.views)
     return {
         "n_nodes": float(len(graph.nodes)),
-        "descriptor_bytes": float(descriptor_bytes),
-        "view_bytes": float(view_bytes),
-        "in_memory_bytes": float(descriptor_bytes + view_bytes),
-        "descriptors_only_pickle_bytes": float(serialized),
+        **{key: float(value) for key, value in sizes.items()},
+        "array_payload_bytes": float(sum(sizes.values())),
+        "compact_pickle_bytes": float(
+            len(pickle.dumps(graph.without_images(), protocol=pickle.HIGHEST_PROTOCOL))
+        ),
     }
 
 
@@ -496,16 +444,23 @@ def place_recognition_recall(
 
     Returns:
         Dict ``recall_at_<k>`` for each k in ``k_values`` (NaN if no queries),
-        plus ``n_queries``.
+        plus ``n_queries``. Queries with no eligible database entry count as misses.
     """
+    if not k_values or min(k_values) < 1:
+        raise ValueError("k_values must be positive")
     q: int = query_descriptors.shape[0]
-    if q == 0 or db_descriptors.shape[0] == 0:
+    if exclude_window < 0:
+        raise ValueError("exclude_window must be nonnegative")
+    if (query_index is None) != (db_index is None):
+        raise ValueError("query_index and db_index must be provided together")
+    if q == 0:
         return {f"recall_at_{k}": float("nan") for k in k_values} | {"n_queries": 0}
 
+    if db_descriptors.shape[0] == 0:
+        return {f"recall_at_{k}": 0.0 for k in k_values} | {"n_queries": q}
+
     def _l2norm(matrix: np.ndarray) -> np.ndarray:
-        return matrix / np.maximum(
-            np.linalg.norm(matrix, axis=1, keepdims=True), 1e-12
-        )
+        return matrix / np.maximum(np.linalg.norm(matrix, axis=1, keepdims=True), 1e-12)
 
     queries: np.ndarray = _l2norm(query_descriptors.astype(np.float64))
     database: np.ndarray = _l2norm(db_descriptors.astype(np.float64))
@@ -515,19 +470,16 @@ def place_recognition_recall(
     deltas: np.ndarray = query_xy[:, None, :] - db_xy[None, :, :]
     distances: np.ndarray = np.linalg.norm(deltas, axis=2)  # (Q, D)
 
-    use_exclusion: bool = (
-        query_index is not None and db_index is not None and exclude_window > 0
-    )
+    use_exclusion: bool = query_index is not None and db_index is not None
     max_k: int = min(max(k_values), database.shape[0])
     hits: dict[int, int] = {k: 0 for k in k_values}
     for i in range(q):
         scores: np.ndarray = similarity[i].copy()
         if use_exclusion:
-            too_close: np.ndarray = (
-                np.abs(db_index - int(query_index[i])) <= exclude_window
-            )
+            too_close: np.ndarray = np.abs(db_index - int(query_index[i])) <= exclude_window
             scores[too_close] = -np.inf
-        order: np.ndarray = np.argsort(scores)[::-1][:max_k]
+        valid = np.flatnonzero(np.isfinite(scores))
+        order: np.ndarray = valid[np.argsort(-scores[valid], kind="stable")[:max_k]]
         correct: np.ndarray = distances[i, order] <= distance_threshold
         for k in k_values:
             if bool(correct[:k].any()):
@@ -564,9 +516,7 @@ def retrieval_metrics(
             hits_1 += 1
         if truth in ranks[:k]:
             hits_k += 1
-        rank_position: int = next(
-            (r + 1 for r, label in enumerate(ranks) if label == truth), 0
-        )
+        rank_position: int = next((r + 1 for r, label in enumerate(ranks) if label == truth), 0)
         reciprocal_ranks.append(1.0 / rank_position if rank_position else 0.0)
 
     n: int = len(true_labels)
@@ -632,8 +582,10 @@ def retrieval_report(
         confusion[truth][predicted] = confusion[truth].get(predicted, 0) + 1
 
     report: dict[str, object] = {
-        "overall": {key: round(float(val), 4) if isinstance(val, float) else val
-                    for key, val in overall.items()},
+        "overall": {
+            key: round(float(val), 4) if isinstance(val, float) else val
+            for key, val in overall.items()
+        },
         "per_class": per_class,
         "confusion": confusion,
     }
@@ -646,19 +598,19 @@ def retrieval_report(
             "coverage": round(len(answered) / n, 4),
             "precision_at_1_when_answered": round(
                 sum(correct_top1[i] for i in answered) / len(answered), 4
-            ) if answered else 0.0,
+            )
+            if answered
+            else 0.0,
             "recall_at_1_if_always_answer": round(overall["recall_at_1"], 4),
-            "wrong_answers_rejected_rate": round(
-                len(rejected_wrong) / len(wrong), 4
-            ) if wrong else 0.0,
+            "wrong_answers_rejected_rate": round(len(rejected_wrong) / len(wrong), 4)
+            if wrong
+            else 0.0,
             "n_answered": len(answered),
         }
     return report
 
 
-def rejection_curve(
-    correct_top1: list[bool], margins: list[float]
-) -> list[dict[str, float]]:
+def rejection_curve(correct_top1: list[bool], margins: list[float]) -> list[dict[str, float]]:
     """Coverage vs precision as the heuristic margin threshold sweeps.
 
     For each candidate top-2 posterior-margin threshold, report the fraction of
@@ -677,13 +629,12 @@ def rejection_curve(
     for threshold in thresholds:
         answered = [i for i in range(n) if margins[i] >= threshold]
         coverage = len(answered) / n
-        precision = (
-            sum(correct_top1[i] for i in answered) / len(answered)
-            if answered else 1.0
+        precision = sum(correct_top1[i] for i in answered) / len(answered) if answered else 1.0
+        curve.append(
+            {
+                "margin": round(float(threshold), 4),
+                "coverage": round(coverage, 4),
+                "precision_at_1": round(precision, 4),
+            }
         )
-        curve.append({
-            "margin": round(float(threshold), 4),
-            "coverage": round(coverage, 4),
-            "precision_at_1": round(precision, 4),
-        })
     return curve

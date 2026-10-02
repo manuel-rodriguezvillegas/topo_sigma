@@ -7,7 +7,7 @@ remain does bidirectional sequence evidence use the vMF log-overlap ratio.
 No learned parameters, external dependency, or new decision threshold is
 introduced.
 
-## Final comparison
+## Historical comparison (before submission corrections)
 
 Across the four COLD and three CID-SIMS evaluations, the cosine validator
 obtained 20 true positives, 1 false positive and 28 false negatives
@@ -23,24 +23,27 @@ than universal.
 Geometry-only obtained 24 true positives and 5 false positives (F1 0.6234).
 The vMF dual gate therefore has slightly higher aggregate F1 while retaining
 substantially better precision, an important property because false loop
-closures can corrupt the whole pose graph.
+closures can corrupt the graph topology.
 
 ## Complexity
 
-The implementation adds roughly 260 production lines and no dependency. In
-the recorded runs, vMF added about 0.64 ms to an average loop search; DINO
-inference still dominates total runtime. Fitting stores the existing mean
+The implementation uses NumPy and the Python standard library. Runtime must
+be measured again after the geometry-first and caching changes. Fitting stores the existing mean
 direction plus three scalar diagnostics per node: concentration, mean
-resultant length and sample count. The descriptors-only footprint avoids
-serializing the mean direction twice.
+resultant length and sample count. The compact operational map stores both the mean direction and all retained
+view descriptors: three 384-D views plus their distinct mean require 6,144
+bytes in float32, before poses, budgets, topology and other metadata.
 
 ## Preserved artifacts
 
-- `output/revised/`: active vMF results.
+- `output/revised/`: historical results; incompatible with the revised budget.
+- `output/submission/`: regenerated, manifest-verified results.
 - `output/vmf_2026-08-20/`: immutable original vMF result and source archive.
 - `output/cosine_2026-08-20_final/`: complete cosine results and ablations.
 - `output/cosine_baseline_2026-08-20_interrupted/`: earlier interrupted cosine
   checkpoint retained for provenance.
 
-The cosine result is therefore a reproducible visual-gate ablation, not a
-discarded experiment.
+Regenerate the controlled cosine variant with `VISUAL_MODEL=cosine` and
+`VARIANT_SUFFIX=_cosine`; the current visual-only vMF ablation keeps the vMF
+evidence model while removing geometry. Historical counts above do not describe
+the revised implementation.

@@ -3,7 +3,7 @@
 #
 # This script does not launch ROS, extract features, rebuild graphs, or modify
 # the standard metrics_report.json files. By default it evaluates the seven
-# final no-GTSAM maps and the AnyLoc-GeM ViT-S baseline at 0.5, 1, 2, and 3
+# final maps and the AnyLoc-GeM ViT-S baseline at 0.5, 1, 2, and 3
 # metres. Set INCLUDE_ABLATIONS=1 to score the existing
 # visual/geometric/threshold gate ablations as well. Set INCLUDE_ANYLOC=0 only
 # when the baseline artifacts are intentionally unavailable.
@@ -11,7 +11,7 @@ set -euo pipefail
 
 DATA_ROOT="${DATA_ROOT:-/workspace/encoder/seq_data}"
 CID_SIMS_ROOT="${CID_SIMS_ROOT:-/workspace/encoder}"
-OUTPUT_ROOT="${OUTPUT_ROOT:-output/revised}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-output/submission}"
 read -r -a tolerances <<< "${TOLERANCES:-0.5 1.0 2.0 3.0}"
 
 cold_environments=(
@@ -43,7 +43,7 @@ add_case() {
     local name="$1"
     local result_dir="$2"
     local gt_path="$3"
-    local graph="${result_dir}/graph_0_noopt.pkl"
+    local graph="${result_dir}/final_graph.pkl"
     local node_gt="${result_dir}/graph_0_node_gt.json"
 
     for required in "${graph}" "${node_gt}" "${gt_path}"; do
@@ -66,6 +66,16 @@ add_environment() {
             "${environment}_anyloc_gem_vits" \
             "${OUTPUT_ROOT}/${environment}_anyloc_gem_vits" \
             "${gt_path}"
+    fi
+
+    if [ "${INCLUDE_COSINE:-0}" = "1" ]; then
+        add_case "${environment}_cosine" "${OUTPUT_ROOT}/${environment}_cosine" "${gt_path}"
+    fi
+    if [ "${INCLUDE_NODE_SENSITIVITY:-0}" = "1" ]; then
+        local variant
+        for variant in node_adaptive_k1p0 node_adaptive_k1p5 node_adaptive_k2p5 node_adaptive_k3p0 node_fixed; do
+            add_case "${environment}_${variant}" "${OUTPUT_ROOT}/${environment}_${variant}" "${gt_path}"
+        done
     fi
 
     if [ "${INCLUDE_ABLATIONS:-0}" = "1" ]; then

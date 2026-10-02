@@ -25,9 +25,7 @@ import numpy as np
 
 from vts_core.node_detection import AdaptiveValleyDetector, FixedValleyDetector
 
-_COLD_FILENAME = re.compile(
-    r"t\d+\.\d+_x-?\d+\.?\d*_y-?\d+\.?\d*_a-?\d+\.?\d*"
-)
+_COLD_FILENAME = re.compile(r"t\d+\.\d+_x-?\d+\.?\d*_y-?\d+\.?\d*_a-?\d+\.?\d*")
 _COLD_CLASSES: tuple[str, ...] = (
     "CR",
     "2PO",
@@ -93,9 +91,7 @@ def load_cold_frame_labels(images_dir: str, labels_path: str) -> list[str]:
     for line in annotation_path.read_text().splitlines():
         parts = line.split()
         if len(parts) >= 2:
-            labels_by_name[os.path.basename(parts[0])] = _canonical_cold_label(
-                parts[1]
-            )
+            labels_by_name[os.path.basename(parts[0])] = _canonical_cold_label(parts[1])
 
     image_names = sorted(
         path.name
@@ -141,50 +137,36 @@ def _segments(splits: list[int], frame_count: int) -> list[tuple[int, int]]:
     return list(pairwise(edges))
 
 
-def _match_boundaries(
-    detected: list[int], reference: list[int], tolerance_frames: int
-) -> int:
-    candidates = sorted(
-        (
-            abs(detected_position - reference_position),
-            detected_index,
-            reference_index,
-        )
-        for detected_index, detected_position in enumerate(detected)
-        for reference_index, reference_position in enumerate(reference)
-        if abs(detected_position - reference_position) <= tolerance_frames
-    )
-    used_detected: set[int] = set()
-    used_reference: set[int] = set()
-    for _, detected_index, reference_index in candidates:
-        if detected_index in used_detected or reference_index in used_reference:
-            continue
-        used_detected.add(detected_index)
-        used_reference.add(reference_index)
-    return len(used_reference)
+def _match_boundaries(detected: list[int], reference: list[int], tolerance_frames: int) -> int:
+    """Maximum-cardinality matching of two ordered 1-D boundary sets."""
+    if tolerance_frames < 0:
+        raise ValueError("tolerance_frames must be nonnegative")
+    first, second = sorted(detected), sorted(reference)
+    i = j = matches = 0
+    while i < len(first) and j < len(second):
+        if first[i] < second[j] - tolerance_frames:
+            i += 1
+        elif second[j] < first[i] - tolerance_frames:
+            j += 1
+        else:
+            matches += 1
+            i += 1
+            j += 1
+    return matches
 
 
 def _semantic_metrics(
     labels: list[str], splits: list[int], tolerance_frames: int
 ) -> dict[str, int | float]:
-    transitions = [
-        index
-        for index in range(1, len(labels))
-        if labels[index] != labels[index - 1]
-    ]
+    transitions = [index for index in range(1, len(labels)) if labels[index] != labels[index - 1]]
     matches = _match_boundaries(splits, transitions, tolerance_frames)
     segments = _segments(splits, len(labels))
 
-    dominant_frames = sum(
-        max(Counter(labels[start:end]).values()) for start, end in segments
-    )
+    dominant_frames = sum(max(Counter(labels[start:end]).values()) for start, end in segments)
     episode_edges = [0, *transitions, len(labels)]
     episodes = list(pairwise(episode_edges))
     segment_overlaps_per_episode = [
-        sum(
-            segment_start < end and start < segment_end
-            for segment_start, segment_end in segments
-        )
+        sum(segment_start < end and start < segment_end for segment_start, segment_end in segments)
         for start, end in episodes
     ]
     episode_overlaps_per_segment = [
@@ -198,12 +180,8 @@ def _semantic_metrics(
         "transition_recall": matches / len(transitions) if transitions else 1.0,
         "semantic_boundary_precision": matches / len(splits) if splits else 0.0,
         "frame_weighted_node_purity": dominant_frames / len(labels),
-        "mean_segments_per_semantic_episode": float(
-            np.mean(segment_overlaps_per_episode)
-        ),
-        "mean_semantic_episodes_per_segment": float(
-            np.mean(episode_overlaps_per_segment)
-        ),
+        "mean_segments_per_semantic_episode": float(np.mean(segment_overlaps_per_episode)),
+        "mean_semantic_episodes_per_segment": float(np.mean(episode_overlaps_per_segment)),
     }
 
 
@@ -275,9 +253,7 @@ def calibrate_fixed_delta(
     best = candidates[errors == np.min(errors)]
     geometric_center = float(np.exp(np.mean(np.log(best))))
     selected = float(best[np.argmin(np.abs(np.log(best / geometric_center)))])
-    fixed_boundaries = len(
-        detect_valleys(signal, FixedValleyDetector(selected, warmup))
-    )
+    fixed_boundaries = len(detect_valleys(signal, FixedValleyDetector(selected, warmup)))
     return Calibration(
         case="",
         delta=selected,
@@ -331,9 +307,7 @@ def run_experiment(
             AdaptiveValleyDetector(k=final_k, history=history, warmup=warmup),
         )
     )
-    raw_calibration = calibrate_fixed_delta(
-        calibration_signal, target, warmup=warmup
-    )
+    raw_calibration = calibrate_fixed_delta(calibration_signal, target, warmup=warmup)
     calibration = Calibration(
         case=calibration_case,
         delta=raw_calibration.delta,
@@ -365,9 +339,7 @@ def run_experiment(
                     ),
                 }
             )
-        fixed_valleys = detect_valleys(
-            signal, FixedValleyDetector(calibration.delta, warmup)
-        )
+        fixed_valleys = detect_valleys(signal, FixedValleyDetector(calibration.delta, warmup))
         rows.append(
             {
                 "environment": case.name,
@@ -386,9 +358,7 @@ def run_experiment(
     return calibration, rows
 
 
-def aggregate_results(
-    rows: list[dict[str, object]], final_k: float
-) -> dict[str, object]:
+def aggregate_results(rows: list[dict[str, object]], final_k: float) -> dict[str, object]:
     """Summarize transfer behavior and the adaptive sensitivity sweep."""
     final_rows = [
         row
@@ -399,47 +369,30 @@ def aggregate_results(
     comparison: dict[str, object] = {}
     for method in ("adaptive", "fixed"):
         selected = [row for row in final_rows if row["method"] == method]
-        node_rates = np.asarray(
-            [float(row["nodes_per_1000_frames"]) for row in selected]
-        )
+        node_rates = np.asarray([float(row["nodes_per_1000_frames"]) for row in selected])
         labeled = [row for row in selected if row["transition_recall"] is not None]
         comparison[method] = {
             "total_nodes": sum(int(row["nodes"]) for row in selected),
             "mean_nodes_per_1000_frames": float(np.mean(node_rates)),
-            "node_rate_coefficient_of_variation": float(
-                np.std(node_rates) / np.mean(node_rates)
-            ),
+            "node_rate_coefficient_of_variation": float(np.std(node_rates) / np.mean(node_rates)),
             "cold_macro_transition_recall": float(
                 np.mean([float(row["transition_recall"]) for row in labeled])
             ),
             "cold_macro_frame_weighted_node_purity": float(
-                np.mean(
-                    [float(row["frame_weighted_node_purity"]) for row in labeled]
-                )
+                np.mean([float(row["frame_weighted_node_purity"]) for row in labeled])
             ),
             "cold_macro_segments_per_semantic_episode": float(
-                np.mean(
-                    [
-                        float(row["mean_segments_per_semantic_episode"])
-                        for row in labeled
-                    ]
-                )
+                np.mean([float(row["mean_segments_per_semantic_episode"]) for row in labeled])
             ),
         }
 
     sensitivity: list[dict[str, int | float]] = []
     k_values = sorted(
-        {
-            float(row["parameter_value"])
-            for row in rows
-            if row["method"] == "adaptive"
-        }
+        {float(row["parameter_value"]) for row in rows if row["method"] == "adaptive"}
     )
     for k in k_values:
         selected = [
-            row
-            for row in rows
-            if row["method"] == "adaptive" and row["parameter_value"] == k
+            row for row in rows if row["method"] == "adaptive" and row["parameter_value"] == k
         ]
         labeled = [row for row in selected if row["transition_recall"] is not None]
         sensitivity.append(
@@ -447,20 +400,13 @@ def aggregate_results(
                 "k": k,
                 "total_nodes": sum(int(row["nodes"]) for row in selected),
                 "mean_nodes_per_1000_frames": float(
-                    np.mean(
-                        [float(row["nodes_per_1000_frames"]) for row in selected]
-                    )
+                    np.mean([float(row["nodes_per_1000_frames"]) for row in selected])
                 ),
                 "cold_macro_transition_recall": float(
                     np.mean([float(row["transition_recall"]) for row in labeled])
                 ),
                 "cold_macro_frame_weighted_node_purity": float(
-                    np.mean(
-                        [
-                            float(row["frame_weighted_node_purity"])
-                            for row in labeled
-                        ]
-                    )
+                    np.mean([float(row["frame_weighted_node_purity"]) for row in labeled])
                 ),
             }
         )
@@ -487,9 +433,7 @@ def _write_json(
             {
                 "protocol": protocol,
                 "fixed_baseline_calibration": asdict(calibration),
-                "summary": aggregate_results(
-                    rows, float(protocol["final_adaptive_k"])
-                ),
+                "summary": aggregate_results(rows, float(protocol["final_adaptive_k"])),
                 "results": rows,
             },
             handle,
@@ -558,9 +502,7 @@ def main() -> None:
         "warmup_samples": args.warmup,
         "frame_rate_hz": args.frame_rate_hz,
         "transition_tolerance_frames": args.transition_tolerance_frames,
-        "transition_tolerance_seconds": (
-            args.transition_tolerance_frames / args.frame_rate_hz
-        ),
+        "transition_tolerance_seconds": (args.transition_tolerance_frames / args.frame_rate_hz),
         "fixed_delta_uses_semantic_labels": False,
         "fixed_delta_calibration_objective": (
             "match final adaptive boundary count on calibration case"

@@ -19,15 +19,13 @@ def _frame(x: float, descriptor: np.ndarray) -> FrameRecord:
 
 class MapperOdometryTest(unittest.TestCase):
     def test_fixed_node_detector_can_be_selected_explicitly(self) -> None:
-        mapper = TopologicalMapper(
-            valley_mode="fixed", valley_delta=0.13, optimize=False
-        )
+        mapper = TopologicalMapper(valley_mode="fixed", valley_delta=0.13)
 
         self.assertIsInstance(mapper._detector, FixedValleyDetector)
 
     def test_unknown_node_detector_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
-            TopologicalMapper(valley_mode="unknown", optimize=False)
+            TopologicalMapper(valley_mode="unknown")
 
     def test_confirmed_valley_splits_at_original_boundary(self) -> None:
         class Monitor:
@@ -48,7 +46,7 @@ class MapperOdometryTest(unittest.TestCase):
                 self.calls += 1
                 return 2 if self.calls == 5 else None
 
-        mapper = TopologicalMapper(optimize=False)
+        mapper = TopologicalMapper()
         mapper._monitor = Monitor()
         mapper._detector = Detector()
         descriptor = np.array([1.0, 0.0], dtype=np.float32)
@@ -66,8 +64,8 @@ class MapperOdometryTest(unittest.TestCase):
         mapper.finalize_nodes()
         self.assertEqual(len(mapper.graph.nodes), 2)
 
-    def test_loop_factor_does_not_snap_pose_or_reset_covariance(self) -> None:
-        mapper = TopologicalMapper(optimize=False)
+    def test_loop_edge_does_not_snap_pose_or_reset_covariance(self) -> None:
+        mapper = TopologicalMapper()
         descriptor = np.array([1.0, 0.0], dtype=np.float32)
 
         mapper._create_node([_frame(0.0, descriptor)])
@@ -91,7 +89,7 @@ class MapperOdometryTest(unittest.TestCase):
         self.assertEqual(mapper.current_node_id, 2)
 
     def test_final_segment_is_flushed(self) -> None:
-        mapper = TopologicalMapper(window_size=3, optimize=False)
+        mapper = TopologicalMapper(window_size=3)
         descriptor = np.array([1.0, 0.0], dtype=np.float32)
         image = np.zeros((2, 2, 3), dtype=np.uint8)
 

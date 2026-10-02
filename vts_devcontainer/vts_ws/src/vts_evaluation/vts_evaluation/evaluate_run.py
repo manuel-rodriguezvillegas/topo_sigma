@@ -34,9 +34,12 @@ import os
 import sys
 import time
 from contextlib import redirect_stdout
+from pathlib import Path
 
 import numpy as np
 
+import vts_core.metrics as core_metrics
+from vts_core.artifacts import completed_run, file_digest, json_safe
 from vts_core.metrics import (
     descriptor_separation,
     directional_model_statistics,
@@ -72,9 +75,7 @@ def main() -> None:
             "omitted by default because it has not been calibrated on held-out data."
         ),
     )
-    parser.add_argument(
-        "--semantic-model", default="openai/clip-vit-base-patch32"
-    )
+    parser.add_argument("--semantic-model", default="openai/clip-vit-base-patch32")
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument(
         "--loop-tolerance",
@@ -112,11 +113,12 @@ def main() -> None:
             "a publication figure."
         ),
     )
-    parser.add_argument(
-        "--no-viz", action="store_true", help="Disable the map images"
-    )
+    parser.add_argument("--no-viz", action="store_true", help="Disable the map images")
+    parser.add_argument("--semantic-revision", default="")
     args: argparse.Namespace = parser.parse_args()
 
+    if not np.isfinite(args.loop_tolerance) or args.loop_tolerance <= 0:
+        parser.error("--loop-tolerance must be finite and positive")
     graph: TopoGraph = TopoGraph.load(args.graph)
     report: dict[str, object] = {}
 
@@ -128,13 +130,13 @@ def main() -> None:
     if args.node_gt and os.path.exists(args.node_gt):
         with open(args.node_gt) as f:
             raw: dict[str, list[float]] = json.load(f)
-        node_gt = {
-            int(k): np.array(v[:2], dtype=np.float64) for k, v in raw.items()
-        }
+        node_gt = {int(k): np.array(v[:2], dtype=np.float64) for k, v in raw.items()}
 
     if gt_xy is not None and gt_xy.size:
         gm = graph_metrics(
-            graph, gt_xy, node_gt_xy=node_gt,
+            graph,
+            gt_xy,
+            node_gt_xy=node_gt,
             loop_tolerance=args.loop_tolerance,
         )
         report["graph"] = {
@@ -183,18 +185,14 @@ def main() -> None:
     separation: dict[str, float] = descriptor_separation(graph)
     if separation:
         report["descriptors"] = separation
-    directional_stats: dict[str, float | int] = (
-        directional_model_statistics(graph)
-    )
+    directional_stats: dict[str, float | int] = directional_model_statistics(graph)
     if directional_stats:
         report["directional_visual_model"] = directional_stats
 
     if not args.no_viz:
         from vts_evaluation.map_viz import render_map, render_on_floorplan
 
-        images_dir: str = os.path.join(
-            os.path.dirname(os.path.abspath(args.graph)), "images"
-        )
+        images_dir: str = os.path.join(os.path.dirname(os.path.abspath(args.graph)), "images")
         os.makedirs(images_dir, exist_ok=True)
         stem: str = os.path.splitext(os.path.basename(args.graph))[0]
         viz_path: str = args.viz_path or os.path.join(images_dir, f"{stem}_map.png")
@@ -214,14 +212,18 @@ def main() -> None:
 
         if args.floorplan and node_gt is not None:
             overlay_path: str = args.floorplan_viz_path or os.path.join(
-                images_dir, f"{stem}_on_floorplan.png",
+                images_dir,
+                f"{stem}_on_floorplan.png",
             )
             overlay_dir: str = os.path.dirname(os.path.abspath(overlay_path))
             os.makedirs(overlay_dir, exist_ok=True)
             with redirect_stdout(sys.stderr):
                 rendered = render_on_floorplan(
-                    graph, args.floorplan, overlay_path,
-                    node_gt=node_gt, gt_xy=gt_xy,
+                    graph,
+                    args.floorplan,
+                    overlay_path,
+                    node_gt=node_gt,
+                    gt_xy=gt_xy,
                 )
             if rendered:
                 report["floorplan_image"] = overlay_path
@@ -245,7 +247,7 @@ def main() -> None:
             queries: list[dict[str, str]] = json.load(f)
         indexing_start = time.perf_counter()
         retriever: PlaceRetriever = PlaceRetriever(
-            SemanticEncoder(args.semantic_model), graph
+            SemanticEncoder(args.semantic_model, args.semantic_revision or None), graph
         )
         indexing_time_s = time.perf_counter() - indexing_start
         ranked_labels: list[list[str]] = []
@@ -257,14 +259,10 @@ def main() -> None:
             query_start = time.perf_counter()
             ranked, confident = retriever.query(entry["query"], top_k=args.top_k)
             query_times_s.append(time.perf_counter() - query_start)
-            ranked_labels.append(
-                [node.room_label or "?" for node, _, _ in ranked]
-            )
+            ranked_labels.append([node.room_label or "?" for node, _, _ in ranked])
             true_labels.append(entry["label"])
             confident_flags.append(confident)
-            margins.append(
-                float(ranked[0][1] - ranked[1][1]) if len(ranked) >= 2 else 1.0
-            )
+            margins.append(float(ranked[0][1] - ranked[1][1]) if len(ranked) >= 2 else 1.0)
         report["retrieval"] = retrieval_report(
             ranked_labels,
             true_labels,
@@ -273,17 +271,14 @@ def main() -> None:
         )
         if args.report_rejection:
             correct_top1 = [
-                bool(r and r[0] == t)
-                for r, t in zip(ranked_labels, true_labels, strict=True)
+                bool(r and r[0] == t) for r, t in zip(ranked_labels, true_labels, strict=True)
             ]
-            report["retrieval"]["rejection_curve"] = rejection_curve(
-                correct_top1, margins
-            )
+            report["retrieval"]["rejection_curve"] = rejection_curve(correct_top1, margins)
         report["retrieval"]["runtime"] = {
             "model_load_and_map_index_s": round(indexing_time_s, 4),
-            "mean_query_ms": round(
-                1000.0 * float(np.mean(query_times_s)), 4
-            ) if query_times_s else 0.0,
+            "mean_query_ms": round(1000.0 * float(np.mean(query_times_s)), 4)
+            if query_times_s
+            else 0.0,
         }
         if not args.no_viz:
             from vts_evaluation.map_viz import (
@@ -291,15 +286,11 @@ def main() -> None:
                 render_rejection_curve,
             )
 
-            images_dir = os.path.join(
-                os.path.dirname(os.path.abspath(args.graph)), "images"
-            )
+            images_dir = os.path.join(os.path.dirname(os.path.abspath(args.graph)), "images")
             os.makedirs(images_dir, exist_ok=True)
             conf_path = os.path.join(images_dir, "retrieval_confusion.png")
             with redirect_stdout(sys.stderr):
-                confusion_rendered = render_confusion(
-                    report["retrieval"]["confusion"], conf_path
-                )
+                confusion_rendered = render_confusion(report["retrieval"]["confusion"], conf_path)
             if confusion_rendered:
                 report["retrieval"]["confusion_image"] = conf_path
             if args.report_rejection:
@@ -311,7 +302,23 @@ def main() -> None:
                 if curve_rendered:
                     report["retrieval"]["rejection_curve_image"] = curve_path
 
-    print(json.dumps(report, indent=2))
+    marker = completed_run(Path(args.graph).parent)
+    report["provenance"] = {
+        "graph_sha256": file_digest(args.graph),
+        "run_fingerprint": marker["fingerprint"] if marker else None,
+        "evaluation_source_sha256": file_digest(__file__),
+        "loop_protocol": {
+            "metrics_source_sha256": file_digest(core_metrics.__file__),
+            "loop_tolerance_m": args.loop_tolerance,
+        },
+        "gt_identity": file_digest(args.node_gt) if args.node_gt else None,
+    }
+    if "retrieval" in report:
+        report["retrieval"]["margin_interpretation"] = (
+            "relative distinctiveness; not calibrated destination presence"
+        )
+        report["retrieval"]["requires_navigation_confirmation"] = True
+    print(json.dumps(json_safe(report), indent=2, allow_nan=False))
 
 
 if __name__ == "__main__":

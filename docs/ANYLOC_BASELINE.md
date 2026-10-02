@@ -1,3 +1,5 @@
+> Historical measurements below predate the revised uncertainty budget. Regenerate with `verify_submission.sh` before using them in the manuscript.
+
 # Literature baseline: AnyLoc-GeM
 
 The selected external comparison is **AnyLoc: Towards Universal Visual Place

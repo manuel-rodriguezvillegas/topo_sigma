@@ -40,36 +40,16 @@ class ToleranceSweepTest(unittest.TestCase):
             graph = TopoGraph()
             for node_id, x in enumerate(positions):
                 graph.add_node(_node(node_id, x))
-            information = np.eye(3)
             for first, second in ((0, 1), (1, 2), (2, 3)):
                 graph.add_edge(first, second)
-                graph.set_edge_constraint(
-                    first,
-                    second,
-                    (1.0, 0.0, 0.0),
-                    information,
-                    "odometry",
-                )
+                graph.add_edge(first, second, edge_type="odometry")
             graph.add_edge(0, 3)
-            graph.set_edge_constraint(
-                0,
-                3,
-                (0.0, 0.0, 0.0),
-                information,
-                "loop",
-            )
-            graph.loop_events.append(
-                LoopClosureEvent(3, 0, True, 0.9, "accepted")
-            )
+            graph.add_edge(0, 3, edge_type="loop")
+            graph.loop_events.append(LoopClosureEvent(3, 0, True, 0.9, "accepted"))
             graph.save(str(graph_path))
 
             node_gt_path.write_text(
-                json.dumps(
-                    {
-                        str(node_id): [x, 0.0, 0.0]
-                        for node_id, x in enumerate(positions)
-                    }
-                )
+                json.dumps({str(node_id): [x, 0.0, 0.0] for node_id, x in enumerate(positions)})
             )
             for index, x in enumerate(positions):
                 (images_path / f"t{index}_x{x}_y0.0_a0.0.jpeg").touch()

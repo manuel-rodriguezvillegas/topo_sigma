@@ -16,9 +16,6 @@ Ablation / experiment overrides (building mode):
         Revisit-gate ablation. When a non-default mode is given, the mapping
         ``output_dir`` and ``run_name`` are suffixed with ``_<mode>`` so
         ablation runs never overwrite the main results.
-    optimize:=true|false
-        End-of-run SE(2) pose-graph optimization (default from the config;
-        the pre-optimization graph is always saved as graph_*_noopt.pkl).
     dino_device:=auto|cuda|mps|cpu
         DINOv2 inference device. ``auto`` prefers CUDA, then Apple MPS, then
         CPU. MPS requires native macOS execution and is unavailable in the
@@ -58,7 +55,6 @@ def _make_nodes(context: object) -> list[Node]:
     config_name: str = LaunchConfiguration("config").perform(context)
     mode: str = LaunchConfiguration("mode").perform(context)
     gate_mode: str = LaunchConfiguration("gate_mode").perform(context)
-    optimize: str = LaunchConfiguration("optimize").perform(context)
     dino_device: str = LaunchConfiguration("dino_device").perform(context)
     feature_backend: str = LaunchConfiguration("feature_backend").perform(context)
     visual_model: str = LaunchConfiguration("visual_model").perform(context)
@@ -68,6 +64,7 @@ def _make_nodes(context: object) -> list[Node]:
     valley_mode: str = LaunchConfiguration("valley_mode").perform(context)
     valley_k: str = LaunchConfiguration("valley_k").perform(context)
     valley_delta: str = LaunchConfiguration("valley_delta").perform(context)
+    player_rate_hz: str = LaunchConfiguration("player_rate_hz").perform(context)
 
     config_path: str = os.path.join(
         get_package_share_directory("vts_bringup"), "config", config_name
@@ -77,6 +74,8 @@ def _make_nodes(context: object) -> list[Node]:
 
     mapping: dict[str, object] = dict(config["mapping"])
     player: dict[str, object] = dict(config["player"])
+    if player_rate_hz:
+        player["publish_rate_hz"] = float(player_rate_hz)
     player_executable = str(config.get("player_executable", "cold_player"))
     if gate_mode:
         mapping["gate_mode"] = gate_mode
@@ -84,8 +83,6 @@ def _make_nodes(context: object) -> list[Node]:
             # Keep ablation outputs separate from the main results.
             mapping["output_dir"] = f"{mapping['output_dir']}_{gate_mode}"
             mapping["run_name"] = f"{mapping['run_name']}_{gate_mode}"
-    if optimize:
-        mapping["optimize"] = optimize.strip().lower() in ("1", "true", "yes")
     if dino_device:
         mapping["dino_device"] = dino_device
     if feature_backend:
@@ -132,11 +129,7 @@ def _make_nodes(context: object) -> list[Node]:
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=graph_builder,
-                    on_exit=[
-                        EmitEvent(
-                            event=Shutdown(reason="graph builder finished")
-                        )
-                    ],
+                    on_exit=[EmitEvent(event=Shutdown(reason="graph builder finished"))],
                 )
             )
         )
@@ -147,9 +140,7 @@ def _make_nodes(context: object) -> list[Node]:
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=dataset_player,
-                    on_exit=[
-                        EmitEvent(event=Shutdown(reason="dataset player finished"))
-                    ],
+                    on_exit=[EmitEvent(event=Shutdown(reason="dataset player finished"))],
                 )
             )
         )
@@ -183,19 +174,11 @@ def generate_launch_description() -> LaunchDescription:
                 ),
             ),
             DeclareLaunchArgument(
-                "optimize",
-                default_value="",
-                description=(
-                    "true|false: end-of-run pose-graph optimization "
-                    "(empty = use the config value)"
-                ),
-            ),
-            DeclareLaunchArgument(
                 "dino_device",
-                default_value="auto",
+                default_value="",
                 description="DINOv2 inference device: auto|cuda|mps|cpu",
             ),
-            DeclareLaunchArgument("feature_backend", default_value="dino_cls"),
+            DeclareLaunchArgument("feature_backend", default_value=""),
             DeclareLaunchArgument("visual_model", default_value=""),
             DeclareLaunchArgument("dino_model", default_value=""),
             DeclareLaunchArgument("dino_layer", default_value=""),
@@ -203,6 +186,10 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("valley_mode", default_value=""),
             DeclareLaunchArgument("valley_k", default_value=""),
             DeclareLaunchArgument("valley_delta", default_value=""),
+            DeclareLaunchArgument(
+                "player_rate_hz", default_value="",
+                description="Playback rate cap; each frame still waits for mapper acknowledgement",
+            ),
             OpaqueFunction(function=_make_nodes),
         ]
     )

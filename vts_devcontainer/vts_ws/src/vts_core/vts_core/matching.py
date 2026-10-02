@@ -1,8 +1,8 @@
 """Matching primitives for visual loop closure and geometric gating.
 
-Metric gating uses a chi-square test on Mahalanobis distance under odometry
-and place-extent covariance, so it scales with uncertainty instead of using a
-fixed distance threshold. Visual ranking and its MAD-relative acceptance test
+Metric gating applies a nominal chi-square threshold to Mahalanobis distance.
+The mapper supplies an additive uncertainty budget and a co-location floor;
+its statistical coverage requires independent calibration. Visual ranking and its MAD-relative acceptance test
 live together in :mod:`vts_core.mapper`.
 """
 
@@ -14,9 +14,7 @@ import numpy as np
 _CHI2_GATE_2DOF: float = 5.991464547107979
 
 
-def mahalanobis_gate(
-    delta_xy: np.ndarray, covariance_xy: np.ndarray
-) -> bool:
+def mahalanobis_gate(delta_xy: np.ndarray, covariance_xy: np.ndarray) -> bool:
     """Chi-square gate (95%, 2 dof) on a position difference.
 
     Args:
@@ -30,40 +28,37 @@ def mahalanobis_gate(
     return bool(np.isfinite(d2) and d2 <= _CHI2_GATE_2DOF)
 
 
-def mahalanobis_distance_squared(
-    delta_xy: np.ndarray, covariance_xy: np.ndarray
-) -> float:
+def mahalanobis_distance_squared(delta_xy: np.ndarray, covariance_xy: np.ndarray) -> float:
     """Return the normalized innovation squared for a 2-D displacement."""
-    cov: np.ndarray = np.asarray(covariance_xy, dtype=np.float64)
-    cov = 0.5 * (cov + cov.T) + np.eye(2) * 1e-6
-    try:
-        solution = np.linalg.solve(cov, np.asarray(delta_xy, dtype=np.float64))
-    except np.linalg.LinAlgError:
-        return float("inf")
-    return float(np.asarray(delta_xy, dtype=np.float64) @ solution)
+    return float(gaussian_position_statistics(delta_xy, covariance_xy)[0])
 
 
-def gaussian_position_nll(
+def gaussian_position_nll(delta_xy: np.ndarray, covariance_xy: np.ndarray) -> float:
+    """Position NLL including covariance volume, up to a shared constant."""
+    return float(gaussian_position_statistics(delta_xy, covariance_xy)[1])
+
+
+def gaussian_position_statistics(
     delta_xy: np.ndarray, covariance_xy: np.ndarray
-) -> float:
-    """Gaussian position negative log-likelihood, up to a shared constant.
+) -> tuple[np.ndarray, np.ndarray]:
+    """Batched squared distances and NLLs using one regularization and solve."""
+    cov = np.asarray(covariance_xy, dtype=np.float64)
+    delta = np.asarray(delta_xy, dtype=np.float64)
+    if cov.shape[-2:] != (2, 2) or delta.shape[-1:] != (2,):
+        raise ValueError("expected (..., 2, 2) covariance and (..., 2) displacement")
+    cov = 0.5 * (cov + np.swapaxes(cov, -1, -2)) + np.eye(2) * 1e-6
+    finite = np.isfinite(cov).all(axis=(-2, -1))
+    safe_cov = np.where(finite[..., None, None], cov, np.eye(2))
+    sign, logdet = np.linalg.slogdet(safe_cov)
+    valid = finite & (safe_cov[..., 0, 0] > 0) & (sign > 0)
+    safe_cov = np.where(valid[..., None, None], safe_cov, np.eye(2))
+    solution = np.linalg.solve(safe_cov, delta[..., None])[..., 0]
+    d2 = np.einsum("...i,...i->...", delta, solution)
+    valid = valid & np.isfinite(d2) & (d2 >= 0)
+    return np.where(valid, d2, np.inf), np.where(valid, 0.5 * (d2 + logdet), np.inf)
 
-    Unlike Mahalanobis distance alone, this score includes the covariance
-    volume. A highly uncertain candidate therefore becomes uninformative
-    instead of automatically looking compatible with every position.
-    """
-    covariance = np.asarray(covariance_xy, dtype=np.float64)
-    covariance = 0.5 * (covariance + covariance.T) + np.eye(2) * 1e-6
-    sign, log_determinant = np.linalg.slogdet(covariance)
-    if sign <= 0.0:
-        return float("inf")
-    d2 = mahalanobis_distance_squared(delta_xy, covariance)
-    return 0.5 * (d2 + float(log_determinant))
 
-
-def fit_se2(
-    points_a: np.ndarray, points_b: np.ndarray
-) -> tuple[np.ndarray, np.ndarray] | None:
+def fit_se2(points_a: np.ndarray, points_b: np.ndarray) -> tuple[np.ndarray, np.ndarray] | None:
     """Least-squares SE(2) fit (Umeyama without scale)."""
     if points_a.shape[0] < 2:
         return None

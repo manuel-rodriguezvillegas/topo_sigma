@@ -1,4 +1,4 @@
-"""Visual place-recognition recall for the frozen DINOv2 descriptor.
+"""Visual place-recognition recall for the frozen DINO descriptor.
 
 Evaluates the *encoder* (not the topological map): rank a database of frames by
 descriptor similarity to each query and count a hit@k if any top-k neighbour is
@@ -20,10 +20,10 @@ re-running with different thresholds/protocols is instant.
         --db   /workspace/encoder/seq_data/cold-freiburg_part_a_seq2_night1/std_cam \
         --queries /workspace/encoder/seq_data/cold-freiburg_part_a_seq2_cloudy1/std_cam \
                   /workspace/encoder/seq_data/cold-freiburg_part_a_seq2_sunny1/std_cam \
-        --model-name dinov2_vits14 \
+        --model-name dinov3_vits16 \
         --cache-dir /tmp/pr_desc --thresholds 2 5 --within
 
-Needs torch and the cached/downloaded stock DINOv2 model.
+Needs torch and the cached/downloaded stock DINO model.
 """
 
 from __future__ import annotations
@@ -54,11 +54,8 @@ def load_descriptors(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return (descriptors (N,d), poses (N,2)); cache per traversal to disk."""
     name: str = _traversal_name(images_dir)
-    cache: str = os.path.join(cache_dir, f"{name}_stride{stride}.npz") if cache_dir else ""
-    if cache and os.path.exists(cache):
-        data = np.load(cache)
-        print(f"[pr] loaded cached descriptors for {name} from {cache}")
-        return data["descs"], data["poses"]
+    if stride < 1:
+        raise ValueError("stride must be positive")
 
     import cv2
 
@@ -71,18 +68,16 @@ def load_descriptors(
         [[float(_POSE.search(n).group(g)) for g in ("x", "y")] for n in names],
         dtype=np.float64,
     )
-    extractor = build_extractor(model_name)
+    extractor = build_extractor(model_name, cache_dir=cache_dir or None)
     descs: list[np.ndarray] = []
     for i, fname in enumerate(names):
         image = cv2.imread(os.path.join(images_dir, fname), cv2.IMREAD_COLOR)
+        if image is None:
+            raise RuntimeError(f"Unreadable image: {fname}")
         descs.append(extractor.extract(image))
         if i % 250 == 0:
             print(f"[pr] {name}: extracted {i}/{len(names)}", flush=True)
     descriptors = np.asarray(descs, dtype=np.float32)
-    if cache:
-        os.makedirs(cache_dir, exist_ok=True)
-        np.savez(cache, descs=descriptors, poses=poses)
-        print(f"[pr] cached descriptors for {name} to {cache}")
     return descriptors, poses
 
 
@@ -95,38 +90,52 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", required=True, help="database traversal std_cam dir")
     parser.add_argument(
-        "--queries", nargs="*", default=[],
+        "--queries",
+        nargs="*",
+        default=[],
         help="cross-condition query traversal std_cam dirs (same route, other "
-             "lighting). Omit to run only the within-traversal protocol.",
+        "lighting). Omit to run only the within-traversal protocol.",
     )
-    parser.add_argument("--model-name", default="dinov2_vits14")
+    parser.add_argument("--model-name", default="dinov3_vits16")
     parser.add_argument("--cache-dir", default="")
     parser.add_argument("--stride", type=int, default=1, help="subsample frames")
     parser.add_argument(
-        "--thresholds", nargs="+", type=float, default=[2.0, 5.0],
+        "--thresholds",
+        nargs="+",
+        type=float,
+        default=[2.0, 5.0],
         help="positive-match distance thresholds in metres",
     )
     parser.add_argument("--k", nargs="+", type=int, default=[1, 5])
     parser.add_argument(
-        "--within", action="store_true",
+        "--within",
+        action="store_true",
         help="also report within-traversal recall on the database run",
     )
     parser.add_argument(
-        "--exclude-window", type=int, default=50,
+        "--exclude-window",
+        type=int,
+        default=50,
         help="within-traversal: frames within +/- this index are excluded as "
-             "self-matches (scale to your frame rate so it spans a few metres)",
+        "self-matches (scale to your frame rate so it spans a few metres)",
     )
     parser.add_argument("--out", default="", help="optional JSON results path")
     args = parser.parse_args()
 
     results: dict[str, object] = {
-        "database": "", "thresholds": args.thresholds, "k": args.k,
-        "within": {}, "cross_condition": {},
+        "database": "",
+        "thresholds": args.thresholds,
+        "k": args.k,
+        "within": {},
+        "cross_condition": {},
     }
 
     k_values: tuple[int, ...] = tuple(args.k)
     db_desc, db_xy = load_descriptors(
-        args.db, args.model_name, args.cache_dir, args.stride,
+        args.db,
+        args.model_name,
+        args.cache_dir,
+        args.stride,
     )
     db_name: str = _traversal_name(args.db)
     results["database"] = db_name
@@ -140,8 +149,15 @@ def main() -> None:
         if args.within:
             idx = np.arange(len(db_xy))
             rec = place_recognition_recall(
-                db_desc, db_xy, db_desc, db_xy, k_values, threshold,
-                query_index=idx, db_index=idx, exclude_window=args.exclude_window,
+                db_desc,
+                db_xy,
+                db_desc,
+                db_xy,
+                k_values,
+                threshold,
+                query_index=idx,
+                db_index=idx,
+                exclude_window=args.exclude_window,
             )
             results["within"][key][db_name] = rec
             print(f"within   {db_name:<45} {_fmt(rec, k_values)}")
@@ -149,19 +165,18 @@ def main() -> None:
         aggregated: list[dict[str, float]] = []
         for query_dir in args.queries:
             q_desc, q_xy = load_descriptors(
-                query_dir, args.model_name, args.cache_dir, args.stride,
+                query_dir,
+                args.model_name,
+                args.cache_dir,
+                args.stride,
             )
-            rec = place_recognition_recall(
-                q_desc, q_xy, db_desc, db_xy, k_values, threshold
-            )
+            rec = place_recognition_recall(q_desc, q_xy, db_desc, db_xy, k_values, threshold)
             aggregated.append(rec)
             results["cross_condition"][key][_traversal_name(query_dir)] = rec
             print(f"x-cond   {_traversal_name(query_dir):<45} {_fmt(rec, k_values)}")
         if len(aggregated) > 1:
             mean = {
-                f"recall_at_{k}": float(
-                    np.mean([r[f"recall_at_{k}"] for r in aggregated])
-                )
+                f"recall_at_{k}": float(np.mean([r[f"recall_at_{k}"] for r in aggregated]))
                 for k in k_values
             }
             mean["n_queries"] = int(sum(r["n_queries"] for r in aggregated))
@@ -170,6 +185,7 @@ def main() -> None:
 
     if args.out:
         import json
+
         with open(args.out, "w") as f:
             json.dump(results, f, indent=2)
         print(f"\n[pr] results written to {args.out}")

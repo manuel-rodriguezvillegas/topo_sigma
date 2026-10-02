@@ -19,9 +19,8 @@ the dataset harness, not a requirement of the mapper or a live robot.
 
 Camera frames are synchronized to the recorded ``odom_scans/odom.tdf``
 trajectory by timestamp interpolation. COLD does not publish covariance, so a
-fixed motion-dependent model supplies uncertainty without changing the
-recorded poses. Any other dataset or robot only needs to publish the same
-standard topics for the mapper to work unchanged.
+path-length budget supplies heuristic uncertainty without changing recorded
+poses. Other adapters must implement this explicit budget contract.
 """
 
 from __future__ import annotations
@@ -29,6 +28,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 from contextlib import suppress
 
 import cv2
@@ -39,7 +39,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Empty, String
+from std_msgs.msg import String
 
 from vts_core.motion import OdometryUncertaintyParams, Pose2D
 from vts_players.cold_odometry import ColdOdometry, load_cold_odometry
@@ -62,7 +62,18 @@ def parse_cold_filename(name: str) -> tuple[float, Pose2D] | None:
 
 # Canonical COLD place classes used to normalize annotation variants.
 COLD_CLASSES: tuple[str, ...] = (
-    "CR", "2PO", "RL", "TL", "TR", "LO", "1PO", "KT", "CNR", "PA", "LAB", "ST",
+    "CR",
+    "2PO",
+    "RL",
+    "TL",
+    "TR",
+    "LO",
+    "1PO",
+    "KT",
+    "CNR",
+    "PA",
+    "LAB",
+    "ST",
 )
 
 
@@ -110,16 +121,16 @@ class ColdPlayerNode(Node):
         super().__init__("cold_player")
 
         self.declare_parameter("dataset_root", "")
+        self.declare_parameter("ack_timeout_s", 300.0)
+        self.declare_parameter("startup_timeout_s", 900.0)
         self.declare_parameter("sequences", [""])
         self.declare_parameter("images_subdir", "std_cam")
         self.declare_parameter("labels_subpath", "localization/places.lst")
         self.declare_parameter("odometry_subpath", "odom_scans/odom.tdf")
         self.declare_parameter("max_odometry_gap_s", 1.0)
-        self.declare_parameter("publish_rate_hz", 5.0)
+        self.declare_parameter("publish_rate_hz", 50.0)
         self.declare_parameter("inter_sequence_pause_s", 5.0)
-        self.declare_parameter(
-            "odometry_uncertainty", [0.025, 0.005, 0.01, 0.0025]
-        )
+        self.declare_parameter("odometry_uncertainty", [0.025, 0.005, 0.01, 0.0025])
 
         self._dataset_root: str = (
             self.get_parameter("dataset_root").get_parameter_value().string_value
@@ -137,23 +148,15 @@ class ColdPlayerNode(Node):
             self.get_parameter("odometry_subpath").get_parameter_value().string_value
         )
         self._max_odometry_gap_s: float = (
-            self.get_parameter("max_odometry_gap_s")
-            .get_parameter_value()
-            .double_value
+            self.get_parameter("max_odometry_gap_s").get_parameter_value().double_value
         )
-        rate_hz: float = (
-            self.get_parameter("publish_rate_hz").get_parameter_value().double_value
-        )
+        rate_hz: float = self.get_parameter("publish_rate_hz").get_parameter_value().double_value
         self._pause_ticks: int = int(
-            self.get_parameter("inter_sequence_pause_s")
-            .get_parameter_value()
-            .double_value
+            self.get_parameter("inter_sequence_pause_s").get_parameter_value().double_value
             * rate_hz
         )
         uncertainty: list[float] = list(
-            self.get_parameter("odometry_uncertainty")
-            .get_parameter_value()
-            .double_array_value
+            self.get_parameter("odometry_uncertainty").get_parameter_value().double_array_value
         )
         if len(uncertainty) != 4:
             raise ValueError("odometry_uncertainty must contain four coefficients")
@@ -170,10 +173,17 @@ class ColdPlayerNode(Node):
         self._gt_pub = self.create_publisher(PoseStamped, "/ground_truth_pose", 10)
         self._done_pub = self.create_publisher(String, "/dataset/sequence_done", 10)
         self._label_pub = self.create_publisher(String, "/dataset/room_label", 10)
-        self.create_subscription(
-            Empty, "/mapping/frame_processed", self._on_frame_processed, 10
-        )
+        self.create_subscription(String, "/mapping/frame_processed", self._on_frame_processed, 10)
 
+        self._ack_token: str | None = None
+        self._progress_time = time.monotonic()
+        self._ack_timeout = float(self.get_parameter("ack_timeout_s").value)
+        self._startup_timeout = float(self.get_parameter("startup_timeout_s").value)
+        if (
+            not np.isfinite([rate_hz, self._ack_timeout, self._startup_timeout]).all()
+            or min(rate_hz, self._ack_timeout, self._startup_timeout) <= 0
+        ):
+            raise ValueError("publish rate and handshake timeouts must be finite and positive")
         self._labels: dict[str, str] = {}
 
         self._sequence_index: int = 0
@@ -181,9 +191,7 @@ class ColdPlayerNode(Node):
         self._pause_remaining: int = 0
         self._waiting_for_frame_ack: bool = False
         self._consumer_connected: bool = False
-        self._frames: list[
-            tuple[float, Pose2D, str, Pose2D, np.ndarray]
-        ] = []
+        self._frames: list[tuple[float, Pose2D, str, Pose2D, np.ndarray]] = []
         self._load_sequence(0)
 
         self._timer = self.create_timer(1.0 / rate_hz, self._tick)
@@ -191,24 +199,16 @@ class ColdPlayerNode(Node):
     # ------------------------------------------------------------------ #
     def _load_sequence(self, index: int) -> None:
         sequence: str = self._sequences[index]
-        images_dir: str = os.path.join(
-            self._dataset_root, sequence, self._images_subdir
-        )
-        odometry_path = os.path.join(
-            self._dataset_root, sequence, self._odometry_subpath
-        )
-        odometry: ColdOdometry = load_cold_odometry(
-            odometry_path, self._uncertainty_params
-        )
+        images_dir: str = os.path.join(self._dataset_root, sequence, self._images_subdir)
+        odometry_path = os.path.join(self._dataset_root, sequence, self._odometry_subpath)
+        odometry: ColdOdometry = load_cold_odometry(odometry_path, self._uncertainty_params)
         frames: list[tuple[float, Pose2D, str, Pose2D, np.ndarray]] = []
         for name in sorted(os.listdir(images_dir)):
             parsed: tuple[float, Pose2D] | None = parse_cold_filename(name)
             if parsed is None:
                 continue
             timestamp, gt_pose = parsed
-            odom_pose, covariance = odometry.at(
-                timestamp, max_gap_s=self._max_odometry_gap_s
-            )
+            odom_pose, covariance = odometry.at(timestamp, max_gap_s=self._max_odometry_gap_s)
             frames.append(
                 (
                     timestamp,
@@ -240,9 +240,11 @@ class ColdPlayerNode(Node):
         return self._labels.get(os.path.basename(image_path))
 
     # ------------------------------------------------------------------ #
-    def _on_frame_processed(self, _message: Empty) -> None:
-        """Allow publication of the next frame after mapping completes."""
-        self._waiting_for_frame_ack = False
+    def _on_frame_processed(self, message: String) -> None:
+        """Only the acknowledgement of the current frame releases flow control."""
+        if self._waiting_for_frame_ack and message.data == self._ack_token:
+            self._waiting_for_frame_ack = False
+            self._progress_time = time.monotonic()
 
     def _tick(self) -> None:
         if not self._consumer_connected:
@@ -253,10 +255,19 @@ class ColdPlayerNode(Node):
             self._consumer_connected = (
                 self._image_pub.get_subscription_count() > 0
                 and self._odom_pub.get_subscription_count() > 0
+                and self._gt_pub.get_subscription_count() > 0
+                and self._label_pub.get_subscription_count() > 0
+                and self._done_pub.get_subscription_count() > 0
+                and self.count_publishers("/mapping/frame_processed") > 0
             )
             if not self._consumer_connected:
+                if time.monotonic() - self._progress_time > self._startup_timeout:
+                    raise TimeoutError("mapping consumers did not become ready")
                 return
+            self._progress_time = time.monotonic()
         if self._waiting_for_frame_ack:
+            if time.monotonic() - self._progress_time > self._ack_timeout:
+                raise TimeoutError(f"no acknowledgement for frame {self._ack_token}")
             return
         if self._pause_remaining > 0:
             self._pause_remaining -= 1
@@ -266,27 +277,25 @@ class ColdPlayerNode(Node):
             self._announce_sequence_done()
             return
 
-        _timestamp, gt_pose, path, odom_pose, covariance = self._frames[
-            self._frame_index
-        ]
+        _timestamp, gt_pose, path, odom_pose, covariance = self._frames[self._frame_index]
         self._frame_index += 1
 
         image: np.ndarray | None = cv2.imread(path, cv2.IMREAD_COLOR)
         if image is None:
-            self.get_logger().warn(f"Unreadable image skipped: {path}")
-            return
+            raise RuntimeError(f"Unreadable COLD image: {path}")
 
         stamp = self.get_clock().now().to_msg()
+        self._ack_token = f"{stamp.sec}:{stamp.nanosec}"
+        self._progress_time = time.monotonic()
         # Set before publishing to avoid a fast acknowledgement racing with
         # assignment in this process.
         self._waiting_for_frame_ack = True
 
         # Publish evaluation metadata first. Ground truth is synchronized by
-        # timestamp in the graph builder; the label has no header, so sending
-        # it before the sensor pair minimizes stale-label assignment.
+        # timestamp in the graph builder; labels are joined using the same key.
         label: str | None = self._room_label_of(path)
         label_msg: String = String()
-        label_msg.data = label or ""
+        label_msg.data = json.dumps({"frame_key": self._ack_token, "label": label})
         self._label_pub.publish(label_msg)
 
         gt_msg: PoseStamped = PoseStamped()

@@ -9,16 +9,23 @@ inference problems.
 
 ![TopoSIGMA pipeline](assets/readme/toposigma_pipeline.webp)
 
-The system uses a frozen DINOv2 encoder and contains no learned
+The system uses a frozen DINOv3 Small encoder and contains no learned
 dataset-specific state. Algebraic connectivity in a sliding visual graph
 identifies place transitions. For each completed segment, all normalized frame
 descriptors are fitted with a von Mises--Fisher (vMF) distribution. Loop
-closure is geometry-first: propagated odometry covariance supplies physically
+closure is geometry-first: an additive odometry uncertainty budget supplies geometrically
 compatible candidates, and bidirectional vMF sequence evidence is used only
 when several candidates remain.
 
 An optional CLIP module applies open-vocabulary text-to-node retrieval to the
 completed graph.
+
+The default encoder is now DINOv3 ViT-S/16. Request access to the
+[official weights](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m)
+and authenticate with `hf auth login` in the runtime before the first run.
+Existing saved experiments use DINOv2 and must not be reported as DINOv3 results.
+See the [migration and loop-closure review](docs/MODELS_AND_LOOP_CLOSURE_REVIEW_2026-09-15.md)
+for reproducible rerun commands, findings, and proposed experiments.
 
 ## Highlights
 
@@ -114,8 +121,8 @@ encoder/
 └── apartment3_1/
 ```
 
-The CID-SIMS runner validates the expected files, image availability, and
-freshness of generated graphs before accepting a run.
+The runners hash source files, effective parameters, input bytes and model
+identities. Only matching runs with verified completion artifacts are reused.
 
 ## Build
 
@@ -157,6 +164,22 @@ directly.
 
 ## Reproduce the experiments
 
+After rebuilding the devcontainer to install the updated lock, run the complete
+verification and regeneration workflow (mapping, gate/cosine/AnyLoc comparisons,
+node sensitivity and language benchmark):
+
+```bash
+cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
+bash verify_submission.sh
+```
+
+Use `bash verify_submission.sh --test-only` for build and regression tests.
+The revised distance/rotation budget and vMF-only ablation change mapping
+results. Previous `output/revised/` artifacts remain historical; they are never
+silently reused. Numerical manuscript results require regeneration and review.
+See [the submission changes](docs/SUBMISSION_CHANGES.md) for contracts and measurements.
+
+
 Run the final configuration on all four COLD traversals and all three
 CID-SIMS traversals:
 
@@ -169,8 +192,8 @@ After checking the main runs, generate the visual-only, geometric-only, and
 fixed-threshold ablations without rebuilding completed maps:
 
 ```bash
-SKIP_EXISTING=1 RUN_ABLATIONS=1 ./run_experiments.sh
-SKIP_EXISTING=1 RUN_ABLATIONS=1 ./run_cid_sims_experiments.sh
+RUN_ABLATIONS=1 ./run_experiments.sh
+RUN_ABLATIONS=1 ./run_cid_sims_experiments.sh
 ```
 
 Both runners accept environment names as positional filters. For example:
@@ -196,7 +219,7 @@ distance tolerances of 0.5, 1, 2, and 3 m:
 This offline sweep does not rerun mapping or overwrite the primary reports.
 It evaluates both TopoSIGMA and the AnyLoc-GeM ViT-S baseline, and writes
 `loop_tolerance_sweep.json` and `loop_tolerance_sweep.csv` under
-`output/revised/`. To score the existing gate ablations as well, run
+`output/submission/`. To score the existing gate ablations as well, run
 `INCLUDE_ABLATIONS=1 ./evaluate_tolerance_sweep.sh`. If the AnyLoc artifacts
 have not been generated, they may be omitted explicitly with
 `INCLUDE_ANYLOC=0`.
@@ -213,7 +236,7 @@ same hysteresis using a constant prominence. The constant is calibrated only
 on Freiburg A to match the final method's node count, without using room
 labels, and is then frozen for every other environment. Results are written to
 `node_segmentation_experiment.json` and `node_segmentation_experiment.csv`
-under `output/revised/`; existing maps and reports remain unchanged.
+under `output/submission/`; existing maps and reports remain unchanged.
 
 To measure how node granularity propagates into loop closure and map quality,
 run the end-to-end sensitivity suite. It preserves the existing adaptive
@@ -233,7 +256,8 @@ The supplied benchmark evaluates the same 100 English requests on every
 annotated COLD map. It covers direct place names, commands, paraphrases,
 functional descriptions, object cues, scene descriptions, and indirect
 requests. Because not every room class occurs in every traversal, it measures
-both retrieval and the rejection of unavailable destinations.
+retrieval and the behavior of an exploratory relative-margin heuristic on
+unavailable destinations. This diagnostic does not authorize navigation.
 
 After building and sourcing the workspace and generating the four COLD maps,
 run:
@@ -241,9 +265,9 @@ run:
 ```bash
 python3 -m vts_evaluation.language_benchmark \
   --benchmark language_queries_100.json \
-  --maps-root output/revised \
-  --graph-name graph_0_noopt.pkl \
-  --out output/revised/language_benchmark.json
+  --maps-root output/submission \
+  --graph-name final_graph.pkl \
+  --out output/submission/language_benchmark.json
 ```
 
 The report contains per-map and aggregate recall at ranks one and three, mean
@@ -256,18 +280,19 @@ for the preserved cosine comparison.
 
 ## Outputs
 
-Runs write to `vts_devcontainer/vts_ws/output/revised/`. This directory is
+Runs write to `vts_devcontainer/vts_ws/output/submission/`. This directory is
 ignored by Git because graph pickles and generated figures are reproducible
 artifacts. Each main environment contains:
 
 ```text
-output/revised/<environment>/
+output/submission/<environment>/
 ├── final_graph.pkl
-├── graph_0_noopt.pkl
+├── compact_graph.pkl
+├── run_manifest.json
+├── completion.json
 ├── graph_0_node_gt.json
 ├── graph_0_performance.json
 ├── metrics_report.json
-├── noopt_report.json
 └── figures/
     ├── topological_map.pdf
     ├── lambda2_valleys.pdf
@@ -276,7 +301,7 @@ output/revised/<environment>/
 
 The suite also writes aggregate `summary.json`, `mapping.csv`,
 `gate_ablation.csv`, `retrieval.csv`, and `runtime.csv` files directly under
-`output/revised/`. The optional language benchmark writes
+`output/submission/`. The optional language benchmark writes
 `language_benchmark.json` alongside them.
 
 ## Using another dataset or robot
@@ -287,13 +312,26 @@ adapter or robot must publish:
 | Topic | Message | Purpose |
 |---|---|---|
 | `/camera/image` | `sensor_msgs/Image` | BGR camera frame |
-| `/odom` | `nav_msgs/Odometry` | Planar pose with meaningful covariance |
+| `/odom` | `nav_msgs/Odometry` | Planar pose with the additive budget contract below |
 | `/dataset/sequence_done` | `std_msgs/String` | End-of-run JSON event |
 | `/ground_truth_pose` | `geometry_msgs/PoseStamped` | Optional evaluation metadata |
 | `/dataset/room_label` | `std_msgs/String` | Optional evaluation metadata |
 
-Camera and odometry messages must share a clock. Ground truth and room labels
-are never used for mapping decisions.
+Camera and odometry messages must share a clock. Set
+`uncertainty_contract: path_length_budget_v1`: the covariance fields must carry
+the monotonic additive budget described in `docs/SUBMISSION_CHANGES.md`.
+Ordinary pose marginal covariances cannot be subtracted to obtain relative
+uncertainty and are not supported. Ground truth and labels are evaluation only.
+When `use_frame_labels: true`, labels are JSON `{"frame_key": "sec:nanosec",
+"label": "CR"}` joined to the image stamp. The bundled players wait for a matching
+`std_msgs/String` acknowledgement on `/mapping/frame_processed`, with explicit
+timeouts and a startup check for all consumers.
+
+Language queries produce ranked suggestions and a `query_id`. In topic mode,
+publish `{"query_id": "<returned id>", "confirm": <candidate node id>}` on
+`/language/command` to explicitly select a destination. A relative softmax margin
+cannot establish that the requested destination exists; manual mode only reports
+suggestions.
 
 ## Compute device
 
@@ -314,7 +352,7 @@ ros2 launch vts_bringup pipeline.launch.py \
 From the built and sourced workspace:
 
 ```bash
-python3 -m pytest -q src/vts_core/test src/vts_players/test
+python3 -m pytest -q src
 
 # Static checks (run from vts_devcontainer/):
 cd /workspaces/topo_sigma/vts_devcontainer

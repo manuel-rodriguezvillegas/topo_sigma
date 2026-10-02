@@ -1,40 +1,23 @@
-"""Language-driven place retrieval (reworked NLP module).
+"""Exploratory language-to-place ranking.
 
-What changed relative to the thesis code and why:
-
-1. **No stitched panoramas.** Node semantics were previously computed from
-   SIFT-homography panoramas, which frequently degenerated into nonsense and
-   poisoned the embeddings — your observed failure mode. Each node now keeps
-   up to three *raw* representative views; a query is scored against every
-   view and the node score is the max (multi-view max pooling), a standard
-   retrieval technique that is robust to one bad view.
-2. **Prompt ensembling on by default.** Text queries are embedded through a
-   small ensemble of CLIP-style templates and averaged, which is the
-   documented way to close the modality gap of contrastive VLMs. The
-   hand-crafted ``_SCENE_MAPPINGS`` dictionary is removed: it was a hidden,
-   environment-specific vocabulary that contradicts dataset-agnosticism.
-3. **Model-agnostic backbone.** Any Hugging Face CLIP- or SigLIP-family
-   checkpoint can be selected by name. ViT-B/32 remains the default; for the
-   paper, evaluate at least one stronger checkpoint (e.g.
-   ``openai/clip-vit-large-patch14`` or ``google/siglip-base-patch16-224``).
-4. **Heuristic ambiguity rejection instead of a similarity threshold.** Raw CLIP
-   cosine similarities are not comparable across queries, so a fixed
-   threshold cannot work. We instead softmax the scores over nodes with the
-   model's own learned logit scale and reject when the distribution is too
-   flat — measured by the margin between the top-2 posterior masses. The
-   rejection rule is relative (per-query) rather than an absolute cutoff.
-5. **Translation removed.** Per your instruction, the module is
-   English-only; queries are used as given.
+The relative softmax margin describes competition within the map. It neither
+estimates destination presence nor authorizes a navigation target.
 """
 
 from __future__ import annotations
+
+import re
+from importlib.metadata import version
 
 import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoModel, AutoProcessor
 
+from vts_core.artifacts import file_digest, identity
 from vts_core.topo_graph import TopoGraph, TopoNode
+
+CLIP_REVISION = "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
 
 _PROMPT_TEMPLATES: tuple[str, ...] = (
     "a photo of a {}",
@@ -53,10 +36,25 @@ _MIN_POSTERIOR_MARGIN: float = 0.1
 # so "take me to the printer area" embeds as "printer area" (the templates
 # expect a noun phrase, not a full sentence).
 _COMMAND_PREFIXES: tuple[str, ...] = (
-    "take me to", "bring me to", "lead me to", "guide me to", "navigate to",
-    "go to", "drive to", "move to", "head to", "walk to", "get to",
-    "show me", "find", "locate", "where is", "where's", "where are",
-    "i want to go to", "can you take me to",
+    "take me to",
+    "bring me to",
+    "lead me to",
+    "guide me to",
+    "navigate to",
+    "go to",
+    "drive to",
+    "move to",
+    "head to",
+    "walk to",
+    "get to",
+    "show me",
+    "find",
+    "locate",
+    "where is",
+    "where's",
+    "where are",
+    "i want to go to",
+    "can you take me to",
 )
 
 
@@ -65,11 +63,11 @@ def place_phrase(query: str) -> str:
     phrase: str = query.strip().lower().rstrip(" ?.!")
     for prefix in _COMMAND_PREFIXES:
         if phrase.startswith(prefix):
-            phrase = phrase[len(prefix):].strip()
+            phrase = phrase[len(prefix) :].strip()
             break
     for article in ("the ", "a ", "an "):
         if phrase.startswith(article):
-            phrase = phrase[len(article):]
+            phrase = phrase[len(article) :]
             break
     return phrase or query.strip().lower()
 
@@ -77,17 +75,31 @@ def place_phrase(query: str) -> str:
 class SemanticEncoder:
     """Wrapper around a Hugging Face CLIP/SigLIP checkpoint."""
 
-    def __init__(self, model_name: str = "openai/clip-vit-base-patch32") -> None:
-        self._device: torch.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        self._model = AutoModel.from_pretrained(model_name).to(self._device)
+    def __init__(
+        self, model_name: str = "openai/clip-vit-base-patch32", revision: str | None = None
+    ) -> None:
+        if revision is None:
+            if model_name != "openai/clip-vit-base-patch32":
+                raise ValueError("provide an immutable revision for a nondefault semantic model")
+            revision = CLIP_REVISION
+        if not re.fullmatch(r"[0-9a-fA-F]{40}", revision):
+            raise ValueError("semantic revision must be an immutable 40-character commit hash")
+        self._device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._model = AutoModel.from_pretrained(model_name, revision=revision).to(self._device)
         self._model.eval()
-        self._processor = AutoProcessor.from_pretrained(model_name)
-        scale = getattr(self._model, "logit_scale", None)
-        self._logit_scale: float = (
-            float(scale.exp().item()) if scale is not None else 100.0
+        self._processor = AutoProcessor.from_pretrained(model_name, revision=revision)
+        self.identity = identity(
+            {
+                "model": model_name,
+                "revision": revision,
+                "source": file_digest(__file__),
+                "transformers": version("transformers"),
+                "torch": version("torch"),
+                "device": str(self._device),
+            }
         )
+        scale = getattr(self._model, "logit_scale", None)
+        self._logit_scale: float = float(scale.exp().item()) if scale is not None else 100.0
 
     @property
     def logit_scale(self) -> float:
@@ -117,12 +129,8 @@ class SemanticEncoder:
         pil_images: list[Image.Image] = [
             Image.fromarray(img[:, :, ::-1].copy()) for img in images_bgr
         ]
-        inputs = self._processor(images=pil_images, return_tensors="pt").to(
-            self._device
-        )
-        features: torch.Tensor = self._as_embedding(
-            self._model.get_image_features(**inputs)
-        )
+        inputs = self._processor(images=pil_images, return_tensors="pt").to(self._device)
+        features: torch.Tensor = self._as_embedding(self._model.get_image_features(**inputs))
         features = features / features.norm(dim=-1, keepdim=True)
         return features.cpu().numpy().astype(np.float32)
 
@@ -136,12 +144,8 @@ class SemanticEncoder:
         """
         phrase: str = place_phrase(query)
         prompts: list[str] = [t.format(phrase) for t in _PROMPT_TEMPLATES]
-        inputs = self._processor(
-            text=prompts, return_tensors="pt", padding=True
-        ).to(self._device)
-        features: torch.Tensor = self._as_embedding(
-            self._model.get_text_features(**inputs)
-        )
+        inputs = self._processor(text=prompts, return_tensors="pt", padding=True).to(self._device)
+        features: torch.Tensor = self._as_embedding(self._model.get_text_features(**inputs))
         features = features / features.norm(dim=-1, keepdim=True)
         mean: torch.Tensor = features.mean(dim=0)
         mean = mean / mean.norm()
@@ -159,9 +163,20 @@ class PlaceRetriever:
     def _ensure_view_embeddings(self) -> None:
         """Embed all node views once (lazy fill on load or after fusion)."""
         for node in self._graph.nodes.values():
-            if node.view_embeddings is not None or not node.views:
+            encoder_identity = self._encoder.identity
+            if (
+                node.view_embeddings is not None
+                and node.semantic_model_identity == encoder_identity
+            ):
+                continue
+            if not node.views:
+                if node.view_embeddings is not None:
+                    raise ValueError(
+                        "semantic model changed but compact map has no images for re-encoding"
+                    )
                 continue
             node.view_embeddings = self._encoder.embed_images(node.views)
+            node.semantic_model_identity = encoder_identity
 
     def query(
         self, sentence: str, top_k: int = 3
@@ -174,12 +189,17 @@ class PlaceRetriever:
 
         Returns:
             (ranked list of (node, posterior probability, raw cosine score),
-            confident_flag). The raw cosine score is the multi-view max-pooled
+            distinctive_flag). The raw cosine score is the multi-view max-pooled
             image/text similarity, surfaced for debugging and inspection.
-            ``confident_flag`` is False when the top-2 posterior margin is
+            The flag is only a relative distinctiveness heuristic, never evidence
+            that the destination exists. It is False when the top-2 margin is
             below the heuristic rejection bound — the caller should treat the answer
             as ambiguous (e.g. ask the user to disambiguate among top-k).
         """
+        if top_k < 1:
+            raise ValueError("top_k must be positive")
+        if not sentence.strip():
+            raise ValueError("query must not be empty")
         text_embedding: np.ndarray = self._encoder.embed_text(sentence)
 
         node_ids: list[int] = []
@@ -212,11 +232,9 @@ class PlaceRetriever:
         ]
 
         if posterior.shape[0] >= 2:
-            margin: float = float(
-                posterior[order[0]] - posterior[order[1]]
-            )
+            margin: float = float(posterior[order[0]] - posterior[order[1]])
             confident: bool = margin >= _MIN_POSTERIOR_MARGIN
         else:
-            confident = True
+            confident = False
 
         return ranked, confident

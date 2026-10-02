@@ -4,7 +4,7 @@ Example:
 
     python3 -m vts_evaluation.plot_odometry \
         --gt-trajectory <sequence>/std_cam \
-        --out output/revised/freiburg_a/images/path_compare.png
+        --out output/submission/freiburg_a/images/path_compare.png
 """
 
 from __future__ import annotations

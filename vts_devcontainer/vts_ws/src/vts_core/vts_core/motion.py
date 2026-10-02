@@ -1,9 +1,8 @@
-"""SE(2) motion helpers and wheel-odometry uncertainty propagation.
+"""Recorded SE(2) motion and a path-length uncertainty budget.
 
-The mapper consumes recorded odometry poses unchanged. COLD does not provide
-pose covariances, so :class:`OdometryUncertaintyTracker` propagates a standard
-motion-dependent uncertainty model over those measurements. Unlike the old
-simulator, this module never samples noise and never modifies the trajectory.
+This heuristic budget is not a calibrated pose marginal. Its increments depend
+on travelled distance (metres) and absolute turning (radians), not sample count.
+Subdividing the same piecewise-linear motion leaves the budget unchanged.
 """
 
 from __future__ import annotations
@@ -22,11 +21,12 @@ def normalize_angle(angle: float) -> float:
 
 @dataclass(frozen=True)
 class OdometryUncertaintyParams:
-    """Motion-dependent wheel-odometry variance coefficients.
+    """Motion-dependent wheel-odometry budget coefficients.
 
     `alpha1` and `alpha2` model rotational variance caused by rotation and
     translation. `alpha3` and `alpha4` model translational variance caused
-    by translation and rotation. One fixed set must be used for every run.
+    by translation and rotation. Units are rad²/rad, rad²/m, m²/m,
+    and m²/rad respectively. These coefficients require independent calibration.
     """
 
     alpha1: float = 0.025
@@ -35,7 +35,8 @@ class OdometryUncertaintyParams:
     alpha4: float = 0.0025
 
     def __post_init__(self) -> None:
-        if min(self.alpha1, self.alpha2, self.alpha3, self.alpha4) < 0.0:
+        values = np.asarray([self.alpha1, self.alpha2, self.alpha3, self.alpha4])
+        if not np.isfinite(values).all() or np.any(values < 0.0):
             raise ValueError("odometry uncertainty coefficients must be nonnegative")
 
 
@@ -44,13 +45,11 @@ class OdometryUncertaintyTracker:
 
     The returned matrix is monotonic: subtracting two snapshots gives the
     uncertainty accumulated only over that interval. This is the quantity
-    required by relative odometry factors and revisit gating. No noise is
+    used by revisit gating. It does not propagate heading uncertainty into XY. No noise is
     sampled and the recorded trajectory is never modified.
     """
 
-    def __init__(
-        self, params: OdometryUncertaintyParams | None = None
-    ) -> None:
+    def __init__(self, params: OdometryUncertaintyParams | None = None) -> None:
         self._params = params or OdometryUncertaintyParams()
         self._previous_pose: Pose2D | None = None
         self._covariance = np.zeros((3, 3), dtype=np.float64)
@@ -60,7 +59,10 @@ class OdometryUncertaintyTracker:
         return self._covariance.copy()
 
     def step(self, measured_pose: Pose2D) -> np.ndarray:
-        """Consume a recorded pose and return its propagated 3x3 covariance."""
+        """Consume a finite recorded pose and return its cumulative 3x3 budget."""
+        if np.shape(measured_pose) != (3,) or not np.isfinite(measured_pose).all():
+            raise ValueError("measured_pose must contain three finite values")
+        measured_pose = tuple(float(value) for value in measured_pose)
         if self._previous_pose is None:
             self._previous_pose = measured_pose
             return self.covariance
@@ -70,13 +72,8 @@ class OdometryUncertaintyTracker:
         translation = float(np.hypot(dx, dy))
         rotation = normalize_angle(measured_pose[2] - self._previous_pose[2])
         params = self._params
-        variance_rotation = (
-            params.alpha1 * rotation**2 + params.alpha2 * translation**2
-        )
-        variance_translation = (
-            params.alpha3 * translation**2
-            + params.alpha4 * rotation**2
-        )
+        variance_rotation = params.alpha1 * abs(rotation) + params.alpha2 * translation
+        variance_translation = params.alpha3 * translation + params.alpha4 * abs(rotation)
         increment_covariance = np.diag(
             [variance_translation, variance_translation, variance_rotation]
         )
