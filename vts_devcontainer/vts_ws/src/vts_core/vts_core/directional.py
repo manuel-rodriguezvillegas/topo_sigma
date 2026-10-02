@@ -3,18 +3,60 @@
 DINO descriptors are L2-normalized, so they live on a unit hypersphere rather
 than in unconstrained Euclidean space. This module models the observations of
 one topological place with a von Mises--Fisher (vMF) distribution. It has no
-learned parameters and depends only on NumPy and the Python standard library.
+learned parameters and uses NumPy and SciPy for numerical calculations.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import lgamma, log, log1p, pi, sqrt
+from functools import lru_cache
+from math import isfinite, lgamma, log, log1p, pi, sqrt
 
 import numpy as np
+from scipy.special import ive
 
 _MIN_NORM: float = 1e-12
 _MAX_CONCENTRATION: float = 1e6
+
+
+@lru_cache(maxsize=4096)
+def vmf_mean_length(dimension: int, concentration: float) -> float:
+    """A_d(kappa), using scaled Bessel functions and a small-k fallback."""
+    if dimension < 3 or not isfinite(concentration) or concentration < 0:
+        raise ValueError("expected dimension >= 3 and finite nonnegative concentration")
+    if concentration == 0:
+        return 0.0
+    order = dimension / 2 - 1
+    denominator = float(ive(order, concentration))
+    if denominator > 0:
+        return float(ive(order + 1, concentration) / denominator)
+    # For tiny arguments at high order both Bessel functions underflow.
+    # Perron's continued fraction is well conditioned in this regime.
+    if concentration >= dimension:
+        raise ArithmeticError("Bessel ratio unavailable outside small-argument regime")
+    tail = 0.0
+    for index in range(128, -1, -1):
+        tail = concentration**2 / (dimension + 2 * index + tail)
+    return tail / concentration
+
+
+def vmf_symmetric_kl(
+    first_direction: np.ndarray, first_concentration: float,
+    second_direction: np.ndarray, second_concentration: float,
+) -> float:
+    """Half the sum of forward/reverse KL, not a calibrated match probability."""
+    a = np.asarray(first_direction, dtype=np.float64)
+    b = np.asarray(second_direction, dtype=np.float64)
+    if a.ndim != 1 or a.shape != b.shape or not np.isfinite([a, b]).all():
+        raise ValueError("expected finite direction vectors of equal shape")
+    if min(np.linalg.norm(a), np.linalg.norm(b)) <= _MIN_NORM:
+        raise ValueError("directions must be non-zero")
+    a, b = a / np.linalg.norm(a), b / np.linalg.norm(b)
+    ra = vmf_mean_length(a.size, first_concentration)
+    rb = vmf_mean_length(b.size, second_concentration)
+    natural_delta = first_concentration * a - second_concentration * b
+    expectation_delta = ra * a - rb * b
+    return max(0.0, float(0.5 * natural_delta @ expectation_delta))
 
 
 @dataclass(frozen=True)
@@ -44,21 +86,26 @@ def fit_von_mises_fisher(descriptors: np.ndarray) -> VonMisesFisher:
         raise ValueError("descriptors must have shape (n >= 1, d >= 2)")
 
     norms = np.linalg.norm(samples, axis=1, keepdims=True)
-    if np.any(norms <= _MIN_NORM):
+    if not np.isfinite(samples).all() or np.any(norms <= _MIN_NORM):
         raise ValueError("descriptors must be non-zero")
     samples = samples / norms
 
     resultant = samples.sum(axis=0)
+    return fit_vmf_resultant(resultant, samples.shape[0], samples[0])
+
+
+def fit_vmf_resultant(
+    resultant: np.ndarray, sample_count: int, fallback: np.ndarray
+) -> VonMisesFisher:
+    """Fit from a streaming sum of unit descriptors and their count."""
+    dimension = resultant.size
     resultant_norm = float(np.linalg.norm(resultant))
-    sample_count, dimension = samples.shape
     if resultant_norm <= _MIN_NORM:
-        mean_direction = samples[0].copy()
+        mean_direction = fallback.copy()
         mean_resultant_length = 0.0
     else:
         mean_direction = resultant / resultant_norm
-        mean_resultant_length = float(
-            np.clip(resultant_norm / sample_count, 0.0, 1.0)
-        )
+        mean_resultant_length = float(np.clip(resultant_norm / sample_count, 0.0, 1.0))
 
     concentration = 0.0
     if sample_count > 1 and mean_resultant_length > _MIN_NORM:
@@ -85,12 +132,10 @@ def _log_vmf_normalizer(dimension: int, concentration: float) -> float:
     """
     if dimension < 3:
         raise ValueError("vMF evidence requires dimension >= 3")
-    kappa = max(float(concentration), 0.0)
-    log_uniform = (
-        lgamma(0.5 * dimension)
-        - log(2.0)
-        - 0.5 * dimension * log(pi)
-    )
+    if not isfinite(concentration) or concentration < 0:
+        raise ValueError("concentration must be finite and nonnegative")
+    kappa = float(concentration)
+    log_uniform = lgamma(0.5 * dimension) - log(2.0) - 0.5 * dimension * log(pi)
     if kappa == 0.0:
         return log_uniform
     if kappa < 1e-3:
@@ -110,11 +155,7 @@ def _log_vmf_normalizer(dimension: int, concentration: float) -> float:
         + order * eta
         + log(max(correction, _MIN_NORM))
     )
-    return (
-        order * log(kappa)
-        - 0.5 * dimension * log(2.0 * pi)
-        - log_bessel
-    )
+    return order * log(kappa) - 0.5 * dimension * log(2.0 * pi) - log_bessel
 
 
 def vmf_log_overlap_ratio(
@@ -136,19 +177,24 @@ def vmf_log_overlap_ratio(
         raise ValueError("directions must have the same dimension >= 3")
     first_norm = float(np.linalg.norm(first))
     second_norm = float(np.linalg.norm(second))
-    if first_norm <= _MIN_NORM or second_norm <= _MIN_NORM:
+    if (
+        not np.isfinite(first).all()
+        or not np.isfinite(second).all()
+        or first_norm <= _MIN_NORM
+        or second_norm <= _MIN_NORM
+    ):
         raise ValueError("directions must be non-zero")
-    first /= first_norm
-    second /= second_norm
+    first = first / first_norm
+    second = second / second_norm
 
-    kappa_a = max(float(first_concentration), 0.0)
-    kappa_b = max(float(second_concentration), 0.0)
+    if not all(
+        isfinite(value) and value >= 0 for value in (first_concentration, second_concentration)
+    ):
+        raise ValueError("concentrations must be finite and nonnegative")
+    kappa_a = float(first_concentration)
+    kappa_b = float(second_concentration)
     cosine = float(np.clip(first @ second, -1.0, 1.0))
-    combined_squared = (
-        kappa_a * kappa_a
-        + kappa_b * kappa_b
-        + 2.0 * kappa_a * kappa_b * cosine
-    )
+    combined_squared = kappa_a * kappa_a + kappa_b * kappa_b + 2.0 * kappa_a * kappa_b * cosine
     combined = sqrt(max(combined_squared, 0.0))
     dimension = first.size
     log_uniform = _log_vmf_normalizer(dimension, 0.0)

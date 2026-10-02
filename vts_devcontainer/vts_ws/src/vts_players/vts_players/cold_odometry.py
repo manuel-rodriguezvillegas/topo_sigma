@@ -66,10 +66,12 @@ def load_cold_odometry(
     """Read COLD odometry and accumulate uncertainty over recorded poses.
 
     Each TDF row stores seconds and microseconds at columns 3--4 and
-    `x, y, theta` at columns 8, 9 and 11 respectively.
+    `x, y, theta` at columns 8, 9 and 11 respectively. A microsecond field that
+    wraps without a seconds increment is treated as the next second.
     """
     timestamps: list[float] = []
     poses: list[Pose2D] = []
+    previous_clock: tuple[int, int] | None = None
     with open(path, encoding="utf-8") as stream:
         for line_number, line in enumerate(stream, start=1):
             fields = line.split()
@@ -78,10 +80,16 @@ def load_cold_odometry(
             if len(fields) < 12:
                 raise ValueError(f"{path}:{line_number}: expected at least 12 fields")
             try:
-                timestamp = float(fields[3]) + 1e-6 * float(fields[4])
+                seconds, microseconds = int(fields[3]), int(fields[4])
                 pose = (float(fields[8]), float(fields[9]), float(fields[11]))
             except ValueError as error:
                 raise ValueError(f"{path}:{line_number}: malformed numeric field") from error
+            # Some COLD logs (e.g. Ljubljana) reset the microsecond field without
+            # incrementing seconds. Only that exact pattern is repaired.
+            if previous_clock is not None and seconds == previous_clock[0] and microseconds < previous_clock[1]:
+                seconds += 1
+            previous_clock = (int(fields[3]), microseconds)
+            timestamp = seconds + 1e-6 * microseconds
             timestamps.append(timestamp)
             poses.append(pose)
 

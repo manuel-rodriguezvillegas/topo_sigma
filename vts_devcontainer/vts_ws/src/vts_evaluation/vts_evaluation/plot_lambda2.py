@@ -6,7 +6,7 @@ are exactly what the mapper detected. Used to generate the node-extraction
 figure of the paper.
 
     python3 -m vts_evaluation.plot_lambda2 \
-        --lambda2 output/revised/freiburg_a/graph_0_lambda2.npy \
+        --lambda2 output/submission/freiburg_a/graph_0_lambda2.npy \
         --valley-k 1.5 --out lambda2_valleys.pdf
 """
 

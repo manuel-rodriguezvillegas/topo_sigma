@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from contextlib import suppress
 
 import cv2
@@ -18,7 +19,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Empty, String
+from std_msgs.msg import String
 
 from vts_core.motion import OdometryUncertaintyParams, Pose2D
 from vts_players.cid_sims_data import (
@@ -34,6 +35,8 @@ class CidSimsPlayerNode(Node):
     def __init__(self) -> None:
         super().__init__("cid_sims_player")
         self.declare_parameter("dataset_root", "")
+        self.declare_parameter("ack_timeout_s", 300.0)
+        self.declare_parameter("startup_timeout_s", 900.0)
         self.declare_parameter("sequences", [""])
         self.declare_parameter("color_subdir", "color")
         self.declare_parameter("ground_truth_file", "groundtruth.txt")
@@ -41,11 +44,9 @@ class CidSimsPlayerNode(Node):
         self.declare_parameter("frame_stride", 6)
         self.declare_parameter("max_ground_truth_gap_s", 0.1)
         self.declare_parameter("max_odometry_gap_s", 0.2)
-        self.declare_parameter("publish_rate_hz", 20.0)
+        self.declare_parameter("publish_rate_hz", 50.0)
         self.declare_parameter("inter_sequence_pause_s", 2.0)
-        self.declare_parameter(
-            "odometry_uncertainty", [0.025, 0.005, 0.01, 0.0025]
-        )
+        self.declare_parameter("odometry_uncertainty", [0.025, 0.005, 0.01, 0.0025])
 
         self._dataset_root = self.get_parameter("dataset_root").value
         self._sequences = list(self.get_parameter("sequences").value)
@@ -53,14 +54,10 @@ class CidSimsPlayerNode(Node):
         self._ground_truth_file = self.get_parameter("ground_truth_file").value
         self._odometry_file = self.get_parameter("odometry_file").value
         self._frame_stride = int(self.get_parameter("frame_stride").value)
-        self._max_gt_gap_s = float(
-            self.get_parameter("max_ground_truth_gap_s").value
-        )
+        self._max_gt_gap_s = float(self.get_parameter("max_ground_truth_gap_s").value)
         self._max_odom_gap_s = float(self.get_parameter("max_odometry_gap_s").value)
         rate_hz = float(self.get_parameter("publish_rate_hz").value)
-        self._pause_ticks = int(
-            float(self.get_parameter("inter_sequence_pause_s").value) * rate_hz
-        )
+        self._pause_ticks = int(float(self.get_parameter("inter_sequence_pause_s").value) * rate_hz)
         uncertainty = list(self.get_parameter("odometry_uncertainty").value)
         if self._frame_stride < 1:
             raise ValueError("frame_stride must be at least one")
@@ -71,27 +68,26 @@ class CidSimsPlayerNode(Node):
         self._bridge = CvBridge()
         self._image_pub = self.create_publisher(Image, "/camera/image", 10)
         self._odom_pub = self.create_publisher(Odometry, "/odom", 10)
-        self._gt_pub = self.create_publisher(
-            PoseStamped, "/ground_truth_pose", 10
-        )
-        self._label_pub = self.create_publisher(
-            String, "/dataset/room_label", 10
-        )
-        self._done_pub = self.create_publisher(
-            String, "/dataset/sequence_done", 10
-        )
-        self.create_subscription(
-            Empty, "/mapping/frame_processed", self._on_frame_processed, 10
-        )
+        self._gt_pub = self.create_publisher(PoseStamped, "/ground_truth_pose", 10)
+        self._label_pub = self.create_publisher(String, "/dataset/room_label", 10)
+        self._done_pub = self.create_publisher(String, "/dataset/sequence_done", 10)
+        self.create_subscription(String, "/mapping/frame_processed", self._on_frame_processed, 10)
 
+        self._ack_token: str | None = None
+        self._progress_time = time.monotonic()
+        self._ack_timeout = float(self.get_parameter("ack_timeout_s").value)
+        self._startup_timeout = float(self.get_parameter("startup_timeout_s").value)
+        if (
+            not np.isfinite([rate_hz, self._ack_timeout, self._startup_timeout]).all()
+            or min(rate_hz, self._ack_timeout, self._startup_timeout) <= 0
+        ):
+            raise ValueError("publish rate and handshake timeouts must be finite and positive")
         self._sequence_index = 0
         self._frame_index = 0
         self._pause_remaining = 0
         self._waiting_for_frame_ack = False
         self._consumer_connected = False
-        self._frames: list[
-            tuple[float, str, Pose2D, Pose2D, np.ndarray]
-        ] = []
+        self._frames: list[tuple[float, str, Pose2D, Pose2D, np.ndarray]] = []
         self._load_sequence(0)
         self._timer = self.create_timer(1.0 / rate_hz, self._tick)
 
@@ -99,40 +95,28 @@ class CidSimsPlayerNode(Node):
         sequence = self._sequences[index]
         sequence_dir = os.path.join(self._dataset_root, sequence)
         if not os.path.isdir(sequence_dir):
-            raise FileNotFoundError(
-                f"CID-SIMS sequence directory not found: {sequence_dir}"
-            )
-        ground_truth = load_ground_truth(
-            os.path.join(sequence_dir, self._ground_truth_file)
-        )
+            raise FileNotFoundError(f"CID-SIMS sequence directory not found: {sequence_dir}")
+        ground_truth = load_ground_truth(os.path.join(sequence_dir, self._ground_truth_file))
         odometry = load_wheel_odometry(
             os.path.join(sequence_dir, self._odometry_file),
             self._uncertainty_params,
         )
-        images = timestamped_color_images(
-            os.path.join(sequence_dir, self._color_subdir)
-        )
+        images = timestamped_color_images(os.path.join(sequence_dir, self._color_subdir))
         selected = images[:: self._frame_stride]
         frames: list[tuple[float, str, Pose2D, Pose2D, np.ndarray]] = []
         skipped = 0
         for timestamp, image_path in selected:
             try:
                 gt_pose, _ = ground_truth.at(timestamp, self._max_gt_gap_s)
-                odom_pose, covariance = odometry.at(
-                    timestamp, self._max_odom_gap_s
-                )
+                odom_pose, covariance = odometry.at(timestamp, self._max_odom_gap_s)
             except ValueError:
                 skipped += 1
                 continue
             if covariance is None:
                 raise RuntimeError("wheel odometry stream has no covariance")
-            frames.append(
-                (timestamp, image_path, gt_pose, odom_pose, covariance)
-            )
+            frames.append((timestamp, image_path, gt_pose, odom_pose, covariance))
         if not frames:
-            raise RuntimeError(
-                f"No synchronized CID-SIMS frames found in {sequence_dir}"
-            )
+            raise RuntimeError(f"No synchronized CID-SIMS frames found in {sequence_dir}")
         self._frames = frames
         self._frame_index = 0
         self._consumer_connected = False
@@ -142,18 +126,30 @@ class CidSimsPlayerNode(Node):
             f"{skipped} outside synchronization limits"
         )
 
-    def _on_frame_processed(self, _message: Empty) -> None:
-        self._waiting_for_frame_ack = False
+    def _on_frame_processed(self, message: String) -> None:
+        """Only the acknowledgement of the current frame releases flow control."""
+        if self._waiting_for_frame_ack and message.data == self._ack_token:
+            self._waiting_for_frame_ack = False
+            self._progress_time = time.monotonic()
 
     def _tick(self) -> None:
         if not self._consumer_connected:
             self._consumer_connected = (
                 self._image_pub.get_subscription_count() > 0
                 and self._odom_pub.get_subscription_count() > 0
+                and self._gt_pub.get_subscription_count() > 0
+                and self._label_pub.get_subscription_count() > 0
+                and self._done_pub.get_subscription_count() > 0
+                and self.count_publishers("/mapping/frame_processed") > 0
             )
             if not self._consumer_connected:
+                if time.monotonic() - self._progress_time > self._startup_timeout:
+                    raise TimeoutError("mapping consumers did not become ready")
                 return
+            self._progress_time = time.monotonic()
         if self._waiting_for_frame_ack:
+            if time.monotonic() - self._progress_time > self._ack_timeout:
+                raise TimeoutError(f"no acknowledgement for frame {self._ack_token}")
             return
         if self._pause_remaining > 0:
             self._pause_remaining -= 1
@@ -162,9 +158,7 @@ class CidSimsPlayerNode(Node):
             self._announce_sequence_done()
             return
 
-        _timestamp, path, gt_pose, odom_pose, covariance = self._frames[
-            self._frame_index
-        ]
+        _timestamp, path, gt_pose, odom_pose, covariance = self._frames[self._frame_index]
         self._frame_index += 1
         image = cv2.imread(path, cv2.IMREAD_COLOR)
         if image is None:
@@ -178,8 +172,12 @@ class CidSimsPlayerNode(Node):
             raise RuntimeError(f"Unreadable CID-SIMS image: {path}.{cloud_hint}")
 
         stamp = self.get_clock().now().to_msg()
+        self._ack_token = f"{stamp.sec}:{stamp.nanosec}"
+        self._progress_time = time.monotonic()
         self._waiting_for_frame_ack = True
-        self._label_pub.publish(String(data=""))
+        self._label_pub.publish(
+            String(data=json.dumps({"frame_key": self._ack_token, "label": None}))
+        )
 
         gt_msg = PoseStamped()
         gt_msg.header.stamp = stamp

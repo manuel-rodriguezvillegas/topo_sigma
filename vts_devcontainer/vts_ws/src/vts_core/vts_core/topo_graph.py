@@ -9,15 +9,17 @@ code can load it safely.
 
 from __future__ import annotations
 
+import os
 import pickle
-from dataclasses import dataclass, field
+import tempfile
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
 Pose2D = tuple[float, float, float]
-# Current node and this many immediate predecessors describe the local
-# traversal rather than a loop closure. Shared by mapping and evaluation.
-LOOP_TEMPORAL_EXCLUSION_NODES: int = 2
+# Exclude only the immediately preceding emitted node: A -> B -> A is eligible.
+# Shared by mapping and evaluation.
+LOOP_TEMPORAL_EXCLUSION_NODES: int = 1
 
 
 @dataclass
@@ -33,6 +35,7 @@ class LoopClosureEvent:
     accepted: bool
     similarity: float | None
     reason: str
+    decision_node_id: int | None = None
 
 
 @dataclass
@@ -81,9 +84,8 @@ class TopoNode:
     views: list[np.ndarray] = field(default_factory=list)
     view_features: np.ndarray | None = None
     view_embeddings: np.ndarray | None = None
-    pose_covariance: np.ndarray = field(
-        default_factory=lambda: np.zeros((2, 2), dtype=np.float64)
-    )
+    semantic_model_identity: str | None = None
+    pose_covariance: np.ndarray = field(default_factory=lambda: np.zeros((2, 2), dtype=np.float64))
     extent_covariance: np.ndarray = field(
         default_factory=lambda: np.zeros((2, 2), dtype=np.float64)
     )
@@ -104,9 +106,7 @@ class TopoNode:
         latter are semantic embeddings populated lazily by the language
         module.
         """
-        kept_images = [image for image in images if image is not None][
-            : self.MAX_VIEWS
-        ]
+        kept_images = [image for image in images if image is not None][: self.MAX_VIEWS]
         self.views = kept_images
         self.view_embeddings = None
         if visual_features is None:
@@ -114,9 +114,7 @@ class TopoNode:
             return
         features = np.asarray(visual_features, dtype=np.float32)
         if features.ndim != 2 or features.shape[0] != len(kept_images):
-            raise ValueError(
-                "visual_features must have shape (number of views, dimension)"
-            )
+            raise ValueError("visual_features must have shape (number of views, dimension)")
         norms = np.linalg.norm(features, axis=1, keepdims=True)
         self.view_features = features / np.maximum(norms, 1e-12)
 
@@ -156,19 +154,9 @@ class TopoGraph:
     def __init__(self, frame_id: str = "map") -> None:
         self.nodes: dict[int, TopoNode] = {}
         self.adjacency: dict[int, set[int]] = {}
-        # Relative SE(2) measurement per edge, captured AT EDGE-CREATION TIME,
-        # keyed (min_id, max_id) and oriented min -> max. Without stored
-        # measurements, pose-graph optimization built from current estimates
-        # is identically a no-op (zero residual by construction).
-        self.edge_measurements: dict[tuple[int, int], Pose2D] = {}
-        # Full SE(2) information matrix and factor type per edge. Odometry
-        # edges constrain translation and heading; descriptor-only loop
-        # closures constrain co-location but carry zero angular information.
-        self.edge_information: dict[tuple[int, int], np.ndarray] = {}
         self.edge_types: dict[tuple[int, int], str] = {}
-        # Compatibility field for older serialized maps.
-        self.edge_sigmas: dict[tuple[int, int], float] = {}
         self.loop_events: list[LoopClosureEvent] = []
+        self.recovery_diagnostics: list[dict] = []
         self.frame_id: str = frame_id
         self._next_id: int = 0
 
@@ -189,73 +177,23 @@ class TopoGraph:
         self.adjacency.setdefault(node.node_id, set())
         self._next_id = max(self._next_id, node.node_id + 1)
 
-    def add_edge(self, id_a: int, id_b: int) -> None:
+    def add_edge(self, id_a: int, id_b: int, edge_type: str = "odometry") -> None:
         """Insert an undirected edge between two existing nodes."""
+        if edge_type not in {"odometry", "loop"}:
+            raise ValueError("edge_type must be odometry or loop")
         if id_a == id_b:
             return
         if id_a not in self.nodes or id_b not in self.nodes:
             raise KeyError(f"Edge ({id_a}, {id_b}) references unknown node")
         self.adjacency[id_a].add(id_b)
         self.adjacency[id_b].add(id_a)
+        self.edge_types[(min(id_a, id_b), max(id_a, id_b))] = edge_type
 
     def remove_edge(self, id_a: int, id_b: int) -> None:
         """Remove an undirected edge if it exists."""
         self.adjacency.get(id_a, set()).discard(id_b)
         self.adjacency.get(id_b, set()).discard(id_a)
-        self.edge_measurements.pop((min(id_a, id_b), max(id_a, id_b)), None)
-        self.edge_information.pop((min(id_a, id_b), max(id_a, id_b)), None)
         self.edge_types.pop((min(id_a, id_b), max(id_a, id_b)), None)
-        self.edge_sigmas.pop((min(id_a, id_b), max(id_a, id_b)), None)
-
-    def set_edge_measurement(
-        self, id_a: int, id_b: int, pose_a: Pose2D, pose_b: Pose2D
-    ) -> None:
-        """Store the relative measurement for edge (id_a, id_b).
-
-        Args:
-            id_a, id_b: Edge endpoints.
-            pose_a: Pose associated with id_a at measurement time.
-            pose_b: Pose associated with id_b at measurement time.
-        """
-        key: tuple[int, int] = (min(id_a, id_b), max(id_a, id_b))
-        first, second = (pose_a, pose_b) if id_a <= id_b else (pose_b, pose_a)
-        import numpy as _np
-
-        dx: float = second[0] - first[0]
-        dy: float = second[1] - first[1]
-        cos_t: float = float(_np.cos(first[2]))
-        sin_t: float = float(_np.sin(first[2]))
-        local_x: float = cos_t * dx + sin_t * dy
-        local_y: float = -sin_t * dx + cos_t * dy
-        d_theta: float = float(
-            (second[2] - first[2] + _np.pi) % (2.0 * _np.pi) - _np.pi
-        )
-        self.edge_measurements[key] = (local_x, local_y, d_theta)
-
-    def set_edge_constraint(
-        self,
-        id_a: int,
-        id_b: int,
-        measurement: Pose2D,
-        information: np.ndarray,
-        edge_type: str,
-    ) -> None:
-        """Store an SE(2) factor oriented from the lower to higher node id."""
-        if edge_type not in {"odometry", "loop"}:
-            raise ValueError("edge_type must be 'odometry' or 'loop'")
-        if id_a >= id_b:
-            raise ValueError(
-                "edge constraints must use canonical id_a < id_b ordering"
-            )
-        key = (id_a, id_b)
-        info = np.asarray(information, dtype=np.float64)
-        if info.shape != (3, 3) or not np.allclose(info, info.T, atol=1e-9):
-            raise ValueError("information must be a symmetric 3x3 matrix")
-        if float(np.min(np.linalg.eigvalsh(info))) < -1e-9:
-            raise ValueError("information must be positive semidefinite")
-        self.edge_measurements[key] = tuple(float(v) for v in measurement)
-        self.edge_information[key] = info.copy()
-        self.edge_types[key] = edge_type
 
     # ------------------------------------------------------------------ #
     # Queries
@@ -275,16 +213,16 @@ class TopoGraph:
     def positions(self) -> np.ndarray:
         """Return an (N, 2) array of node (x, y) positions, sorted by id."""
         ids: list[int] = sorted(self.nodes)
-        return np.array(
-            [self.nodes[i].pose[:2] for i in ids], dtype=np.float64
-        ).reshape(-1, 2)
+        return np.array([self.nodes[i].pose[:2] for i in ids], dtype=np.float64).reshape(-1, 2)
 
     def feature_matrix(self) -> tuple[list[int], np.ndarray]:
         """Return (sorted node ids, stacked L2-normalized descriptors)."""
         ids: list[int] = sorted(self.nodes)
-        features: np.ndarray = np.stack(
-            [self.nodes[i].visual_features for i in ids]
-        ).astype(np.float32)
+        if not ids:
+            return [], np.empty((0, 0), dtype=np.float32)
+        features: np.ndarray = np.stack([self.nodes[i].visual_features for i in ids]).astype(
+            np.float32
+        )
         norms: np.ndarray = np.linalg.norm(features, axis=1, keepdims=True)
         features = features / np.maximum(norms, 1e-12)
         return ids, features
@@ -292,10 +230,30 @@ class TopoGraph:
     # ------------------------------------------------------------------ #
     # Persistence
     # ------------------------------------------------------------------ #
+    def without_images(self) -> TopoGraph:
+        """A reloadable map retaining all matching, pose and topology state."""
+        compact = TopoGraph(self.frame_id)
+        for node in self.nodes.values():
+            compact.add_node(replace(node, views=[]))
+        for a, b in self.edges():
+            compact.add_edge(a, b, self.edge_types.get((a, b), "odometry"))
+        compact.loop_events = list(self.loop_events)
+        compact.recovery_diagnostics = list(self.recovery_diagnostics)
+        return compact
+
     def save(self, path: str) -> None:
-        """Pickle the graph to disk."""
-        with open(path, "wb") as f:
-            pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
+        """Atomically publish a trusted local pickle."""
+        parent = os.path.dirname(os.path.abspath(path))
+        fd, temporary = tempfile.mkstemp(dir=parent)
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                pickle.dump(self, stream, protocol=pickle.HIGHEST_PROTOCOL)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
 
     @staticmethod
     def load(path: str) -> TopoGraph:
@@ -304,14 +262,13 @@ class TopoGraph:
             graph: TopoGraph = pickle.load(f)
         if not isinstance(graph, TopoGraph):
             raise TypeError(f"File {path} does not contain a TopoGraph")
-        if not hasattr(graph, "edge_measurements"):  # older pickles
-            graph.edge_measurements = {}
-        if not hasattr(graph, "edge_sigmas"):
-            graph.edge_sigmas = {}
-        if not hasattr(graph, "edge_information"):
-            graph.edge_information = {}
+        # Drop obsolete auxiliary attributes from trusted historical maps.
+        for name in set(vars(graph)) - set(vars(TopoGraph())):
+            delattr(graph, name)
         if not hasattr(graph, "edge_types"):
             graph.edge_types = {}
+        if not hasattr(graph, "recovery_diagnostics"):
+            graph.recovery_diagnostics = []
         if not hasattr(graph, "loop_events"):
             graph.loop_events = []
         for node in graph.nodes.values():

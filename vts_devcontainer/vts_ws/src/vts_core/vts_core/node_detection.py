@@ -23,6 +23,8 @@ class ConnectivityMonitor:
         Args:
             window_size: Number of most recent images in the similarity graph.
         """
+        if not isinstance(window_size, int) or window_size < 2:
+            raise ValueError("window_size must be an integer >= 2")
         self._n: int = window_size
         self.window_features: np.ndarray | None = None
         self.affinity: np.ndarray | None = None
@@ -57,9 +59,7 @@ class ConnectivityMonitor:
             self.affinity[:-1, :-1] = self.affinity[1:, 1:]
             self.affinity[-1, :] = 0.0
             self.affinity[:, -1] = 0.0
-            self.window_features = np.vstack(
-                [self.window_features[1:], descriptor]
-            )
+            self.window_features = np.vstack([self.window_features[1:], descriptor])
 
         similarities: np.ndarray = self.window_features[:-1] @ descriptor
         weights: np.ndarray = np.clip(similarities, 0.0, 1.0)
@@ -223,10 +223,7 @@ class FixedValleyDetector:
         if self._look_for_max:
             if lambda_2 > self._max_value:
                 self._max_value = lambda_2
-            if (
-                self._sample_index + 1 >= self._warmup
-                and lambda_2 < self._max_value - self._delta
-            ):
+            if self._sample_index + 1 >= self._warmup and lambda_2 < self._max_value - self._delta:
                 self._look_for_max = False
                 self._min_value = lambda_2
                 self._min_index = self._sample_index

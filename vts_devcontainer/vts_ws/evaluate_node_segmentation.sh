@@ -7,7 +7,7 @@
 set -euo pipefail
 
 DATA_ROOT="${DATA_ROOT:-/workspace/encoder/seq_data}"
-OUTPUT_ROOT="${OUTPUT_ROOT:-output/revised}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-output/submission}"
 read -r -a k_values <<< "${K_VALUES:-1.0 1.5 2.0 2.5 3.0}"
 
 case_args=()

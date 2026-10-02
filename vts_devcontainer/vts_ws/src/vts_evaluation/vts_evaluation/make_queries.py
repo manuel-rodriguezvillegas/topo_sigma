@@ -9,7 +9,7 @@ the benchmark and count as retrieval failures.
 
     python -m vts_evaluation.make_queries \
         --labels-file <sequence>/localization/places.lst \
-        --out output/revised/freiburg_a/queries.json
+        --out output/submission/freiburg_a/queries.json
 """
 
 from __future__ import annotations

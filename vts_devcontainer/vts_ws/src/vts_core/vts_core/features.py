@@ -1,6 +1,6 @@
 """Frozen visual foundation-model feature extraction.
 
-The mapper deliberately uses an unmodified DINOv2 backbone. There is no
+The mapper deliberately uses an unmodified DINOv3 Small backbone by default. There is no
 training, projection head, checkpoint selection, or dataset-specific state in
 the mapping pipeline; evaluation sequences therefore never enter a learning
 or model-selection path.
@@ -9,6 +9,9 @@ or model-selection path.
 from __future__ import annotations
 
 from collections.abc import Callable
+from importlib.metadata import version
+from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 import torch
@@ -16,9 +19,19 @@ from PIL import Image
 from torch.nn import functional as F
 from torchvision import transforms
 
+from vts_core.artifacts import file_digest
+from vts_core.descriptor_cache import DescriptorCache
 
-class FeatureExtractor:
+DINO_REVISION = "7764ea0f912e53c92e82eb78a2a1631e92725fc8"
+DINOV3_MODEL = "facebook/dinov3-vits16-pretrain-lvd1689m"
+DINOV3_REVISION = "114c1379950215c8b35dfcd4e90a5c251dde0d32"
+DEFAULT_DINO_MODEL = "dinov3_vits16"
+
+
+class FeatureExtractor(Protocol):
     """Maps a BGR image to an L2-normalized descriptor."""
+
+    model_identity: dict[str, object]
 
     @property
     def device(self) -> str:
@@ -33,9 +46,7 @@ _IMAGENET_TRANSFORM: Callable[[Image.Image], torch.Tensor] = transforms.Compose(
     [
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-        ),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
 
@@ -65,24 +76,60 @@ def resolve_torch_device(requested: str = "auto") -> torch.device:
     if choice == "auto":
         choice = "cuda" if cuda_available else "mps" if mps_available else "cpu"
     elif choice == "cuda" and not cuda_available:
-        raise RuntimeError(
-            "DINO device 'cuda' was requested, but CUDA is not available to PyTorch"
-        )
+        raise RuntimeError("DINO device 'cuda' was requested, but CUDA is not available to PyTorch")
     elif choice == "mps" and not mps_available:
-        raise RuntimeError(
-            "DINO device 'mps' was requested, but MPS is not available to PyTorch"
-        )
+        raise RuntimeError("DINO device 'mps' was requested, but MPS is not available to PyTorch")
     return torch.device(choice)
+
+
+class FrozenDinoV3Extractor(FeatureExtractor):
+    """Official DINOv3 ViT-S/16 CLS descriptor, with pinned weights and processor."""
+
+    def __init__(self, device: str = "auto") -> None:
+        from huggingface_hub import hf_hub_download
+        from transformers import AutoImageProcessor, AutoModel
+
+        self._device = resolve_torch_device(device)
+        try:
+            self._processor = AutoImageProcessor.from_pretrained(
+                DINOV3_MODEL, revision=DINOV3_REVISION
+            )
+            self._model = AutoModel.from_pretrained(
+                DINOV3_MODEL, revision=DINOV3_REVISION
+            ).to(self._device).eval()
+        except OSError as exc:
+            raise RuntimeError(
+                "Could not load DINOv3 Small. Request access to "
+                f"https://huggingface.co/{DINOV3_MODEL}, then authenticate with "
+                "`hf auth login` in the execution environment (or set HF_TOKEN). "
+                "For offline runs, cache this pinned revision first."
+            ) from exc
+        self.checkpoint = Path(hf_hub_download(
+            DINOV3_MODEL, "model.safetensors", revision=DINOV3_REVISION,
+            local_files_only=True,
+        ))
+
+    @property
+    def device(self) -> str:
+        return str(self._device)
+
+    @torch.no_grad()
+    def extract(self, image_bgr: np.ndarray) -> np.ndarray:
+        inputs = self._processor(images=_to_pil(image_bgr), return_tensors="pt")
+        inputs = {key: value.to(self._device) for key, value in inputs.items()}
+        # Pooler output is the CLS token, excluding the four register tokens.
+        features = self._model(**inputs).pooler_output
+        return F.normalize(features, dim=-1)[0].cpu().numpy().astype(np.float32)
 
 
 class FrozenDinoV2Extractor(FeatureExtractor):
     """Stock DINOv2 ViT-S/14 loaded from the official Torch Hub repository."""
 
-    def __init__(
-        self, model_name: str = "dinov2_vits14", device: str = "auto"
-    ) -> None:
+    def __init__(self, model_name: str = "dinov2_vits14", device: str = "auto") -> None:
         self._device = resolve_torch_device(device)
-        self._model = torch.hub.load("facebookresearch/dinov2", model_name)
+        self._model = torch.hub.load(
+            f"facebookresearch/dinov2:{DINO_REVISION}", model_name, trust_repo=True
+        )
         self._model.to(self._device).eval()
 
     @property
@@ -106,7 +153,7 @@ def generalized_mean(features: torch.Tensor, power: float = 3.0) -> torch.Tensor
     """
     if features.ndim != 3 or features.shape[1] == 0:
         raise ValueError("Expected local descriptors with shape [B, patches, D]")
-    if power <= 0:
+    if not np.isfinite(power) or power <= 0:
         raise ValueError("GeM power must be positive")
     moment = features.sign() * features.abs().pow(power)
     pooled = moment.mean(dim=1)
@@ -131,7 +178,9 @@ class AnyLocGeMExtractor(FeatureExtractor):
         power: float = 3.0,
     ) -> None:
         self._device = resolve_torch_device(device)
-        self._model = torch.hub.load("facebookresearch/dinov2", model_name)
+        self._model = torch.hub.load(
+            f"facebookresearch/dinov2:{DINO_REVISION}", model_name, trust_repo=True
+        )
         self._model.to(self._device).eval()
         if not 0 <= layer < len(self._model.blocks):
             raise ValueError(
@@ -178,16 +227,46 @@ class AnyLocGeMExtractor(FeatureExtractor):
 
 
 def build_extractor(
-    model_name: str = "dinov2_vits14",
+    model_name: str = DEFAULT_DINO_MODEL,
     device: str = "auto",
     backend: str = "dino_cls",
     layer: int = -1,
+    cache_dir: str | None = None,
 ) -> FeatureExtractor:
     """Build a frozen global descriptor extractor."""
+    is_dinov3 = model_name in {DEFAULT_DINO_MODEL, DINOV3_MODEL}
     if backend == "dino_cls":
-        return FrozenDinoV2Extractor(model_name, device=device)
-    if backend == "anyloc_gem":
+        extractor = (
+            FrozenDinoV3Extractor(device=device)
+            if is_dinov3 else FrozenDinoV2Extractor(model_name, device=device)
+        )
+    elif backend == "anyloc_gem":
         if layer < 0:
             raise ValueError("anyloc_gem requires an explicit DINO block index")
-        return AnyLocGeMExtractor(model_name, layer=layer, device=device)
-    raise ValueError(f"Unknown feature backend {backend!r}")
+        if not model_name.startswith("dinov2_"):
+            raise ValueError("anyloc_gem requires a DINOv2 backbone and its value-facet layout")
+        extractor = AnyLocGeMExtractor(model_name, layer=layer, device=device)
+    else:
+        raise ValueError(f"Unknown feature backend {backend!r}")
+    checkpoint = Path(torch.hub.get_dir()) / "checkpoints" / f"{model_name}_pretrain.pth"
+    if is_dinov3:
+        checkpoint = extractor.checkpoint
+    model_identity = {
+        "model": DINOV3_MODEL if is_dinov3 else model_name,
+        "revision": DINOV3_REVISION if is_dinov3 else DINO_REVISION,
+        "backend": backend,
+        "layer": layer,
+        "gem_power": 3.0,
+        "device": extractor.device,
+        "dimension": int(
+            extractor._model.config.hidden_size if is_dinov3 else extractor._model.embed_dim
+        ),
+        "preprocessing_source_sha256": file_digest(__file__),
+        "checkpoint_sha256": file_digest(checkpoint) if checkpoint.is_file() else None,
+        "packages": {name: version(name) for name in ("torch", "torchvision", "numpy", "pillow")},
+    }
+    if is_dinov3:
+        model_identity["processor"] = extractor._processor.to_dict()
+        model_identity["packages"]["transformers"] = version("transformers")
+    extractor.model_identity = model_identity
+    return DescriptorCache(extractor, cache_dir, model_identity) if cache_dir else extractor
