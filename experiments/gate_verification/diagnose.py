@@ -168,8 +168,9 @@ def main() -> None:
         partial = target.with_suffix(".partial")
         partial.write_text("".join(json.dumps(json_safe(r)) + "\n" for r in records))
         partial.replace(target)
+        errors = sum(1 for r in records for v in r["views"] if v.get("m_error"))
         print(f"[{number}/{len(names)}] {name}: {len(queries)} queries, {len(records)} pairs, "
-              f"{time.perf_counter() - started:.0f} s", flush=True)
+              f"{errors} MASt3R errors, {time.perf_counter() - started:.0f} s", flush=True)
 
 
 if __name__ == "__main__":
