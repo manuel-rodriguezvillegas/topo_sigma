@@ -10,15 +10,18 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
     ],
+    package_data={package_name: ["config/*.yaml"]},
+    include_package_data=True,
     install_requires=["setuptools"],
     zip_safe=True,
     maintainer="Manuel Rodriguez Villegas",
     maintainer_email="manuelrodriguez@alu.comillas.edu",
-    description="Dataset-agnostic core algorithms for visual topological mapping.",
+    description="TopoSIGMA engine: sessions, segmentation, association, multi-session building blocks.",
     license="MIT",
     python_requires=">=3.12,<3.13",
     entry_points={
         "console_scripts": [
+            "toposigma = vts_core.cli:main",
         ],
     },
 )

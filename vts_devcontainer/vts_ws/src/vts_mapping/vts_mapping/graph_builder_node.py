@@ -1,33 +1,26 @@
-"""Graph builder ROS2 node (dataset-agnostic).
+"""Graph builder ROS node: a thin wrapper around :class:`vts_core.mapping.OnlineMapper`.
 
-Subscribes to standard topics with an explicit additive-budget adapter contract:
+Subscribes (time-synchronized) to ``/camera/image`` and ``/odom`` carrying the
+``path_length_budget_v1`` cumulative budget, optionally ``/ground_truth_pose``
+(stored for evaluation only, never used to map), and ``/dataset/sequence_done``.
+Each frame is encoded with the frozen DINOv3 model and pushed to the same
+engine the offline replays use. Each sequence produces in ``output_dir``:
 
-- ``/camera/image``           sensor_msgs/Image
-- ``/odom``                   nav_msgs/Odometry  (carrying path_length_budget_v1)
-- ``/ground_truth_pose``      geometry_msgs/PoseStamped (optional, attached
-                              to nodes for evaluation only — never used by
-                              the mapping algorithm)
-- ``/dataset/sequence_done``  std_msgs/String    (JSON; end-of-run signal,
-                              replacing the old 20 s image timeout)
-
-For each completed sequence the resulting graph is saved to
-``<output_dir>/graph_<i>.pkl`` and a JSON event is published on
-``/mapping/graph_ready``. After the last sequence it publishes
-``{"all_done": true}`` and exits cleanly.
+- ``graph_<i>.npz``: places, in-session decisions and edges (TopoGraph)
+- ``graph_<i>_views/<place>_<k>.jpg``: the representative views of each place
+- ``graph_<i>.json``: node ground truth, lambda_2 series, timing and provenance
 """
 
 from __future__ import annotations
 
-import io
 import json
 import os
-import resource
 import signal
-import sys
 import time
 from contextlib import suppress
 from pathlib import Path
 
+import cv2
 import numpy as np
 import rclpy
 from cv_bridge import CvBridge
@@ -39,436 +32,130 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 
-from vts_core.artifacts import atomic_bytes, atomic_json, file_digest
-from vts_core.features import FeatureExtractor, build_extractor
-from vts_core.mapper import TopologicalMapper
-from vts_core.metrics import map_footprint
-from vts_core.motion import Pose2D
+from vts_core.descriptors import build_encoder
+from vts_core.graph import TopoGraph
+from vts_core.mapping import MapperConfig, OnlineMapper
+from vts_core.provenance import atomic_json, load_config, run_record
 
 
-def _yaw_from_quaternion(z: float, w: float) -> float:
+def yaw(z: float, w: float) -> float:
     return float(2.0 * np.arctan2(z, w))
 
 
-class GraphBuilderNode(Node):
-    """Builds one topological graph per incoming sequence."""
+def budget_from_covariance(flat: list[float]) -> np.ndarray:
+    return np.asarray(flat, dtype=np.float64).reshape(6, 6)[np.ix_([0, 1, 5], [0, 1, 5])]
 
+
+class GraphBuilderNode(Node):
     def __init__(self) -> None:
         super().__init__("graph_builder")
-
-        self.declare_parameter("window_size", 30)
-        self.declare_parameter("valley_k", 2.0)
-        self.declare_parameter("valley_mode", "adaptive")
-        self.declare_parameter("valley_delta", 0.1)
-        self.declare_parameter("visual_outlier_k", 2.0)
+        self.declare_parameter("toposigma_config", "")
         self.declare_parameter("uncertainty_contract", "")
-        self.declare_parameter("descriptor_cache_dir", "output/cache/descriptors")
-        self.declare_parameter("run_fingerprint", "unmanaged")
-        if self.get_parameter("uncertainty_contract").value != "path_length_budget_v1":
-            raise ValueError(
-                "declare uncertainty_contract=path_length_budget_v1; ordinary pose marginals are unsupported"
-            )
-        self.declare_parameter("gate_mode", "both")
-        self.declare_parameter("naive_threshold", 0.7)
-        self.declare_parameter("visual_model", "cosine")
-        self.declare_parameter("sequence_policy", "self_only")
-        self.declare_parameter("require_visual_verification", False)
-        self.declare_parameter("recovery_mode", 'off')
-        self.declare_parameter("recovery_top_k", 5)
-        self.declare_parameter("recovery_horizon", 2)
-        self.declare_parameter("recovery_residual_m", 0.75)
-        self.declare_parameter("recovery_min_span_m", 1.0)
-        self.declare_parameter("recovery_min_turn_deg", 15.0)
-        self.declare_parameter("recovery_visual_z", 2.0)
-        self.declare_parameter("geometric_gate_scale", 1.0)
-        self.declare_parameter("verification_threshold", 0.0)
-        self.declare_parameter("defer_nodes", 2)
-        self.declare_parameter("fixed_concentration", 384.0)
-        self.declare_parameter("dino_model", "dinov3_vits16")
-        self.declare_parameter("dino_device", "auto")
-        self.declare_parameter("feature_backend", "dino_cls")
-        self.declare_parameter("dino_layer", -1)
-        self.declare_parameter("use_ground_truth", False)
-        self.declare_parameter("use_frame_labels", False)
-        self.declare_parameter("output_dir", "output/graphs")
-        self.declare_parameter("run_name", "run")
-        # Exit the process once the last sequence is done (lets scripted runs
-        # like run_experiments.sh proceed without a manual Ctrl-C; the launch
-        # file shuts the whole pipeline down when this node exits).
+        self.declare_parameter("encoder_device", "auto")
+        self.declare_parameter("output_dir", "output/ros")
+        self.declare_parameter("use_ground_truth", True)
         self.declare_parameter("exit_when_done", True)
+        if self.get_parameter("uncertainty_contract").value != "path_length_budget_v1":
+            raise ValueError("declare uncertainty_contract=path_length_budget_v1; pose marginals are unsupported")
+        self._config = load_config(str(self.get_parameter("toposigma_config").value) or None)
+        self._mapper_config = MapperConfig.from_dict(self._config["mapping"])
+        self._output = Path(str(self.get_parameter("output_dir").value))
+        self._output.mkdir(parents=True, exist_ok=True)
+        self._encoder = build_encoder("dinov3", str(self.get_parameter("encoder_device").value))
+        self._bridge = CvBridge()
+        self._sequence = 0
+        self._reset()
 
-        self._window_size: int = (
-            self.get_parameter("window_size").get_parameter_value().integer_value
-        )
-        self._valley_k: float = self.get_parameter("valley_k").get_parameter_value().double_value
-        self._valley_mode = str(self.get_parameter("valley_mode").value)
-        self._valley_delta = float(self.get_parameter("valley_delta").value)
-        self._visual_outlier_k: float = (
-            self.get_parameter("visual_outlier_k").get_parameter_value().double_value
-        )
-        self._gate_mode: str = self.get_parameter("gate_mode").get_parameter_value().string_value
-        self._naive_threshold: float = (
-            self.get_parameter("naive_threshold").get_parameter_value().double_value
-        )
-        self._visual_model = str(self.get_parameter("visual_model").value)
-        dino_model: str = self.get_parameter("dino_model").get_parameter_value().string_value
-        dino_device: str = self.get_parameter("dino_device").get_parameter_value().string_value
-        feature_backend: str = (
-            self.get_parameter("feature_backend").get_parameter_value().string_value
-        )
-        dino_layer: int = self.get_parameter("dino_layer").get_parameter_value().integer_value
-        self._feature_backend = feature_backend
-        self._dino_model = dino_model
-        self._dino_layer = dino_layer
-        self._use_ground_truth: bool = (
-            self.get_parameter("use_ground_truth").get_parameter_value().bool_value
-        )
-        self._output_dir: str = self.get_parameter("output_dir").get_parameter_value().string_value
-        self._run_name: str = self.get_parameter("run_name").get_parameter_value().string_value
-        self._exit_when_done: bool = (
-            self.get_parameter("exit_when_done").get_parameter_value().bool_value
-        )
-        self._shutdown_timer = None
-        os.makedirs(self._output_dir, exist_ok=True)
-
-        extractor_start: float = time.perf_counter()
-        self._extractor: FeatureExtractor = build_extractor(
-            dino_model,
-            device=dino_device,
-            backend=feature_backend,
-            layer=dino_layer,
-            cache_dir=str(self.get_parameter("descriptor_cache_dir").value) or None,
-        )
-        self._extractor_init_s: float = time.perf_counter() - extractor_start
-        self.get_logger().info(
-            f"Visual descriptor: {feature_backend}, model={dino_model}, "
-            f"layer={dino_layer}, device={self._extractor.device} "
-            f"(requested: {dino_device})"
-        )
-        self._bridge: CvBridge = CvBridge()
-
-        self._sequence_index: int = 0
-        self._processed: int = 0
-        self._callback_times: list[float] = []
-        self._first_frame_time: float | None = None
-        self._cache_start = (0, 0)
-        self._extraction_time_s: float = 0.0
-        self._mapper: TopologicalMapper = self._new_mapper()
-        self._latest_gt: Pose2D | None = None
-        self._latest_label: str | None = None
-        self._frame_labels: dict[str, str | None] = {}
-        self._pending_sample: tuple | None = None
-        self._use_frame_labels = bool(self.get_parameter("use_frame_labels").value)
-        self._node_gt: dict[int, Pose2D] = {}
-
-        # Create the acknowledgement publisher before exposing input
-        # subscriptions. Once the dataset player observes those subscriptions,
-        # this publisher is guaranteed to exist for the first processed frame.
-        self._frame_processed_pub = self.create_publisher(String, "/mapping/frame_processed", 10)
-        image_sub: Subscriber = Subscriber(self, Image, "/camera/image")
-        odom_sub: Subscriber = Subscriber(self, Odometry, "/odom")
-        synchronized_subscribers = [image_sub, odom_sub]
-        if self._use_ground_truth:
-            synchronized_subscribers.append(Subscriber(self, PoseStamped, "/ground_truth_pose"))
-        self._synchronizer: ApproximateTimeSynchronizer = ApproximateTimeSynchronizer(
-            synchronized_subscribers, queue_size=30, slop=0.05
-        )
-        self._synchronizer.registerCallback(self._on_frame)
-
-        if not self._use_ground_truth:
-            self.create_subscription(PoseStamped, "/ground_truth_pose", self._on_ground_truth, 10)
-        self.create_subscription(String, "/dataset/room_label", self._on_room_label, 10)
-        self.create_subscription(String, "/dataset/sequence_done", self._on_sequence_done, 10)
+        self._ack_pub = self.create_publisher(String, "/mapping/frame_processed", 10)
         self._ready_pub = self.create_publisher(String, "/mapping/graph_ready", 10)
-        # Offline dataset players may use this acknowledgement for lossless
-        # flow control. Live robots can ignore it; mapping input remains the
-        # same standard image and odometry topics.
+        inputs = [Subscriber(self, Image, "/camera/image"), Subscriber(self, Odometry, "/odom")]
+        if bool(self.get_parameter("use_ground_truth").value):
+            inputs.append(Subscriber(self, PoseStamped, "/ground_truth_pose"))
+        self._sync = ApproximateTimeSynchronizer(inputs, queue_size=30, slop=0.05)
+        self._sync.registerCallback(self._on_frame)
+        self.create_subscription(String, "/dataset/sequence_done", self._on_sequence_done, 10)
+        self._shutdown_timer = None
 
-    # ------------------------------------------------------------------ #
-    def _new_mapper(self) -> TopologicalMapper:
-        return TopologicalMapper(
-            window_size=self._window_size,
-            valley_k=self._valley_k,
-            valley_mode=self._valley_mode,
-            valley_delta=self._valley_delta,
-            visual_outlier_k=self._visual_outlier_k,
-            gate_mode=self._gate_mode,
-            naive_threshold=self._naive_threshold,
-            visual_model=self._visual_model,
-            sequence_policy=str(self.get_parameter("sequence_policy").value),
-            require_visual_verification=bool(self.get_parameter("require_visual_verification").value),
-            recovery_mode=str(self.get_parameter("recovery_mode").value),
-            recovery_top_k=int(self.get_parameter("recovery_top_k").value),
-            recovery_horizon=int(self.get_parameter("recovery_horizon").value),
-            recovery_residual_m=float(self.get_parameter("recovery_residual_m").value),
-            recovery_min_span_m=float(self.get_parameter("recovery_min_span_m").value),
-            recovery_min_turn_deg=float(self.get_parameter("recovery_min_turn_deg").value),
-            recovery_visual_z=float(self.get_parameter("recovery_visual_z").value),
-            geometric_gate_scale=float(self.get_parameter("geometric_gate_scale").value),
-            verification_threshold=float(self.get_parameter("verification_threshold").value),
-            defer_nodes=int(self.get_parameter("defer_nodes").value),
-            fixed_concentration=float(self.get_parameter("fixed_concentration").value),
-            frame_id=f"{self._run_name}_seq{self._sequence_index}",
-        )
+    def _reset(self) -> None:
+        self._mapper = OnlineMapper(self._mapper_config)
+        self._images: dict[int, np.ndarray] = {}  # frames of the open segment, JPEG-encoded
+        self._views: dict[int, list[bytes]] = {}
+        self._gt: list[list[float] | None] = []
+        self._encode_s = 0.0
+        self._map_s = 0.0
 
-    def _on_ground_truth(self, msg: PoseStamped) -> None:
-        self._latest_gt = (
-            float(msg.pose.position.x),
-            float(msg.pose.position.y),
-            _yaw_from_quaternion(float(msg.pose.orientation.z), float(msg.pose.orientation.w)),
-        )
-
-    def _on_frame(
-        self,
-        image_msg: Image,
-        odom_msg: Odometry,
-        ground_truth_msg: PoseStamped | None = None,
-    ) -> None:
+    def _on_frame(self, image_msg: Image, odom_msg: Odometry, gt_msg: PoseStamped | None = None) -> None:
+        image = self._bridge.imgmsg_to_cv2(image_msg, desired_encoding="bgr8")
+        position, orientation = odom_msg.pose.pose.position, odom_msg.pose.pose.orientation
+        pose = (float(position.x), float(position.y), yaw(orientation.z, orientation.w))
+        started = time.perf_counter()
+        descriptor = self._encoder.encode([image])[0]
+        self._encode_s += time.perf_counter() - started
+        frame = self._mapper.frames
+        self._images[frame] = cv2.imencode(".jpg", image)[1]
+        self._gt.append(None if gt_msg is None else [float(gt_msg.pose.position.x), float(gt_msg.pose.position.y),
+                                                     yaw(gt_msg.pose.orientation.z, gt_msg.pose.orientation.w)])
+        started = time.perf_counter()
+        place = self._mapper.push(descriptor, pose, budget_from_covariance(odom_msg.pose.covariance))
+        self._map_s += time.perf_counter() - started
+        if place is not None:
+            self._keep_views(place)
         stamp = image_msg.header.stamp
-        frame_key = f"{stamp.sec}:{stamp.nanosec}"
-        if self._use_frame_labels and frame_key not in self._frame_labels:
-            if self._pending_sample is not None:
-                raise RuntimeError(
-                    "received another frame before keyed metadata; lossless player protocol violated"
-                )
-            self._pending_sample = (image_msg, odom_msg, ground_truth_msg)
-            return
-        self._latest_label = self._frame_labels.pop(frame_key, None)
-        callback_start = time.perf_counter()
-        if self._first_frame_time is None:
-            self._first_frame_time = callback_start
-        if ground_truth_msg is not None:
-            self._on_ground_truth(ground_truth_msg)
-        image: np.ndarray = self._bridge.imgmsg_to_cv2(image_msg, desired_encoding="bgr8")
-        pose: Pose2D = (
-            float(odom_msg.pose.pose.position.x),
-            float(odom_msg.pose.pose.position.y),
-            _yaw_from_quaternion(
-                float(odom_msg.pose.pose.orientation.z),
-                float(odom_msg.pose.pose.orientation.w),
-            ),
-        )
-        flat: list[float] = list(odom_msg.pose.covariance)
-        covariance: np.ndarray = np.array(
-            [
-                [flat[0], flat[1], flat[5]],
-                [flat[6], flat[7], flat[11]],
-                [flat[30], flat[31], flat[35]],
-            ],
-            dtype=np.float64,
-        )
+        self._ack_pub.publish(String(data=f"{stamp.sec}:{stamp.nanosec}"))
 
-        start: float = time.perf_counter()
-        descriptor: np.ndarray = self._extractor.extract(image)
-        elapsed: float = time.perf_counter() - start
-        self._extraction_time_s += elapsed
-        self._processed += 1
-        if self._processed % 25 == 0:
-            self.get_logger().info(
-                f"{self._processed} frames processed, last extraction {elapsed:.3f}s"
-            )
-        touched_id: int | None = self._mapper.process_frame(
-            image,
-            descriptor,
-            pose,
-            covariance,
-            gt_pose=self._latest_gt if ground_truth_msg is not None else None,
-            room_label=self._latest_label,
-        )
-        if touched_id is not None:
-            node = self._mapper.graph.nodes[touched_id]
-            # Evaluation-only ground truth (never used to map). Use the node's
-            # own gt_pose: the GT of its representative (medoid) frame, which
-            # is the exact frame that fixed the node's pose. Falling back to
-            # the latest GT only if the mapper carried none.
-            node_gt: Pose2D | None = node.gt_pose
-            if node_gt is not None:
-                self._node_gt.setdefault(touched_id, node_gt)
-        self._callback_times.append(time.perf_counter() - callback_start)
-        self._frame_processed_pub.publish(String(data=frame_key))
+    def _keep_views(self, place) -> None:
+        self._views[len(self._mapper.places) - 1] = [self._images[f].tobytes() for f in place.view_frames]
+        for frame in [f for f in self._images if f < place.stop]:
+            del self._images[frame]
 
-    def _on_room_label(self, msg: String) -> None:
-        if not self._use_frame_labels:
-            return
-        payload = json.loads(msg.data)
-        key = str(payload["frame_key"])
-        self._frame_labels[key] = payload["label"]
-        if len(self._frame_labels) > 30:
-            raise RuntimeError("unmatched label backlog exceeds synchronization queue")
-        if self._pending_sample is not None:
-            sample = self._pending_sample
-            stamp = sample[0].header.stamp
-            if key == f"{stamp.sec}:{stamp.nanosec}":
-                self._pending_sample = None
-                self._on_frame(*sample)
-
-    # ------------------------------------------------------------------ #
-    def _on_sequence_done(self, msg: String) -> None:
-        info: dict[str, object] = json.loads(msg.data)
-        expected_frames = info.get("frame_count")
-        if expected_frames is not None:
-            actual_frames = self._mapper._frame_count
-            if actual_frames != int(expected_frames):
-                raise RuntimeError(
-                    "Incomplete frame stream: mapper processed "
-                    f"{actual_frames}/{int(expected_frames)} frames"
-                )
-        # The detector confirms a boundary after the valley itself. Flush the
-        # remaining post-valley frames before either graph snapshot is saved.
-        flushed_id = self._mapper.finalize_nodes()
-        if flushed_id is not None:
-            flushed_gt = self._mapper.graph.nodes[flushed_id].gt_pose
-            if flushed_gt is not None:
-                self._node_gt.setdefault(flushed_id, flushed_gt)
-        save_start = time.perf_counter()
-        eig_path: str = os.path.join(self._output_dir, f"graph_{self._sequence_index}_lambda2.npy")
-        payload = io.BytesIO()
-        np.save(payload, np.array(self._mapper._monitor.eigenvalues))
-        atomic_bytes(eig_path, payload.getvalue())
-        self.get_logger().info(
-            f"DIAG: frames_processed={self._mapper._frame_count}, "
-            f"nodes={len(self._mapper.graph.nodes)}, "
-            f"edges={len(self._mapper.graph.edges())}, "
-            f"lambda2 series saved to {eig_path}"
-        )
-        graph_path: str = os.path.join(self._output_dir, f"graph_{self._sequence_index}.pkl")
-        self._mapper.graph.save(graph_path)
-        # Single-run pipeline: the per-sequence graph is also the final map the
-        # language/evaluation tools consume (no separate alignment step).
-        final_path: str = os.path.join(self._output_dir, "final_graph.pkl")
-        self._mapper.graph.save(final_path)
-        self._mapper.graph.without_images().save(
-            os.path.join(self._output_dir, "compact_graph.pkl")
-        )
-
-        # Full runtime summary, including the frozen DINOv2 forward pass.
-        perf: dict[str, object] = self._mapper.performance_stats()
-        perf["encoder_time_ms_per_frame"] = (
-            1000.0 * self._extraction_time_s / max(self._processed, 1)
-        )
-        perf["encoder_initialization_s"] = self._extractor_init_s
-        perf["feature_backend"] = self._feature_backend
-        perf["dino_model"] = self._dino_model
-        perf["dino_layer"] = self._dino_layer
-        perf["visual_model"] = self._visual_model
-        perf["valley_mode"] = self._valley_mode
-        perf["valley_k"] = self._valley_k
-        perf["valley_delta"] = self._valley_delta
-        perf["encoder_plus_mapper_ms_per_frame"] = (
-            perf["encoder_time_ms_per_frame"] + perf["map_update_time_ms"]
-        )
-        footprint: dict[str, float] = map_footprint(self._mapper.graph)
-        perf["map_disk_bytes_full"] = float(os.path.getsize(final_path))
-        perf["map_disk_bytes_compact"] = footprint["compact_pickle_bytes"]
-        perf.update(footprint)
-        perf["encoder_identity"] = self._extractor.model_identity
-        perf["descriptor_cache_enabled"] = hasattr(self._extractor, "hits")
-        perf["descriptor_cache_hits"] = getattr(self._extractor, "hits", 0) - self._cache_start[0]
-        perf["descriptor_cache_misses"] = (
-            getattr(self._extractor, "misses", 0) - self._cache_start[1]
-        )
-        perf["callback_p95_ms"] = float(np.percentile(self._callback_times, 95) * 1000)
-        perf["callback_p99_ms"] = float(np.percentile(self._callback_times, 99) * 1000)
-        perf["observed_frames_per_second"] = self._processed / max(
-            time.perf_counter() - self._first_frame_time, 1e-9
-        )
-        perf["graph_serialization_time_s"] = time.perf_counter() - save_start
-        perf["process_peak_rss_bytes"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (
-            1 if sys.platform == "darwin" else 1024
-        )
-        perf_path: str = os.path.join(
-            self._output_dir, f"graph_{self._sequence_index}_performance.json"
-        )
-        atomic_json(perf_path, perf)
-        self.get_logger().info(
-            "PERF: encoder_plus_mapper={encoder_plus_mapper_ms_per_frame:.2f} ms/frame, "
-            "encoder={encoder_time_ms_per_frame:.2f} ms/frame, "
-            "map_update={map_update_time_ms:.2f} ms/frame, "
-            "loop_closure_search={loop_closure_time_ms:.2f} ms, "
-            "map_size_full={full:.2f} MB, "
-            "map_size_compact={desc:.3f} MB".format(
-                **perf,
-                full=perf["map_disk_bytes_full"] / 1e6,
-                desc=perf["map_disk_bytes_compact"] / 1e6,
-            )
-        )
-        gt_path: str = os.path.join(self._output_dir, f"graph_{self._sequence_index}_node_gt.json")
-        atomic_json(gt_path, {str(k): list(v) for k, v in self._node_gt.items()})
-        artifacts = [
-            graph_path,
-            final_path,
-            eig_path,
-            perf_path,
-            gt_path,
-            os.path.join(self._output_dir, "compact_graph.pkl"),
-        ]
-        artifacts.extend(
-            str(path)
-            for name in ("run_manifest.json", "effective_config.yaml")
-            if (path := Path(self._output_dir) / name).is_file()
-        )
-        atomic_json(
-            Path(self._output_dir) / "completion.json",
-            {
-                "schema": 1,
-                "fingerprint": str(self.get_parameter("run_fingerprint").value),
-                "frames": self._processed,
-                "encoder_identity": self._extractor.model_identity,
-                "artifacts": {Path(path).name: file_digest(path) for path in artifacts},
-            },
-        )
-
-        event: dict[str, object] = {
-            "graph_path": graph_path,
-            "sequence_index": self._sequence_index,
-            "all_done": bool(info.get("is_last", False)),
-        }
-        out: String = String()
-        out.data = json.dumps(event)
-        self._ready_pub.publish(out)
-        self.get_logger().info(f"Graph ready: {event}")
-
-        self._sequence_index += 1
-        self._processed = 0
-        self._extraction_time_s = 0.0
-        self._mapper.close()
-        self._mapper = self._new_mapper()
-        self._callback_times = []
-        self._first_frame_time = None
-        self._cache_start = (
-            getattr(self._extractor, "hits", 0),
-            getattr(self._extractor, "misses", 0),
-        )
-        self._node_gt = {}
-        self._frame_labels.clear()
-        self._latest_gt = None
-
-        if event["all_done"] and self._exit_when_done:
-            # Grace period so DDS delivers the graph_ready message, then end
-            # the spin. The launch file reacts to this process exiting by
-            # shutting down the whole pipeline (player included).
-            self.get_logger().info("All sequences done; exiting in 2 s.")
+    def _on_sequence_done(self, message: String) -> None:
+        info = json.loads(message.data)
+        if info.get("frame_count") is not None and int(info["frame_count"]) != self._mapper.frames:
+            raise RuntimeError(f"incomplete stream: {self._mapper.frames}/{info['frame_count']} frames mapped")
+        place = self._mapper.finish()
+        if place is not None:
+            self._keep_views(place)
+        name = info.get("session") or f"sequence{self._sequence}"
+        graph = TopoGraph()
+        graph.add_session(name, self._mapper.places, self._mapper.decisions)
+        stem = self._output / f"graph_{self._sequence}"
+        graph.save(stem.with_suffix(".npz"))
+        for index, views in self._views.items():
+            for k, jpeg in enumerate(views):
+                path = Path(f"{stem}_views") / f"{index}_{k}.jpg"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(jpeg)
+        frames = max(self._mapper.frames, 1)
+        atomic_json(stem.with_suffix(".json"), {
+            "run": run_record("ros graph_builder", {"mapping": self._config["mapping"]}, {}),
+            "session": name, "frames": self._mapper.frames, "places": len(self._mapper.places),
+            "accepted": sum(d.accepted for d in self._mapper.decisions),
+            "place_gt": [self._gt[p.medoid] for p in self._mapper.places],
+            "lambda2": self._mapper.segmenter.lambda2,
+            "encoder_ms_per_frame": 1000 * self._encode_s / frames, "map_ms_per_frame": 1000 * self._map_s / frames,
+            "encoder": self._encoder.identity,
+        })
+        event = {"graph_path": str(stem.with_suffix(".npz")), "sequence_index": self._sequence,
+                 "all_done": bool(info.get("is_last", False))}
+        self._ready_pub.publish(String(data=json.dumps(event)))
+        self.get_logger().info(f"Graph ready: {event} ({len(self._mapper.places)} places)")
+        self._sequence += 1
+        self._reset()
+        if event["all_done"] and bool(self.get_parameter("exit_when_done").value):
             self._shutdown_timer = self.create_timer(2.0, self._request_shutdown)
 
     def _request_shutdown(self) -> None:
-        # ``rclpy.try_shutdown()`` from inside a timer callback can invalidate
-        # the context without waking the executor that is currently spinning;
-        # the process then remains alive and launch never receives
-        # ``OnProcessExit``. SIGINT follows the already-tested manual Ctrl+C
-        # path through ``main`` and therefore guarantees a clean process exit.
-        if self._shutdown_timer is not None:
-            self._shutdown_timer.cancel()
-        self.get_logger().info("Shutdown grace period complete; exiting now.")
+        # SIGINT follows the tested Ctrl+C path, so launch sees the process exit.
+        self._shutdown_timer.cancel()
         os.kill(os.getpid(), signal.SIGINT)
 
 
 def main(args: list[str] | None = None) -> None:
     rclpy.init(args=args)
-    node: GraphBuilderNode = GraphBuilderNode()
+    node = GraphBuilderNode()
     with suppress(KeyboardInterrupt, ExternalShutdownException):
         rclpy.spin(node)
     with suppress(Exception, KeyboardInterrupt):
-        node._mapper.close()
         node.destroy_node()
     with suppress(Exception):
         rclpy.try_shutdown()

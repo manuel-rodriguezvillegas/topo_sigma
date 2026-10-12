@@ -1,0 +1,67 @@
+# TopoSIGMA configuration. One file for every offline command; ROS nodes read
+# the mapping section through their launch parameters. Override any value with
+# `toposigma --config my.yaml ...` (deep-merged over this file).
+
+# Raw datasets (read-only). TOPOSIGMA_DATA_ROOT overrides data_root.
+data_root: /workspace/encoder
+# Session stores and run outputs, relative to the workspace (vts_ws) unless absolute.
+# TOPOSIGMA_STORE_ROOT / TOPOSIGMA_OUTPUT_ROOT override them.
+store_root: output/sessions
+output_root: output/toposigma
+
+datasets:
+  cold:
+    subdir: seq_data
+    images_subdir: std_cam
+    labels_subpath: localization/places.lst
+    odometry_subpath: odom_scans/odom.tdf
+    max_odometry_gap_s: 1.0
+    exact_atol_s: 1.0e-7
+    motion_noise: [0.025, 0.005, 0.01, 0.0025]
+  cid_sims:
+    subdir: ""
+    color_subdir: color
+    ground_truth_file: groundtruth.txt
+    odometry_file: odom.txt
+    # 30 Hz RGB; every sixth image gives the ~5 Hz stream used for COLD.
+    frame_stride: 6
+    max_ground_truth_gap_s: 0.1
+    max_odometry_gap_s: 0.2
+    exact_atol_s: 1.0e-9
+    motion_noise: [0.025, 0.005, 0.01, 0.0025]
+
+# Final test data (docs/PLAN_B_MULTISESSION.md): never built, loaded or looked at
+# before a written confirmatory protocol exists. Loading needs --allow-test.
+test_sessions:
+  - cold_ljubljana_*
+  - cid_office_building*
+  - cid_apartment2_3
+  - cid_apartment3_3
+
+encoders:
+  default: dinov3
+  batch_size: 8
+  device: cpu
+
+mapping:
+  # Segmentation always uses the DINOv3 store; the association encoder may differ.
+  window: 30
+  valley_k: 2.0
+  method: gate            # gate | posterior
+  gate:
+    visual_k: 2.0
+    gate_scale: 1.0
+    use_appearance: true
+  posterior:
+    appearance: mean_cosine
+    eps: 0.05
+    prior_revisit: 0.5
+    view_mixture: false
+    view_heading_deg: 45.0
+    use_prior: false
+    tau: 0.5
+
+evaluation:
+  tolerances_m: [0.5, 1.0, 2.0]
+  aligned_deg: 45.0
+  bootstrap: 10000

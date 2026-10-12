@@ -21,10 +21,9 @@ from PIL import Image
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from vts_core.artifacts import atomic_json
-from vts_core.retrieval import PlaceRetriever, SemanticEncoder
-from vts_core.selection import PendingSelection
-from vts_core.topo_graph import TopoGraph, TopoNode
+from vts_core.provenance import atomic_json
+from vts_language.retrieval import MapPlace, PlaceRetriever, SemanticEncoder, load_map
+from vts_language.selection import PendingSelection
 
 
 class CommandsNode(Node):
@@ -33,7 +32,7 @@ class CommandsNode(Node):
     def __init__(self) -> None:
         super().__init__("commands")
 
-        self.declare_parameter("graph_path", "output/graphs/final_graph.pkl")
+        self.declare_parameter("graph_path", "output/ros/graph_0.npz")
         self.declare_parameter("semantic_model", "openai/clip-vit-base-patch32")
         self.declare_parameter("semantic_revision", "")
         self.declare_parameter("mode", "manual")
@@ -54,14 +53,14 @@ class CommandsNode(Node):
         self._target_pub = self.create_publisher(Pose2D, "/language/navigation_target", 10)
         self._result_pub = self.create_publisher(String, "/language/result", 10)
 
-        graph: TopoGraph = TopoGraph.load(graph_path)
+        places = load_map(graph_path)
         encoder: SemanticEncoder = SemanticEncoder(
             model_name, str(self.get_parameter("semantic_revision").value) or None
         )
         self._selection = PendingSelection()
-        self._retriever: PlaceRetriever = PlaceRetriever(encoder, graph)
+        self._retriever: PlaceRetriever = PlaceRetriever(encoder, places)
         self.get_logger().info(
-            f"Loaded graph '{graph_path}' ({len(graph.nodes)} nodes) with model '{model_name}'."
+            f"Loaded graph '{graph_path}' ({len(places)} places) with model '{model_name}'."
         )
 
         if self.mode == "topic":
@@ -89,7 +88,7 @@ class CommandsNode(Node):
             report = {
                 "status": "confirmed",
                 "query_id": request["query_id"],
-                "node_id": selected.node_id,
+                "node_id": selected.key[1],
             }
             self._result_pub.publish(String(data=json.dumps(report)))
             atomic_json(os.path.join(self._output_dir, "result.json"), report)
@@ -108,11 +107,10 @@ class CommandsNode(Node):
             "distinctive_margin": distinctive,
             "candidates": [
                 {
-                    "node_id": node.node_id,
+                    "node_id": node.key[1],
                     "posterior": round(posterior, 4),
                     "score": round(score, 4),
-                    "pose": list(node.pose),
-                    "room_label": node.room_label,
+                    "pose": [float(v) for v in node.pose],
                 }
                 for node, posterior, score in ranked
             ],
@@ -129,11 +127,11 @@ class CommandsNode(Node):
 
         return report
 
-    def _save_views(self, node: TopoNode, rank: int) -> None:
+    def _save_views(self, node: MapPlace, rank: int) -> None:
         for view_index, view in enumerate(node.views):
             path: str = os.path.join(
                 self._output_dir,
-                f"rank{rank}_node{node.node_id}_v{view_index}.pdf",
+                f"rank{rank}_node{node.key[1]}_v{view_index}.pdf",
             )
             rgb = cv2.cvtColor(view, cv2.COLOR_BGR2RGB)
             Image.fromarray(rgb).save(path, "PDF", resolution=150.0)

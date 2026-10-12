@@ -3,7 +3,7 @@
 <package format="3">
   <name>vts_players</name>
   <version>1.0.0</version>
-  <description>Dataset player nodes for COLD and CID-SIMS.</description>
+  <description>Dataset player node (COLD and CID-SIMS) over the vts_core adapters.</description>
   <maintainer email="manuelrodriguez@alu.comillas.edu">Manuel Rodriguez Villegas</maintainer>
   <license>MIT</license>
   <depend>rclpy</depend>

@@ -1,0 +1,292 @@
+{
+ "cid_apartment1_1": {
+  "fn": 4,
+  "fp": 2,
+  "tp": 5
+ },
+ "cid_apartment1_2": {
+  "fn": 1,
+  "fp": 1,
+  "tp": 2
+ },
+ "cid_apartment2_1": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 2
+ },
+ "cid_apartment2_2": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 6
+ },
+ "cid_apartment3_1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 9
+ },
+ "cid_apartment3_2": {
+  "fn": 2,
+  "fp": 1,
+  "tp": 3
+ },
+ "cold_freiburg_a_seq1_cloudy1": {
+  "fn": 5,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_freiburg_a_seq1_cloudy2": {
+  "fn": 5,
+  "fp": 1,
+  "tp": 4
+ },
+ "cold_freiburg_a_seq1_cloudy3": {
+  "fn": 0,
+  "fp": 0,
+  "tp": 6
+ },
+ "cold_freiburg_a_seq1_night1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 3
+ },
+ "cold_freiburg_a_seq1_night2": {
+  "fn": 3,
+  "fp": 1,
+  "tp": 3
+ },
+ "cold_freiburg_a_seq1_sunny2": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 3
+ },
+ "cold_freiburg_a_seq1_sunny4": {
+  "fn": 1,
+  "fp": 1,
+  "tp": 7
+ },
+ "cold_freiburg_a_seq2_cloudy1": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_freiburg_a_seq2_cloudy2": {
+  "fn": 4,
+  "fp": 2,
+  "tp": 10
+ },
+ "cold_freiburg_a_seq2_cloudy3": {
+  "fn": 10,
+  "fp": 2,
+  "tp": 6
+ },
+ "cold_freiburg_a_seq2_night1": {
+  "fn": 3,
+  "fp": 2,
+  "tp": 8
+ },
+ "cold_freiburg_a_seq2_night2": {
+  "fn": 4,
+  "fp": 1,
+  "tp": 8
+ },
+ "cold_freiburg_a_seq2_night3": {
+  "fn": 4,
+  "fp": 3,
+  "tp": 7
+ },
+ "cold_freiburg_a_seq2_sunny1": {
+  "fn": 2,
+  "fp": 3,
+  "tp": 7
+ },
+ "cold_freiburg_a_seq2_sunny2": {
+  "fn": 6,
+  "fp": 1,
+  "tp": 2
+ },
+ "cold_freiburg_a_seq2_sunny3": {
+  "fn": 4,
+  "fp": 2,
+  "tp": 1
+ },
+ "cold_freiburg_a_seq2_sunny4": {
+  "fn": 3,
+  "fp": 2,
+  "tp": 8
+ },
+ "cold_freiburg_b_seq3_cloudy1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 7
+ },
+ "cold_freiburg_b_seq3_cloudy2": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 6
+ },
+ "cold_freiburg_b_seq3_cloudy3": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_freiburg_b_seq3_sunny1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 5
+ },
+ "cold_saarbruecken_a_seq1_cloudy1": {
+  "fn": 4,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_a_seq1_cloudy2": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_saarbruecken_a_seq1_cloudy3": {
+  "fn": 2,
+  "fp": 1,
+  "tp": 1
+ },
+ "cold_saarbruecken_a_seq1_night1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_saarbruecken_a_seq1_night2": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 3
+ },
+ "cold_saarbruecken_a_seq1_night3": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_a_seq2_cloudy1": {
+  "fn": 7,
+  "fp": 2,
+  "tp": 1
+ },
+ "cold_saarbruecken_a_seq2_cloudy2": {
+  "fn": 5,
+  "fp": 0,
+  "tp": 5
+ },
+ "cold_saarbruecken_a_seq2_cloudy3": {
+  "fn": 4,
+  "fp": 2,
+  "tp": 2
+ },
+ "cold_saarbruecken_a_seq2_night1": {
+  "fn": 7,
+  "fp": 1,
+  "tp": 2
+ },
+ "cold_saarbruecken_a_seq2_night2": {
+  "fn": 6,
+  "fp": 1,
+  "tp": 1
+ },
+ "cold_saarbruecken_a_seq2_night3": {
+  "fn": 6,
+  "fp": 4,
+  "tp": 3
+ },
+ "cold_saarbruecken_b_seq3_cloudy1": {
+  "fn": 4,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq3_cloudy2": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 0
+ },
+ "cold_saarbruecken_b_seq3_cloudy4": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq3_cloudy5": {
+  "fn": 0,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq3_night1": {
+  "fn": 0,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq3_night2": {
+  "fn": 0,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_saarbruecken_b_seq3_night3": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq3_sunny1": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq3_sunny2": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq3_sunny3": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq4_cloudy1": {
+  "fn": 6,
+  "fp": 0,
+  "tp": 4
+ },
+ "cold_saarbruecken_b_seq4_cloudy2": {
+  "fn": 2,
+  "fp": 1,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq4_cloudy3": {
+  "fn": 0,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq4_night1": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq4_night2": {
+  "fn": 2,
+  "fp": 0,
+  "tp": 1
+ },
+ "cold_saarbruecken_b_seq4_night3": {
+  "fn": 3,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq4_sunny1": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 3
+ },
+ "cold_saarbruecken_b_seq4_sunny2": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 2
+ },
+ "cold_saarbruecken_b_seq4_sunny3": {
+  "fn": 1,
+  "fp": 0,
+  "tp": 2
+ }
+}

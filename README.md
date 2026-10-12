@@ -2,72 +2,54 @@
 
 **Topo**logical **S**pectral **I**nformation-**G**eometric **M**apping **A**rchitecture
 
-TopoSIGMA is an online, training-free visual topological mapping system for
-ROS 2. It turns synchronized camera and wheel-odometry streams into a compact
-place graph while treating node formation and loop closure as separate
-inference problems.
+TopoSIGMA is an online, training-free visual topological mapping system. It
+turns synchronized camera and wheel-odometry streams into a compact place graph
+and, as current work, associates a new session with a map built in an earlier
+one (multi-session topological map merging; see
+[the plan](docs/PLAN_B_MULTISESSION.md)).
 
 ![TopoSIGMA pipeline](assets/readme/toposigma_pipeline.webp)
 
-The system uses a frozen DINOv3 Small encoder and contains no learned
-dataset-specific state. Algebraic connectivity in a sliding visual graph
-identifies place transitions. For each completed segment, all normalized frame
-descriptors are fitted with a von Mises--Fisher (vMF) distribution. Loop
-closure is geometry-first: an additive odometry uncertainty budget supplies geometrically
-compatible candidates, and bidirectional vMF sequence evidence is used only
-when several candidates remain.
+- A frozen DINOv3 ViT-S/16 encoder; no learned dataset-specific state.
+- Places are segments between valleys of the algebraic connectivity of a
+  sliding visual graph; each keeps its mean descriptor direction, three views
+  and the odometry pose of its medoid frame.
+- In-session association (baseline): a chi-square gate on an additive odometry
+  uncertainty budget proposes revisits; appearance (multi-view cosine on
+  three-place sequences) only disambiguates several candidates. A posterior
+  with an explicit new-place hypothesis is available for comparison.
+- Cross-session building blocks: batched appearance scores, sequence evidence
+  aligned by travelled distance, and a bounded set of SE(2) anchor hypotheses.
 
-An optional CLIP module applies open-vocabulary text-to-node retrieval to the
-completed graph.
+The code used for the manuscript submission (DINOv2/vMF variants, ablation and
+exploratory studies, experiment runners) is preserved at the git tag
+`manuscript-v1`. The rewrite and its equivalence checks are described in
+[docs/CORE_REWRITE_2026-10-02.md](docs/CORE_REWRITE_2026-10-02.md).
 
-The default encoder is now DINOv3 ViT-S/16. Request access to the
+DINOv3 weights are gated: request access to the
 [official weights](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m)
-and authenticate with `hf auth login` in the runtime before the first run.
-Existing saved experiments use DINOv2 and must not be reported as DINOv3 results.
-See the [migration and loop-closure review](docs/MODELS_AND_LOOP_CLOSURE_REVIEW_2026-09-15.md)
-for reproducible rerun commands, findings, and proposed experiments.
-
-## Highlights
-
-- Online node extraction from valleys of spectral algebraic connectivity.
-- Covariance-aware loop-candidate search using Mahalanobis compatibility.
-- Training-free directional node models that preserve appearance dispersion.
-- Separate sequential and loop edges, with explicit loop-closure metrics.
-- Dataset-independent mapping core and ROS topic interface.
-- Reproducible COLD and CID-SIMS experiment runners with resumable ablations.
-- Optional AnyLoc-GeM comparison and CLIP text-to-node retrieval.
-
-![Directional node model](assets/readme/directional_node_model.webp)
+and run `hf auth login` in the runtime before extracting descriptors.
 
 ## Repository structure
 
 ```text
 .
 ├── assets/readme/                  README figures
-├── docs/                           Baseline and ablation notes
+├── docs/                           Protocols, studies and plans (including negative results)
 ├── encoder/                        Local datasets (ignored by Git)
 └── vts_devcontainer/
     ├── .devcontainer/              Ubuntu 24.04 / ROS 2 Jazzy environment
-    ├── pyproject.toml               Python dependency declaration
-    ├── uv.lock                      Reproducible dependency lock
-    └── vts_ws/
-        ├── language_queries_100.json  Cross-laboratory language benchmark
-        ├── run_experiments.sh       COLD experiment suite
-        ├── run_cid_sims_experiments.sh
-        ├── run_anyloc_baseline.sh
-        ├── evaluate_tolerance_sweep.sh
-        ├── evaluate_node_segmentation.sh
-        └── src/
-            ├── vts_core/            Dataset-independent algorithms
-            ├── vts_players/         COLD and CID-SIMS adapters
-            ├── vts_mapping/         ROS graph-builder node
-            ├── vts_language/        Text-to-node retrieval node
-            ├── vts_evaluation/      Metrics and publication figures
-            └── vts_bringup/         Launch file and experiment configs
+    ├── pyproject.toml, uv.lock     Locked Python dependencies
+    └── vts_ws/src/
+        ├── vts_core/               Pure-Python engine and the `toposigma` CLI (no ROS)
+        ├── vts_players/            ROS dataset player over the vts_core adapters
+        ├── vts_mapping/            ROS graph builder: thin wrapper of the engine
+        ├── vts_language/           Optional CLIP text-to-place suggestions
+        └── vts_bringup/            Launch file
 ```
 
-The package-level architecture and ROS interface are documented in
-[`vts_devcontainer/vts_ws/src/README.md`](vts_devcontainer/vts_ws/src/README.md).
+See [`vts_devcontainer/vts_ws/src/README.md`](vts_devcontainer/vts_ws/src/README.md)
+for the module map and the ROS interface.
 
 ## Requirements
 
@@ -90,17 +72,10 @@ mounted at `/workspace/encoder` inside the container.
 
 ### COLD
 
-Download the Freiburg and Saarbruecken sequences from the
-[COsy Localization Database](https://www.cas.kth.se/COLD/). The supplied
-configurations use these four traversals:
-
-```text
-encoder/seq_data/
-├── cold-freiburg_part_a_seq2_night1/
-├── cold-freiburg_part_b_seq3_sunny1/
-├── cold-saarbruecken_part_a_seq2_night2/
-└── cold-saarbruecken_part_b_seq4_sunny1/
-```
+Download the sequences from the
+[COsy Localization Database](https://www.cas.kth.se/COLD/) into
+`encoder/seq_data/<recording>/` (e.g. `cold-freiburg_part_a_seq2_night1/`).
+Every recording found there enters the catalogue.
 
 Each extracted traversal must retain the original `std_cam/`, `odom_scans/`,
 and `localization/` directories.
@@ -109,7 +84,7 @@ and `localization/` directories.
 
 Download CID-SIMS from
 [Science Data Bank](https://doi.org/10.57760/sciencedb.ai.00003) and extract
-the first traversal from each apartment as follows:
+each traversal as follows:
 
 ```text
 encoder/
@@ -121,248 +96,82 @@ encoder/
 └── apartment3_1/
 ```
 
-The runners hash source files, effective parameters, input bytes and model
-identities. Only matching runs with verified completion artifacts are reused.
-
 ## Build
 
 Open `vts_devcontainer/` in the development container, then run:
 
 ```bash
 cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
-
-colcon build --symlink-install \
-  --packages-select vts_core vts_players vts_mapping \
-  vts_evaluation vts_bringup vts_language
-
+colcon build --symlink-install --base-paths src   # output/ holds historical package copies
 source install/setup.bash
 ```
 
-The first mapping run downloads the selected pretrained model through
-PyTorch Hub or Hugging Face and caches it inside the container user's home
-directory.
+The offline tools need only NumPy, SciPy and PyYAML (plus PyTorch and
+Transformers for descriptor extraction); they also run outside ROS with
+`PYTHONPATH=src/vts_core python3 -m vts_core.cli ...`.
 
-## Run TopoSIGMA
+## Offline workflow (`toposigma`)
 
-Build one COLD map:
-
-```bash
-ros2 launch vts_bringup pipeline.launch.py \
-  config:=cold_freiburg_a.yaml mode:=building
-```
-
-Query the completed map with the sentence configured in the same YAML file:
+Every recording is a *session* with a canonical store under
+`output/sessions/<session>/` (frames, raw odometry, ground truth, descriptors
+and a manifest of SHA-256 hashes). Session names follow the recordings, e.g.
+`cold_freiburg_a_seq2_night1` or `cid_apartment1_2`. Recordings reserved as
+final test data (`test_sessions` in `vts_core/config/toposigma.yaml`) are
+refused unless `--allow-test` is given, which requires a written protocol.
 
 ```bash
-ros2 launch vts_bringup pipeline.launch.py \
-  config:=cold_freiburg_a.yaml mode:=command
+toposigma frames list --check            # catalogue, roles, stores, odometry quality
+toposigma frames build --all-missing     # DINOv3 stores for every clean development recording
+toposigma map --all --jobs 6             # in-session baseline on every stored session
+toposigma evaluate loops                 # loop P/R/F1, split into aligned / opposed revisits
+toposigma evaluate revisits              # cross-session revisit types per session pair
+toposigma associate --kind mean_cosine --jobs 6
+toposigma evaluate cross --label mean_cosine__dinov3
 ```
 
-Environment-specific inputs and output paths live in
-`vts_bringup/config/*.yaml`; the mapping algorithms do not access datasets
-directly.
+Configuration lives in one YAML file, `vts_core/config/toposigma.yaml`;
+`--config my.yaml` is deep-merged over it. Outputs go to `output/toposigma/`,
+each with a run record (code hash, parameters, input manifests). Outside the
+container, point `TOPOSIGMA_DATA_ROOT` at the local `encoder/` directory.
 
-## Reproduce the experiments
-
-After rebuilding the devcontainer to install the updated lock, run the complete
-verification and regeneration workflow (mapping, gate/cosine/AnyLoc comparisons,
-node sensitivity and language benchmark):
+## ROS pipeline
 
 ```bash
-cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
-bash verify_submission.sh
+ros2 launch vts_bringup pipeline.launch.py sessions:=cold_freiburg_a_seq2_night1
+ros2 launch vts_bringup pipeline.launch.py mode:=command \
+  graph:=output/ros/cold_freiburg_a_seq2_night1/graph_0.npz query:="Go to the kitchen."
 ```
 
-Use `bash verify_submission.sh --test-only` for build and regression tests.
-The revised distance/rotation budget and vMF-only ablation change mapping
-results. Previous `output/revised/` artifacts remain historical; they are never
-silently reused. Numerical manuscript results require regeneration and review.
-See [the submission changes](docs/SUBMISSION_CHANGES.md) for contracts and measurements.
-
-
-Run the final configuration on all four COLD traversals and all three
-CID-SIMS traversals:
-
-```bash
-FORCE=1 RUN_ABLATIONS=0 ./run_experiments.sh
-FORCE=1 RUN_ABLATIONS=0 ./run_cid_sims_experiments.sh
-```
-
-After checking the main runs, generate the visual-only, geometric-only, and
-fixed-threshold ablations without rebuilding completed maps:
-
-```bash
-RUN_ABLATIONS=1 ./run_experiments.sh
-RUN_ABLATIONS=1 ./run_cid_sims_experiments.sh
-```
-
-Both runners accept environment names as positional filters. For example:
-
-```bash
-FORCE=1 ./run_experiments.sh freiburg_a
-FORCE=1 ./run_cid_sims_experiments.sh apartment1_1
-```
-
-Run the computationally matched AnyLoc-GeM comparison with:
-
-```bash
-./run_anyloc_baseline.sh all
-```
-
-Once the seven main maps exist, re-score the unchanged graphs at ground-truth
-distance tolerances of 0.5, 1, 2, and 3 m:
-
-```bash
-./evaluate_tolerance_sweep.sh
-```
-
-This offline sweep does not rerun mapping or overwrite the primary reports.
-It evaluates both TopoSIGMA and the AnyLoc-GeM ViT-S baseline, and writes
-`loop_tolerance_sweep.json` and `loop_tolerance_sweep.csv` under
-`output/submission/`. To score the existing gate ablations as well, run
-`INCLUDE_ABLATIONS=1 ./evaluate_tolerance_sweep.sh`. If the AnyLoc artifacts
-have not been generated, they may be omitted explicitly with
-`INCLUDE_ANYLOC=0`.
-
-Evaluate the adaptive node-creation rule from the saved algebraic-connectivity
-traces, including a sensitivity sweep over `k = {1, 1.5, 2, 2.5, 3}`:
-
-```bash
-./evaluate_node_segmentation.sh
-```
-
-This second offline experiment compares the final adaptive detector with the
-same hysteresis using a constant prominence. The constant is calibrated only
-on Freiburg A to match the final method's node count, without using room
-labels, and is then frozen for every other environment. Results are written to
-`node_segmentation_experiment.json` and `node_segmentation_experiment.csv`
-under `output/submission/`; existing maps and reports remain unchanged.
-
-To measure how node granularity propagates into loop closure and map quality,
-run the end-to-end sensitivity suite. It preserves the existing adaptive
-`k=2` maps and creates four additional adaptive settings plus a calibrated
-fixed-prominence baseline in suffixed output directories:
-
-```bash
-./run_node_sensitivity_experiments.sh
-```
-
-The suite is resumable. Use `FORCE=1` only when every sensitivity variant
-should intentionally be rebuilt.
-
-### Benchmark text-to-node retrieval
-
-The supplied benchmark evaluates the same 100 English requests on every
-annotated COLD map. It covers direct place names, commands, paraphrases,
-functional descriptions, object cues, scene descriptions, and indirect
-requests. Because not every room class occurs in every traversal, it measures
-retrieval and the behavior of an exploratory relative-margin heuristic on
-unavailable destinations. This diagnostic does not authorize navigation.
-
-After building and sourcing the workspace and generating the four COLD maps,
-run:
-
-```bash
-python3 -m vts_evaluation.language_benchmark \
-  --benchmark language_queries_100.json \
-  --maps-root output/submission \
-  --graph-name final_graph.pkl \
-  --out output/submission/language_benchmark.json
-```
-
-The report contains per-map and aggregate recall at ranks one and three, mean
-reciprocal rank, answer coverage, precision among answered queries, rejection
-rate for absent destinations, and all individual ranked results.
-
-See [`docs/ANYLOC_BASELINE.md`](docs/ANYLOC_BASELINE.md) for the exact and
-ViT-S-matched configurations, and [`docs/VMF_VALIDATION.md`](docs/VMF_VALIDATION.md)
-for the preserved cosine comparison.
-
-## Outputs
-
-Runs write to `vts_devcontainer/vts_ws/output/submission/`. This directory is
-ignored by Git because graph pickles and generated figures are reproducible
-artifacts. Each main environment contains:
-
-```text
-output/submission/<environment>/
-├── final_graph.pkl
-├── compact_graph.pkl
-├── run_manifest.json
-├── completion.json
-├── graph_0_node_gt.json
-├── graph_0_performance.json
-├── metrics_report.json
-└── figures/
-    ├── topological_map.pdf
-    ├── lambda2_valleys.pdf
-    └── recorded_odometry.pdf
-```
-
-The suite also writes aggregate `summary.json`, `mapping.csv`,
-`gate_ablation.csv`, `retrieval.csv`, and `runtime.csv` files directly under
-`output/submission/`. The optional language benchmark writes
-`language_benchmark.json` alongside them.
-
-## Using another dataset or robot
-
-TopoSIGMA consumes standard ROS messages rather than dataset files. A new
-adapter or robot must publish:
+The player replays a recording through the same adapters as the stores; the
+graph builder feeds the same engine as the offline replays. A robot or another
+dataset must publish:
 
 | Topic | Message | Purpose |
 |---|---|---|
 | `/camera/image` | `sensor_msgs/Image` | BGR camera frame |
-| `/odom` | `nav_msgs/Odometry` | Planar pose with the additive budget contract below |
+| `/odom` | `nav_msgs/Odometry` | Planar pose; covariance fields carry the cumulative budget |
 | `/dataset/sequence_done` | `std_msgs/String` | End-of-run JSON event |
-| `/ground_truth_pose` | `geometry_msgs/PoseStamped` | Optional evaluation metadata |
-| `/dataset/room_label` | `std_msgs/String` | Optional evaluation metadata |
+| `/ground_truth_pose` | `geometry_msgs/PoseStamped` | Optional, evaluation only |
 
-Camera and odometry messages must share a clock. Set
-`uncertainty_contract: path_length_budget_v1`: the covariance fields must carry
-the monotonic additive budget described in `docs/SUBMISSION_CHANGES.md`.
-Ordinary pose marginal covariances cannot be subtracted to obtain relative
-uncertainty and are not supported. Ground truth and labels are evaluation only.
-When `use_frame_labels: true`, labels are JSON `{"frame_key": "sec:nanosec",
-"label": "CR"}` joined to the image stamp. The bundled players wait for a matching
-`std_msgs/String` acknowledgement on `/mapping/frame_processed`, with explicit
-timeouts and a startup check for all consumers.
+Camera and odometry share a clock. The covariance must be the monotonic
+additive budget `path_length_budget_v1` (`vts_core.odometry.BudgetTracker`);
+ordinary pose marginals cannot be subtracted and are rejected. The player waits
+for an acknowledgement on `/mapping/frame_processed` before each frame.
+Language queries only suggest places; in topic mode a destination needs
+explicit confirmation (`{"query_id": ..., "confirm": <place>}` on
+`/language/command`).
 
-Language queries produce ranked suggestions and a `query_id`. In topic mode,
-publish `{"query_id": "<returned id>", "confirm": <candidate node id>}` on
-`/language/command` to explicitly select a destination. A relative softmax margin
-cannot establish that the requested destination exists; manual mode only reports
-suggestions.
-
-## Compute device
-
-`dino_device:=auto` selects CUDA, then Apple Metal Performance Shaders (MPS),
-then CPU according to the active PyTorch runtime. A Linux container running
-through Docker Desktop on macOS cannot access MPS and therefore uses CPU.
-CUDA requires a compatible NVIDIA host, the NVIDIA Container Toolkit, and GPU
-access for the container. The selected device is logged at startup and can be
-overridden explicitly:
+## Tests
 
 ```bash
-ros2 launch vts_bringup pipeline.launch.py \
-  config:=cold_freiburg_a.yaml dino_device:=cpu
-```
-
-## Development and validation
-
-From the built and sourced workspace:
-
-```bash
+cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
 python3 -m pytest -q src
-
-# Static checks (run from vts_devcontainer/):
-cd /workspaces/topo_sigma/vts_devcontainer
-uvx ruff check vts_ws/src
+cd .. && uvx ruff check vts_ws/src
 ```
 
-Runtime dependencies are declared in `vts_devcontainer/pyproject.toml` and
-reproduced from `vts_devcontainer/uv.lock`. To intentionally update one
-dependency, run `uv lock --upgrade-package <package>` from
-`vts_devcontainer/`, rebuild the container, and rerun the complete test suite.
+`vts_core/test/test_regression.py` checks that segments, decisions and loop
+counts on the seven manuscript sessions match the tagged code exactly (141
+places, 38 accepted revisits); it needs the development session stores.
 
 ## Citation
 

@@ -19,8 +19,7 @@ setup(
     python_requires=">=3.12,<3.13",
     entry_points={
         "console_scripts": [
-            "cold_player = vts_players.cold_player_node:main",
-            "cid_sims_player = vts_players.cid_sims_player_node:main",
+            "session_player = vts_players.session_player_node:main",
         ],
     },
 )
