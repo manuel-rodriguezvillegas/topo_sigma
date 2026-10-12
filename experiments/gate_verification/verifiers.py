@@ -26,8 +26,11 @@ def fundamental_inliers(p0: np.ndarray, p1: np.ndarray) -> int:
 
     if len(p0) < 8:
         return 0
-    _, mask = cv2.findFundamentalMat(p0.astype(np.float64), p1.astype(np.float64), cv2.USAC_MAGSAC, 1.0,
-                                     0.999, 10000)
+    try:
+        _, mask = cv2.findFundamentalMat(p0.astype(np.float64), p1.astype(np.float64), cv2.USAC_MAGSAC, 1.0,
+                                         0.999, 10000)
+    except cv2.error:  # degenerate configuration (e.g. collinear or repeated points): no model
+        return 0
     return 0 if mask is None else int(mask.sum())
 
 
@@ -87,7 +90,7 @@ class Mast3rVerifier:
     name = "m"
     CHECKPOINT = "naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric"
 
-    def __init__(self, repo: Path, device: str = "cuda", batch_size: int = 8, size: int = 512) -> None:
+    def __init__(self, repo: Path, device: str = "cuda", batch_size: int = 2, size: int = 512) -> None:
         import torch
 
         sys.path.insert(0, str(repo))

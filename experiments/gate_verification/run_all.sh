@@ -170,7 +170,7 @@ if ! done_once downloads; then
 fi
 
 # --------------------------------------------------------------------------- #
-export TOPOSIGMA_DATA_ROOT=$DATA PYTHONPATH=$WS/src/vts_core HF_HUB_DISABLE_TELEMETRY=1
+export TOPOSIGMA_DATA_ROOT=$DATA PYTHONPATH=$WS/src/vts_core HF_HUB_DISABLE_TELEMETRY=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 CONFIG=$OUT/gpu.yaml
 printf 'encoders:\n  device: cuda\n  batch_size: 32\n' > "$CONFIG"
 TS="$PY -m vts_core.cli"
