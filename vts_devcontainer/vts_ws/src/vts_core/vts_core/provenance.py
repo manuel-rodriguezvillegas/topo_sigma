@@ -67,6 +67,8 @@ def atomic_bytes(path: str | Path, content: bytes) -> None:
 
 def json_safe(value: object) -> object:
     """Undefined numbers become null; numpy scalars and arrays become plain JSON."""
+    if isinstance(value, os.PathLike):
+        return os.fspath(value)
     if hasattr(value, "tolist"):
         value = value.tolist()
     if isinstance(value, float) and not math.isfinite(value):
