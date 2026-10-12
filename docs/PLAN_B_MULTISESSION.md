@@ -158,4 +158,29 @@ verosimilitudes (monotonía, cotas) y casos sintéticos de anclaje.
 - El ventilador molesta: parar el contenedor al terminar o cuando lo pida el autor.
 - Las tareas en segundo plano tienen un límite de 1 h: lanzar trabajos largos
   desacoplados (`docker exec -d` o `nohup`).
-- Nada de este trabajo está commiteado todavía.
+- El trabajo hasta el plan está en el commit 43a490f (tag `manuscript-v1`).
+
+## 8. Estado (02-10-2026, tarde)
+
+Pasos 1–3 hechos salvo la extracción DINOv3 de 36 grabaciones (preparada, no
+lanzada) y la prueba de los nodos ROS en el contenedor. Detalle, equivalencias y
+primeros resultados en `docs/CORE_REWRITE_2026-10-02.md`: el código nuevo
+reproduce exactamente los 141 nodos y 38 decisiones; entre sesiones el 80 % de
+las revisitas son alineadas; el baseline de dirección media da AP 0,61 a 1 m.
+
+## 9. Estado (02-10-2026, noche)
+
+- Paso 2 completo: 58 sesiones de desarrollo (34 extraídas, a 25 fps en el
+  contenedor, y bit a bit iguales a los descriptores guardados).
+- Nodos ROS compilados con `colcon` y probados de extremo a extremo: idénticos
+  al replay offline.
+- Paso 4 (etapas) en `docs/MULTISESSION_STAGES_2026-10-02.md`.
+- Paso 5: borrador en `docs/CONFIRMATORY_PROTOCOL_MULTISESSION_2026-10-03.md`,
+  pendiente de que el autor elija la variable principal y apruebe la descarga de
+  office_building.
+
+## 10. Prueba confirmatoria (03-10-2026)
+
+Resultado: H1 **no confirmada**. Recall a precisión 0,95 a 2 m, con entornos de
+igual peso: +0,028 [−0,110; +0,128]. El anclaje falla en Ljubljana (11 anclas
+malas de 40). Detalle en `docs/CONFIRMATORY_RESULTS_MULTISESSION_2026-10-03.md`.

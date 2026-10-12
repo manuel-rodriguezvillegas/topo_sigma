@@ -1,195 +1,62 @@
-"""Pipeline launch file.
+"""ROS pipeline: dataset player + graph builder, or the language node on a stored map.
 
-All environment-specific values live in YAML configs under
-``vts_bringup/config`` — the LAB_CONFIGS dictionary that used to be embedded
-in the launch file is gone. Usage:
+    ros2 launch vts_bringup pipeline.launch.py sessions:=cold_freiburg_a_seq2_night1
+    ros2 launch vts_bringup pipeline.launch.py mode:=command graph:=output/ros/cold_freiburg_a_seq2_night1/graph_0.npz \
+        query:="Go to the kitchen."
 
-    ros2 launch vts_bringup pipeline.launch.py \
-        config:=cold_freiburg_a.yaml mode:=building
-
-Modes:
-    building: player + graph builder (single-run; writes final_graph.pkl).
-    command:  language node on an existing final_graph.pkl.
-
-Ablation / experiment overrides (building mode):
-    gate_mode:=both|visual|geometric|threshold
-        Revisit-gate ablation. When a non-default mode is given, the mapping
-        ``output_dir`` and ``run_name`` are suffixed with ``_<mode>`` so
-        ablation runs never overwrite the main results.
-    dino_device:=auto|cuda|mps|cpu
-        DINOv2 inference device. ``auto`` prefers CUDA, then Apple MPS, then
-        CPU. MPS requires native macOS execution and is unavailable in the
-        Linux Docker container used by this project.
-
-Example gate ablation sweep for one environment:
-
-    for m in both visual geometric threshold; do
-        ros2 launch vts_bringup pipeline.launch.py \
-            config:=cold_freiburg_a.yaml gate_mode:=$m
-    done
-
-The pipeline intentionally maps one traversal at a time; obsolete multi-map
-alignment code has been removed from the focused implementation.
+Every mapping parameter comes from the vts_core configuration
+(``vts_core/config/toposigma.yaml``, or ``config:=my.yaml`` merged over it), so
+ROS runs and offline replays share one source of truth.
 """
 
 from __future__ import annotations
 
 import os
 
-import yaml
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import (
-    DeclareLaunchArgument,
-    EmitEvent,
-    OpaqueFunction,
-    RegisterEventHandler,
-)
+from launch.actions import DeclareLaunchArgument, EmitEvent, OpaqueFunction, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-def _make_nodes(context: object) -> list[Node]:
-    config_name: str = LaunchConfiguration("config").perform(context)
-    mode: str = LaunchConfiguration("mode").perform(context)
-    gate_mode: str = LaunchConfiguration("gate_mode").perform(context)
-    dino_device: str = LaunchConfiguration("dino_device").perform(context)
-    feature_backend: str = LaunchConfiguration("feature_backend").perform(context)
-    visual_model: str = LaunchConfiguration("visual_model").perform(context)
-    dino_model: str = LaunchConfiguration("dino_model").perform(context)
-    dino_layer: str = LaunchConfiguration("dino_layer").perform(context)
-    variant_suffix: str = LaunchConfiguration("variant_suffix").perform(context)
-    valley_mode: str = LaunchConfiguration("valley_mode").perform(context)
-    valley_k: str = LaunchConfiguration("valley_k").perform(context)
-    valley_delta: str = LaunchConfiguration("valley_delta").perform(context)
-    player_rate_hz: str = LaunchConfiguration("player_rate_hz").perform(context)
+def _nodes(context) -> list:
+    def arg(name: str) -> str:
+        return LaunchConfiguration(name).perform(context)
 
-    config_path: str = os.path.join(
-        get_package_share_directory("vts_bringup"), "config", config_name
-    )
-    with open(config_path) as f:
-        config: dict[str, object] = yaml.safe_load(f)
-
-    mapping: dict[str, object] = dict(config["mapping"])
-    player: dict[str, object] = dict(config["player"])
-    if player_rate_hz:
-        player["publish_rate_hz"] = float(player_rate_hz)
-    player_executable = str(config.get("player_executable", "cold_player"))
-    if gate_mode:
-        mapping["gate_mode"] = gate_mode
-        if gate_mode != "both":
-            # Keep ablation outputs separate from the main results.
-            mapping["output_dir"] = f"{mapping['output_dir']}_{gate_mode}"
-            mapping["run_name"] = f"{mapping['run_name']}_{gate_mode}"
-    if dino_device:
-        mapping["dino_device"] = dino_device
-    if feature_backend:
-        mapping["feature_backend"] = feature_backend
-    if visual_model:
-        mapping["visual_model"] = visual_model
-    if dino_model:
-        mapping["dino_model"] = dino_model
-    if dino_layer:
-        mapping["dino_layer"] = int(dino_layer)
-    if valley_mode:
-        mapping["valley_mode"] = valley_mode
-    if valley_k:
-        mapping["valley_k"] = float(valley_k)
-    if valley_delta:
-        mapping["valley_delta"] = float(valley_delta)
-    if variant_suffix:
-        mapping["output_dir"] = f"{mapping['output_dir']}{variant_suffix}"
-        mapping["run_name"] = f"{mapping['run_name']}{variant_suffix}"
-
-    nodes: list[Node] = []
-
-    if mode == "building":
-        dataset_player = Node(
-            package="vts_players",
-            executable=player_executable,
-            name="dataset_player",
-            parameters=[player],
-            output="screen",
-        )
-        nodes.append(dataset_player)
-        graph_builder: Node = Node(
-            package="vts_mapping",
-            executable="graph_builder",
-            name="graph_builder",
-            parameters=[mapping],
-            output="screen",
-        )
-        nodes.append(graph_builder)
-        # The graph builder exits by itself after the last sequence
-        # (exit_when_done); take the player (and the launch) down with it so
-        # scripted runs need no manual Ctrl-C.
-        nodes.append(
-            RegisterEventHandler(
-                OnProcessExit(
-                    target_action=graph_builder,
-                    on_exit=[EmitEvent(event=Shutdown(reason="graph builder finished"))],
-                )
-            )
-        )
-        # A failed player cannot deliver the end-of-sequence message, so the
-        # graph builder would otherwise wait forever. Shut the launch down and
-        # let the runner reject the missing fresh graph.
-        nodes.append(
-            RegisterEventHandler(
-                OnProcessExit(
-                    target_action=dataset_player,
-                    on_exit=[EmitEvent(event=Shutdown(reason="dataset player finished"))],
-                )
-            )
-        )
-    elif mode == "command":
-        nodes.append(
-            Node(
-                package="vts_language",
-                executable="commands",
-                name="commands",
-                parameters=[dict(config["language"])],
-                output="screen",
-            )
-        )
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-
-    return nodes
+    if arg("mode") == "command":
+        return [Node(package="vts_language", executable="commands", name="commands", output="screen",
+                     parameters=[{"graph_path": arg("graph"), "mode": arg("language_mode"),
+                                  "query_sentence": arg("query"),
+                                  "output_dir": (arg("output_dir") or os.path.dirname(arg("graph"))) + "/commands"}])]
+    if arg("mode") != "building":
+        raise ValueError(f"unknown mode {arg('mode')!r}")
+    sessions = [s for s in arg("sessions").split(",") if s]
+    output_dir = arg("output_dir") or f"output/ros/{sessions[0]}"
+    player = Node(package="vts_players", executable="session_player", name="session_player", output="screen",
+                  parameters=[{"sessions": sessions, "toposigma_config": arg("config"),
+                               "publish_rate_hz": float(arg("player_rate_hz"))}])
+    builder = Node(package="vts_mapping", executable="graph_builder", name="graph_builder", output="screen",
+                   parameters=[{"toposigma_config": arg("config"), "uncertainty_contract": "path_length_budget_v1",
+                                "encoder_device": arg("device"), "output_dir": output_dir}])
+    # Either process ending (done or failed) takes the whole pipeline down.
+    return [player, builder] + [RegisterEventHandler(OnProcessExit(
+        target_action=node, on_exit=[EmitEvent(event=Shutdown(reason="pipeline node finished"))]))
+        for node in (builder, player)]
 
 
 def generate_launch_description() -> LaunchDescription:
-    return LaunchDescription(
-        [
-            DeclareLaunchArgument("config", default_value="cold_freiburg_a.yaml"),
-            DeclareLaunchArgument("mode", default_value="building"),
-            DeclareLaunchArgument(
-                "gate_mode",
-                default_value="",
-                description=(
-                    "Revisit-gate ablation: both|visual|geometric|threshold "
-                    "(empty = use the config value)"
-                ),
-            ),
-            DeclareLaunchArgument(
-                "dino_device",
-                default_value="",
-                description="DINOv2 inference device: auto|cuda|mps|cpu",
-            ),
-            DeclareLaunchArgument("feature_backend", default_value=""),
-            DeclareLaunchArgument("visual_model", default_value=""),
-            DeclareLaunchArgument("dino_model", default_value=""),
-            DeclareLaunchArgument("dino_layer", default_value=""),
-            DeclareLaunchArgument("variant_suffix", default_value=""),
-            DeclareLaunchArgument("valley_mode", default_value=""),
-            DeclareLaunchArgument("valley_k", default_value=""),
-            DeclareLaunchArgument("valley_delta", default_value=""),
-            DeclareLaunchArgument(
-                "player_rate_hz", default_value="",
-                description="Playback rate cap; each frame still waits for mapper acknowledgement",
-            ),
-            OpaqueFunction(function=_make_nodes),
-        ]
-    )
+    return LaunchDescription([
+        DeclareLaunchArgument("mode", default_value="building", description="building | command"),
+        DeclareLaunchArgument("sessions", default_value="cold_freiburg_a_seq2_night1",
+                              description="comma-separated catalogue names"),
+        DeclareLaunchArgument("config", default_value="", description="YAML merged over the vts_core defaults"),
+        DeclareLaunchArgument("device", default_value="auto", description="encoder device: auto|cuda|mps|cpu"),
+        DeclareLaunchArgument("output_dir", default_value=""),
+        DeclareLaunchArgument("player_rate_hz", default_value="50.0"),
+        DeclareLaunchArgument("graph", default_value="output/ros/graph_0.npz"),
+        DeclareLaunchArgument("query", default_value="Go to the kitchen."),
+        DeclareLaunchArgument("language_mode", default_value="manual", description="manual | topic"),
+        OpaqueFunction(function=_nodes),
+    ])
