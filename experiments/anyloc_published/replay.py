@@ -153,9 +153,14 @@ def run_one(job: tuple[str, str, dict, str]) -> dict:
         return {"sequence": seq_name, "variant": variant, "error": f"{error!r}", "trace": traceback.format_exc()}
 
 
-def check_reproduction(results: list[dict]) -> list[str]:
+def check_reproduction(results: list[dict], sequences: list[str]) -> list[str]:
     reference = json.loads((HERE / "reference/manuscript_metrics.json").read_text())["cases"]
     problems = []
+    done = {(r["sequence"], r["variant"]) for r in results}
+    for name in sequences:
+        for variant in ("topo", "topo_cosine"):
+            if (name, variant) not in done:
+                problems.append(f"{name} {variant}: no result (see ERROR above)")
     for r in results:
         if r.get("split") != "dev" or r["variant"] not in ("topo", "topo_cosine"):
             continue
@@ -187,7 +192,7 @@ def main() -> None:
     for e in errors:
         print("ERROR", e["sequence"], e["variant"], e["error"])
     if args.split == "dev":
-        problems = check_reproduction([r for r in results if "error" not in r])
+        problems = check_reproduction([r for r in results if "error" not in r], seqs)
         status = "PASS" if not problems else "FAIL"
         print(f"Reproduction of the manuscript (topo, topo_cosine): {status}")
         for p in problems[:40]:

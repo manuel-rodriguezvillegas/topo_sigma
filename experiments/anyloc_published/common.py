@@ -120,8 +120,34 @@ def _room_labels(path: Path) -> dict[str, str]:
     return labels
 
 
+_REFERENCE_FRAMES: dict[str, set[str]] = {}
+
+
+def reference_frames(seq: Sequence) -> set[str] | None:
+    """Frame names the manuscript actually processed (development traversals only).
+
+    The Mac copy of cold-freiburg_part_a_seq2_night1 lacks one image
+    (t1152908172.545660..., listed in places.lst), so the manuscript used 2,875 of
+    the 2,876 published frames. A fresh download has it; it is skipped here so the
+    stream is identical to the manuscript's.
+    """
+    if seq.split != "dev":
+        return None
+    if seq.name not in _REFERENCE_FRAMES:
+        with np.load(HERE / "reference/dinov2_vits14_mac.npz") as data:
+            _REFERENCE_FRAMES[seq.name] = set(data[f"{seq.name}/frames"].tolist())
+    return _REFERENCE_FRAMES[seq.name]
+
+
 def frames(seq: Sequence) -> Iterator[tuple[str, tuple, tuple, np.ndarray, str | None]]:
     """Yield (image_path, gt_pose, odom_pose, budget, room_label) as the submission players did."""
+    keep = reference_frames(seq)
+    for item in _frames(seq):
+        if keep is None or os.path.basename(item[0]) in keep:
+            yield item
+
+
+def _frames(seq: Sequence) -> Iterator[tuple[str, tuple, tuple, np.ndarray, str | None]]:
     uncertainty = OdometryUncertaintyParams(*UNCERTAINTY)
     if seq.dataset == "cid":
         gt = load_ground_truth(str(seq.path / "groundtruth.txt"))
