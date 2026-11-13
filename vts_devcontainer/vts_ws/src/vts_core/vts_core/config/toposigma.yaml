@@ -37,6 +37,8 @@ test_sessions:
   - cid_office_building*
   - cid_apartment2_3
   - cid_apartment3_3
+  # Reserved on 2026-10-13 for the confirmatory test of the observability-aware closure (plan B).
+  - cid_apartment1_3
 
 encoders:
   default: dinov3

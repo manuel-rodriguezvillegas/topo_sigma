@@ -1,0 +1,888 @@
+{
+ "source": "vts_devcontainer/vts_ws/output/submission/loop_tolerance_sweep.json",
+ "note": "Submission loop metrics (TopoSIGMA = DINOv2-S + vMF; *_anyloc_gem_vits = manuscript AnyLoc adaptation; *_cosine = multi-view cosine).",
+ "cases": {
+  "freiburg_a": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 30,
+    "n_loop_edges": 3,
+    "loop_opportunities": 2,
+    "loop_tp": 1,
+    "loop_fp": 2,
+    "loop_fn": 1,
+    "loop_f1": 0.4
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 30,
+    "n_loop_edges": 3,
+    "loop_opportunities": 3,
+    "loop_tp": 1,
+    "loop_fp": 2,
+    "loop_fn": 2,
+    "loop_f1": 0.3333
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 30,
+    "n_loop_edges": 3,
+    "loop_opportunities": 7,
+    "loop_tp": 1,
+    "loop_fp": 2,
+    "loop_fn": 6,
+    "loop_f1": 0.2
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 30,
+    "n_loop_edges": 3,
+    "loop_opportunities": 13,
+    "loop_tp": 1,
+    "loop_fp": 2,
+    "loop_fn": 12,
+    "loop_f1": 0.125
+   }
+  ],
+  "freiburg_a_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 27,
+    "n_loop_edges": 5,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 4,
+    "loop_fn": 0,
+    "loop_f1": 0.3333
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 27,
+    "n_loop_edges": 5,
+    "loop_opportunities": 3,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 1,
+    "loop_f1": 0.5
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 27,
+    "n_loop_edges": 5,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 4,
+    "loop_f1": 0.3636
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 27,
+    "n_loop_edges": 5,
+    "loop_opportunities": 8,
+    "loop_tp": 3,
+    "loop_fp": 2,
+    "loop_fn": 5,
+    "loop_f1": 0.4615
+   }
+  ],
+  "freiburg_a_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 30,
+    "n_loop_edges": 5,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 0,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 30,
+    "n_loop_edges": 5,
+    "loop_opportunities": 3,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 1,
+    "loop_f1": 0.5
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 30,
+    "n_loop_edges": 5,
+    "loop_opportunities": 7,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 5,
+    "loop_f1": 0.3333
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 30,
+    "n_loop_edges": 5,
+    "loop_opportunities": 13,
+    "loop_tp": 2,
+    "loop_fp": 3,
+    "loop_fn": 11,
+    "loop_f1": 0.2222
+   }
+  ],
+  "freiburg_ext": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.8
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 4,
+    "loop_tp": 2,
+    "loop_fp": 1,
+    "loop_fn": 2,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 7,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.6
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 9,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 6,
+    "loop_f1": 0.5
+   }
+  ],
+  "freiburg_ext_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 20,
+    "n_loop_edges": 2,
+    "loop_opportunities": 2,
+    "loop_tp": 0,
+    "loop_fp": 2,
+    "loop_fn": 2,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 20,
+    "n_loop_edges": 2,
+    "loop_opportunities": 4,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 3,
+    "loop_f1": 0.3333
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 20,
+    "n_loop_edges": 2,
+    "loop_opportunities": 5,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 3,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 20,
+    "n_loop_edges": 2,
+    "loop_opportunities": 8,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 6,
+    "loop_f1": 0.4
+   }
+  ],
+  "freiburg_ext_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.8
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 4,
+    "loop_tp": 2,
+    "loop_fp": 1,
+    "loop_fn": 2,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 7,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.6
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 22,
+    "n_loop_edges": 3,
+    "loop_opportunities": 9,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 6,
+    "loop_f1": 0.5
+   }
+  ],
+  "saarbruecken_a": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 32,
+    "n_loop_edges": 3,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 3,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 32,
+    "n_loop_edges": 3,
+    "loop_opportunities": 4,
+    "loop_tp": 1,
+    "loop_fp": 2,
+    "loop_fn": 3,
+    "loop_f1": 0.2857
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 32,
+    "n_loop_edges": 3,
+    "loop_opportunities": 9,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 6,
+    "loop_f1": 0.5
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 32,
+    "n_loop_edges": 3,
+    "loop_opportunities": 13,
+    "loop_tp": 3,
+    "loop_fp": 0,
+    "loop_fn": 10,
+    "loop_f1": 0.375
+   }
+  ],
+  "saarbruecken_a_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 31,
+    "n_loop_edges": 4,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 4,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 31,
+    "n_loop_edges": 4,
+    "loop_opportunities": 4,
+    "loop_tp": 0,
+    "loop_fp": 4,
+    "loop_fn": 4,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 31,
+    "n_loop_edges": 4,
+    "loop_opportunities": 5,
+    "loop_tp": 0,
+    "loop_fp": 4,
+    "loop_fn": 5,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 31,
+    "n_loop_edges": 4,
+    "loop_opportunities": 10,
+    "loop_tp": 2,
+    "loop_fp": 2,
+    "loop_fn": 8,
+    "loop_f1": 0.2857
+   }
+  ],
+  "saarbruecken_a_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 32,
+    "n_loop_edges": 4,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 4,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 32,
+    "n_loop_edges": 4,
+    "loop_opportunities": 4,
+    "loop_tp": 1,
+    "loop_fp": 3,
+    "loop_fn": 3,
+    "loop_f1": 0.25
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 32,
+    "n_loop_edges": 4,
+    "loop_opportunities": 9,
+    "loop_tp": 3,
+    "loop_fp": 1,
+    "loop_fn": 6,
+    "loop_f1": 0.4615
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 32,
+    "n_loop_edges": 4,
+    "loop_opportunities": 13,
+    "loop_tp": 3,
+    "loop_fp": 1,
+    "loop_fn": 10,
+    "loop_f1": 0.3529
+   }
+  ],
+  "saarbruecken_ext": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 2,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 0,
+    "loop_f1": 1.0
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.5
+   }
+  ],
+  "saarbruecken_ext_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 13,
+    "n_loop_edges": 1,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 13,
+    "n_loop_edges": 1,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 13,
+    "n_loop_edges": 1,
+    "loop_opportunities": 1,
+    "loop_tp": 0,
+    "loop_fp": 1,
+    "loop_fn": 1,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 13,
+    "n_loop_edges": 1,
+    "loop_opportunities": 2,
+    "loop_tp": 1,
+    "loop_fp": 0,
+    "loop_fn": 1,
+    "loop_f1": 0.6667
+   }
+  ],
+  "saarbruecken_ext_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 2,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 0,
+    "loop_f1": 1.0
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 16,
+    "n_loop_edges": 2,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.5
+   }
+  ],
+  "cid_sims_apartment1_1": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 18,
+    "n_loop_edges": 8,
+    "loop_opportunities": 3,
+    "loop_tp": 2,
+    "loop_fp": 6,
+    "loop_fn": 1,
+    "loop_f1": 0.3636
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 18,
+    "n_loop_edges": 8,
+    "loop_opportunities": 5,
+    "loop_tp": 2,
+    "loop_fp": 6,
+    "loop_fn": 3,
+    "loop_f1": 0.3077
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 18,
+    "n_loop_edges": 8,
+    "loop_opportunities": 9,
+    "loop_tp": 8,
+    "loop_fp": 0,
+    "loop_fn": 1,
+    "loop_f1": 0.9412
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 18,
+    "n_loop_edges": 8,
+    "loop_opportunities": 12,
+    "loop_tp": 8,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.8
+   }
+  ],
+  "cid_sims_apartment1_1_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 19,
+    "n_loop_edges": 8,
+    "loop_opportunities": 2,
+    "loop_tp": 1,
+    "loop_fp": 7,
+    "loop_fn": 1,
+    "loop_f1": 0.2
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 19,
+    "n_loop_edges": 8,
+    "loop_opportunities": 5,
+    "loop_tp": 2,
+    "loop_fp": 6,
+    "loop_fn": 3,
+    "loop_f1": 0.3077
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 19,
+    "n_loop_edges": 8,
+    "loop_opportunities": 10,
+    "loop_tp": 7,
+    "loop_fp": 1,
+    "loop_fn": 3,
+    "loop_f1": 0.7778
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 19,
+    "n_loop_edges": 8,
+    "loop_opportunities": 14,
+    "loop_tp": 7,
+    "loop_fp": 1,
+    "loop_fn": 7,
+    "loop_f1": 0.6364
+   }
+  ],
+  "cid_sims_apartment1_1_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 18,
+    "n_loop_edges": 6,
+    "loop_opportunities": 3,
+    "loop_tp": 1,
+    "loop_fp": 5,
+    "loop_fn": 2,
+    "loop_f1": 0.2222
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 18,
+    "n_loop_edges": 6,
+    "loop_opportunities": 5,
+    "loop_tp": 1,
+    "loop_fp": 5,
+    "loop_fn": 4,
+    "loop_f1": 0.1818
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 18,
+    "n_loop_edges": 6,
+    "loop_opportunities": 9,
+    "loop_tp": 6,
+    "loop_fp": 0,
+    "loop_fn": 3,
+    "loop_f1": 0.8
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 18,
+    "n_loop_edges": 6,
+    "loop_opportunities": 12,
+    "loop_tp": 6,
+    "loop_fp": 0,
+    "loop_fn": 6,
+    "loop_f1": 0.6667
+   }
+  ],
+  "cid_sims_apartment2_1": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 2,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 5,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 3,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.5
+   }
+  ],
+  "cid_sims_apartment2_1_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 12,
+    "n_loop_edges": 2,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 12,
+    "n_loop_edges": 2,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 0,
+    "loop_f1": 1.0
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 12,
+    "n_loop_edges": 2,
+    "loop_opportunities": 4,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 2,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 12,
+    "n_loop_edges": 2,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.5
+   }
+  ],
+  "cid_sims_apartment2_1_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 0,
+    "loop_tp": 0,
+    "loop_fp": 2,
+    "loop_fn": 0,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 1,
+    "loop_tp": 1,
+    "loop_fp": 1,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 5,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 3,
+    "loop_f1": 0.5714
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 11,
+    "n_loop_edges": 2,
+    "loop_opportunities": 6,
+    "loop_tp": 2,
+    "loop_fp": 0,
+    "loop_fn": 4,
+    "loop_f1": 0.5
+   }
+  ],
+  "cid_sims_apartment3_1": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 20,
+    "n_loop_edges": 6,
+    "loop_opportunities": 1,
+    "loop_tp": 0,
+    "loop_fp": 6,
+    "loop_fn": 1,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 20,
+    "n_loop_edges": 6,
+    "loop_opportunities": 5,
+    "loop_tp": 0,
+    "loop_fp": 6,
+    "loop_fn": 5,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 20,
+    "n_loop_edges": 6,
+    "loop_opportunities": 9,
+    "loop_tp": 6,
+    "loop_fp": 0,
+    "loop_fn": 3,
+    "loop_f1": 0.8
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 20,
+    "n_loop_edges": 6,
+    "loop_opportunities": 13,
+    "loop_tp": 6,
+    "loop_fp": 0,
+    "loop_fn": 7,
+    "loop_f1": 0.6316
+   }
+  ],
+  "cid_sims_apartment3_1_anyloc_gem_vits": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 21,
+    "n_loop_edges": 10,
+    "loop_opportunities": 2,
+    "loop_tp": 2,
+    "loop_fp": 8,
+    "loop_fn": 0,
+    "loop_f1": 0.3333
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 21,
+    "n_loop_edges": 10,
+    "loop_opportunities": 5,
+    "loop_tp": 5,
+    "loop_fp": 5,
+    "loop_fn": 0,
+    "loop_f1": 0.6667
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 21,
+    "n_loop_edges": 10,
+    "loop_opportunities": 10,
+    "loop_tp": 8,
+    "loop_fp": 2,
+    "loop_fn": 2,
+    "loop_f1": 0.8
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 21,
+    "n_loop_edges": 10,
+    "loop_opportunities": 12,
+    "loop_tp": 10,
+    "loop_fp": 0,
+    "loop_fn": 2,
+    "loop_f1": 0.9091
+   }
+  ],
+  "cid_sims_apartment3_1_cosine": [
+   {
+    "tolerance_m": 0.5,
+    "n_nodes": 20,
+    "n_loop_edges": 4,
+    "loop_opportunities": 1,
+    "loop_tp": 0,
+    "loop_fp": 4,
+    "loop_fn": 1,
+    "loop_f1": 0.0
+   },
+   {
+    "tolerance_m": 1.0,
+    "n_nodes": 20,
+    "n_loop_edges": 4,
+    "loop_opportunities": 5,
+    "loop_tp": 1,
+    "loop_fp": 3,
+    "loop_fn": 4,
+    "loop_f1": 0.2222
+   },
+   {
+    "tolerance_m": 2.0,
+    "n_nodes": 20,
+    "n_loop_edges": 4,
+    "loop_opportunities": 9,
+    "loop_tp": 4,
+    "loop_fp": 0,
+    "loop_fn": 5,
+    "loop_f1": 0.6154
+   },
+   {
+    "tolerance_m": 3.0,
+    "n_nodes": 20,
+    "n_loop_edges": 4,
+    "loop_opportunities": 13,
+    "loop_tp": 4,
+    "loop_fp": 0,
+    "loop_fn": 9,
+    "loop_f1": 0.4706
+   }
+  ]
+ }
+}

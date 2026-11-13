@@ -67,3 +67,8 @@ encoder/loss_history/
 encoder/images/
 encoder/images/*.png
 *.log
+
+# Tool caches and per-experiment environments (rebuilt by the run scripts)
+.ruff_cache/
+experiments/*/.venv/
+experiments/*/third_party/
