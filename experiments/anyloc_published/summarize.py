@@ -50,6 +50,24 @@ def bootstrap(per_seq: dict[str, dict[str, np.ndarray]], a: str, b: str, stat: i
             "sequences": len(names)}
 
 
+SHORT = {"precision": "P", "recall": "R", "f1": "F1"}
+
+
+def bootstrap_abs(per_seq: dict[str, dict[str, np.ndarray]], a: str, n=10000, seed=0):
+    """Micro-aggregated P, R, F1 of one variant with a 95 % CI from resampling traversals."""
+    names = [s for s in per_seq if a in per_seq[s]]
+    if not names:
+        return None
+    rng = np.random.default_rng(seed)
+    A = np.array([per_seq[s][a] for s in names])
+    idx = rng.integers(0, len(names), size=(n, len(names)))
+    boot = np.array([prf(A[i].sum(0)) for i in idx])
+    point = prf(A.sum(0))
+    return {k: {"point": float(point[j]), "ci95": [float(np.percentile(boot[:, j], 2.5)),
+                                                  float(np.percentile(boot[:, j], 97.5))]}
+            for j, k in enumerate(("precision", "recall", "f1"))} | {"sequences": len(names)}
+
+
 def section(results: dict, seqs, title: str) -> tuple[list[str], dict]:
     lines, data = [f"## {title}", ""], {}
     variants = [v for v in ORDER if any((s.name, v) in results for s in seqs)]
@@ -84,6 +102,17 @@ def section(results: dict, seqs, title: str) -> tuple[list[str], dict]:
                      f"{agg.get('opp_opposed', 0)} | {agg.get('tp_opposed', 0)} | {agg.get('fp', 0)} |")
         data.setdefault(v, {})["breakdown_2m"] = agg
     per_seq = {s.name: {v: counts(results[(s.name, v)], 2.0) for v in variants if (s.name, v) in results} for s in seqs}
+    lines += ["", "### Metrics at 2 m with 95 % CI (bootstrap over traversals, 10,000 resamples)", ""]
+    data["bootstrap_abs_2m"] = {}
+    for v in variants:
+        res = bootstrap_abs(per_seq, v)
+        if res:
+            lines.append(f"- {v}: " + ", ".join(f"{SHORT[k]} {res[k]['point']:.3f} "
+                                                 f"[{res[k]['ci95'][0]:.3f}; {res[k]['ci95'][1]:.3f}]"
+                                                 for k in ("precision", "recall", "f1")))
+            data["bootstrap_abs_2m"][v] = res
+    data["per_traversal"] = {s.name: {v: {str(t): counts(results[(s.name, v)], t)[:4].tolist() for t in TOLERANCES}
+                                      for v in variants if (s.name, v) in results} for s in seqs}
     lines += ["", "### Paired bootstrap over traversals at 2 m (10,000 resamples)", ""]
     tests = [("topo", "geometry_only", 0, "precision"), ("topo", "geometry_only", 2, "F1"),
              ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "paired_anyloc_vlad_g", 2, "F1"),
