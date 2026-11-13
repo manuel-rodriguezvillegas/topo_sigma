@@ -1,0 +1,21 @@
+{
+  "dinov2_s": {
+    "code": "historical vts_core.features",
+    "device": "cuda"
+  },
+  "anyloc_gem_s224": {
+    "code": "historical vts_core.features",
+    "device": "cuda"
+  },
+  "anyloc_gem_g224": {
+    "code": "historical vts_core.features",
+    "device": "cuda"
+  },
+  "anyloc_vitg_native": {
+    "vocabulary": "https://github.com/AnyLoc/DINO/releases/download/v1/dinov2_vitg14_l31_value_c32_indoor_c_centers.pt",
+    "vocabulary_sha256": "05731213c402a27ddb5cd7a03fd942de4b884a3f4fc63a1bf49d1fbe9a2aff35",
+    "dinov2_revision": "7764ea0f912e53c92e82eb78a2a1631e92725fc8",
+    "layer": 31,
+    "facet": "value"
+  }
+}
