@@ -84,6 +84,20 @@ Reproduction of the manuscript on the 7 development traversals: **PASS**
 | paired_anyloc_gem_g | 16 | 6 | 30 | 14 | 5 |
 | paired_anyloc_vlad_g | 14 | 8 | 33 | 14 | 6 |
 
+### Metrics at 2 m with 95 % CI (bootstrap over traversals, 10,000 resamples)
+
+- topo: P 0.926 [0.727; 1.000], R 0.521 [0.325; 0.722], F1 0.667 [0.455; 0.837]
+- topo_gpu: P 0.926 [0.727; 1.000], R 0.521 [0.325; 0.722], F1 0.667 [0.455; 0.837]
+- topo_cosine: P 0.846 [0.636; 1.000], R 0.458 [0.358; 0.583], F1 0.595 [0.466; 0.734]
+- geometry_only: P 0.829 [0.600; 1.000], R 0.604 [0.409; 0.811], F1 0.699 [0.500; 0.885]
+- anyloc_gem_s224: P 0.656 [0.333; 0.848], R 0.512 [0.235; 0.683], F1 0.575 [0.279; 0.742]
+- anyloc_gem_g224: P 0.885 [0.680; 1.000], R 0.535 [0.258; 0.714], F1 0.667 [0.385; 0.815]
+- anyloc_gem_g: P 0.692 [0.440; 0.923], R 0.474 [0.348; 0.541], F1 0.562 [0.388; 0.667]
+- anyloc_vlad_g: P 0.586 [0.464; 0.750], R 0.425 [0.316; 0.529], F1 0.493 [0.384; 0.607]
+- paired_anyloc_gem_g224: P 0.852 [0.667; 0.973], R 0.479 [0.294; 0.694], F1 0.613 [0.412; 0.800]
+- paired_anyloc_gem_g: P 0.800 [0.600; 0.939], R 0.435 [0.250; 0.622], F1 0.563 [0.360; 0.741]
+- paired_anyloc_vlad_g: P 0.786 [0.640; 0.917], R 0.468 [0.326; 0.627], F1 0.587 [0.432; 0.733]
+
 ### Paired bootstrap over traversals at 2 m (10,000 resamples)
 
 - precision topo − geometry_only: +0.097 [+0.000; +0.207] (7 traversals)
@@ -181,6 +195,19 @@ Reproduction of the manuscript on the 7 development traversals: **PASS**
 | paired_anyloc_gem_g224 | 6 | 1 | 54 | 18 | 3 |
 | paired_anyloc_gem_g | 7 | 3 | 52 | 19 | 3 |
 | paired_anyloc_vlad_g | 11 | 4 | 46 | 19 | 3 |
+
+### Metrics at 2 m with 95 % CI (bootstrap over traversals, 10,000 resamples)
+
+- topo: P 0.704 [0.483; 1.000], R 0.365 [0.236; 0.525], F1 0.481 [0.329; 0.667]
+- topo_cosine: P 0.704 [0.459; 1.000], R 0.365 [0.236; 0.525], F1 0.481 [0.328; 0.667]
+- geometry_only: P 0.677 [0.455; 1.000], R 0.404 [0.254; 0.571], F1 0.506 [0.349; 0.697]
+- anyloc_gem_s224: P 0.800 [0.619; 1.000], R 0.348 [0.213; 0.467], F1 0.485 [0.333; 0.603]
+- anyloc_gem_g224: P 0.750 [0.538; 1.000], R 0.341 [0.213; 0.450], F1 0.469 [0.312; 0.600]
+- anyloc_gem_g: P 0.737 [0.536; 1.000], R 0.286 [0.161; 0.444], F1 0.412 [0.261; 0.582]
+- anyloc_vlad_g: P 0.850 [0.706; 1.000], R 0.395 [0.239; 0.567], F1 0.540 [0.370; 0.701]
+- paired_anyloc_gem_g224: P 0.864 [0.708; 1.000], R 0.317 [0.221; 0.449], F1 0.463 [0.343; 0.611]
+- paired_anyloc_gem_g: P 0.880 [0.708; 1.000], R 0.373 [0.269; 0.500], F1 0.524 [0.395; 0.657]
+- paired_anyloc_vlad_g: P 0.885 [0.727; 1.000], R 0.404 [0.275; 0.550], F1 0.554 [0.405; 0.705]
 
 ### Paired bootstrap over traversals at 2 m (10,000 resamples)
 
