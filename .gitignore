@@ -1,5 +1,4 @@
 # Report
-report/
 docs/design_decisions.md
 
 # Local datasets and model caches are not redistributed.
