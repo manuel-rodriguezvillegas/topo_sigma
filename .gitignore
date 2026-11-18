@@ -71,3 +71,13 @@ encoder/images/*.png
 .ruff_cache/
 experiments/*/.venv/
 experiments/*/third_party/
+
+# LaTeX build artifacts
+manuscript/*.aux
+manuscript/*.bbl
+manuscript/*.blg
+manuscript/*.fdb_latexmk
+manuscript/*.fls
+manuscript/*.out
+manuscript/*.spl
+manuscript/*.synctex.gz
