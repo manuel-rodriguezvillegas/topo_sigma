@@ -8,7 +8,10 @@ live together in :mod:`vts_core.mapper`.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
+from scipy.special import ndtr
 
 # 95th percentile of chi-square with two degrees of freedom.
 _CHI2_GATE_2DOF: float = 5.991464547107979
@@ -56,6 +59,48 @@ def gaussian_position_statistics(
     d2 = np.einsum("...i,...i->...", delta, solution)
     valid = valid & np.isfinite(d2) & (d2 >= 0)
     return np.where(valid, d2, np.inf), np.where(valid, 0.5 * (d2 + logdet), np.inf)
+
+
+_OUTER_NODES: np.ndarray = np.linspace(-8.0, 8.0, 1601)
+_OUTER_WEIGHTS: np.ndarray = np.exp(-0.5 * _OUTER_NODES**2) / np.sqrt(2.0 * np.pi) * (_OUTER_NODES[1] - _OUTER_NODES[0])
+
+
+def disk_probability(displacement: np.ndarray, covariance: np.ndarray, radius: float) -> np.ndarray:
+    """Probability that ``x ~ N(displacement, covariance)`` lies within ``radius`` of the origin.
+
+    In the covariance eigenbasis the disk is unchanged, so the integral is analytic along the
+    narrower axis and a fixed quadrature over +-8 standard deviations along the wider one.
+    """
+    displacement = np.atleast_2d(np.asarray(displacement, dtype=np.float64))
+    covariance = np.asarray(covariance, dtype=np.float64).reshape(-1, 2, 2)
+    eigenvalues, eigenvectors = np.linalg.eigh(0.5 * (covariance + covariance.swapaxes(-1, -2)))
+    std = np.sqrt(np.maximum(eigenvalues, 1e-18))
+    mean = np.einsum("nji,nj->ni", eigenvectors, displacement)
+    outer = mean[:, 1:2] + std[:, 1:2] * _OUTER_NODES
+    half_width = np.sqrt(np.maximum(radius**2 - outer**2, 0.0))
+    inner = ndtr((half_width - mean[:, :1]) / std[:, :1]) - ndtr((-half_width - mean[:, :1]) / std[:, :1])
+    return np.clip(inner @ _OUTER_WEIGHTS, 0.0, 1.0)
+
+
+def wrapped_interval_probability(mean: np.ndarray, variance: np.ndarray, half_width: float) -> np.ndarray:
+    """Probability that an angle ``~ N(mean, variance)`` wraps into ``[-half_width, half_width]``."""
+    mean = np.asarray(mean, dtype=np.float64)[..., None]
+    std = np.sqrt(np.maximum(np.asarray(variance, dtype=np.float64), 1e-18))[..., None]
+    centers = 2.0 * np.pi * np.arange(-4, 5)
+    upper = ndtr((centers + half_width - mean) / std)
+    lower = ndtr((centers - half_width - mean) / std)
+    return np.clip(np.sum(upper - lower, axis=-1), 0.0, 1.0)
+
+
+@dataclass(frozen=True)
+class VisualLikelihood:
+    """Likelihood ratio of a visual score, same aligned place against a different place; log-linear in the score."""
+
+    intercept: float
+    slope: float
+
+    def ratio(self, scores: np.ndarray) -> np.ndarray:
+        return np.exp(np.clip(self.intercept + self.slope * np.asarray(scores, dtype=np.float64), -50.0, 50.0))
 
 
 def fit_se2(points_a: np.ndarray, points_b: np.ndarray) -> tuple[np.ndarray, np.ndarray] | None:

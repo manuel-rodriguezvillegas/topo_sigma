@@ -16,7 +16,7 @@ from typing import Any
 import numpy as np
 
 from vts_core.artifacts import atomic_json, file_digest
-from vts_core.retrieval import PlaceRetriever, SemanticEncoder
+from vts_core.retrieval import SEMANTIC_MODEL, PlaceRetriever, SemanticEncoder
 from vts_core.topo_graph import TopoGraph
 
 
@@ -81,7 +81,7 @@ def main() -> None:
     parser.add_argument("--benchmark", required=True)
     parser.add_argument("--maps-root", required=True)
     parser.add_argument("--graph-name", default="final_graph.pkl")
-    parser.add_argument("--semantic-model", default="openai/clip-vit-base-patch32")
+    parser.add_argument("--semantic-model", default=SEMANTIC_MODEL)
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--out", required=True)
     parser.add_argument("--semantic-revision", default="")

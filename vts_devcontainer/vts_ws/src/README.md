@@ -29,7 +29,7 @@ Configuration: `vts_core/config/toposigma.yaml`. Ground truth enters only
 - `vts_players`: `session_player` replays catalogue sessions (`sessions:=a,b`) through `vts_core.datasets`.
 - `vts_mapping`: `graph_builder` encodes frames with DINOv3 and pushes them to `OnlineMapper`; writes
   `graph_<i>.npz`, `graph_<i>_views/` and `graph_<i>.json` per sequence.
-- `vts_language`: `commands` ranks places of a stored graph with CLIP; destinations need confirmation.
+- `vts_language`: `commands` ranks places of a stored graph with SigLIP 2; destinations need confirmation.
 - `vts_bringup`: `pipeline.launch.py` (`mode:=building|command`).
 
 ## Topic contract

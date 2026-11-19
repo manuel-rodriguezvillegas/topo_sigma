@@ -30,7 +30,7 @@ datasets:
     exact_atol_s: 1.0e-9
     motion_noise: [0.025, 0.005, 0.01, 0.0025]
 
-# Final test data (docs/PLAN_B_MULTISESSION.md): never built, loaded or looked at
+# Final test data: never built, loaded or looked at
 # before a written confirmatory protocol exists. Loading needs --allow-test.
 test_sessions:
   - cold_ljubljana_*

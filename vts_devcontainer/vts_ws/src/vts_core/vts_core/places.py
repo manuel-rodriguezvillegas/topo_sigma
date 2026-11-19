@@ -4,7 +4,7 @@ A place keeps its segment's frame range, the medoid frame (closest to the mean
 direction; it fixes the place pose), up to three representative views (medoid,
 first and last frame) and, for each view, the recorded odometry pose. The mean
 direction of the segment's unit descriptors is the appearance summary that
-worked best across sessions (docs/APPEARANCE_STUDY_C4_2026-10-02.md).
+worked best across sessions.
 
 Ground truth is never part of a place; evaluation looks it up by frame index.
 """

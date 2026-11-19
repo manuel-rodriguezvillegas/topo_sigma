@@ -75,7 +75,7 @@ def main() -> None:
             "omitted by default because it has not been calibrated on held-out data."
         ),
     )
-    parser.add_argument("--semantic-model", default="openai/clip-vit-base-patch32")
+    parser.add_argument("--semantic-model", default="google/siglip2-base-patch16-224")
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument(
         "--loop-tolerance",

@@ -19,17 +19,20 @@ from transformers import AutoModel, AutoProcessor
 from vts_core.graph import TopoGraph
 from vts_core.provenance import file_digest, identity
 
-CLIP_REVISION = "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+SEMANTIC_MODEL = "google/siglip2-base-patch16-224"
+SEMANTIC_REVISION = "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2"
 
 _PROMPT_TEMPLATES: tuple[str, ...] = (
-    "a photo of a {}",
-    "a photo of a {} in a building",
-    "an indoor scene showing a {}",
-    "a picture of the {} of an office building",
+    "a photo of a {}.",
+    "a photo of the {}.",
+    "an indoor photo of a {}.",
 )
 
+# SigLIP text towers were trained on text padded to 64 tokens (Zhai et al., ICCV 2023).
+_SIGLIP_TEXT_LENGTH: int = 64
+
 # Minimum top-2 posterior margin for an unambiguous answer. With softmax at
-# CLIP's logit scale, 0.1 means "the best node holds at least 10 percentage
+# the model's logit scale, 0.1 means "the best node holds at least 10 percentage
 # points more probability mass than the runner-up" — a relative,
 # per-query heuristic, not a calibrated probability or similarity cutoff.
 _MIN_POSTERIOR_MARGIN: float = 0.1
@@ -78,18 +81,23 @@ class SemanticEncoder:
     """Wrapper around a Hugging Face CLIP/SigLIP checkpoint."""
 
     def __init__(
-        self, model_name: str = "openai/clip-vit-base-patch32", revision: str | None = None
+        self, model_name: str = SEMANTIC_MODEL, revision: str | None = None
     ) -> None:
         if revision is None:
-            if model_name != "openai/clip-vit-base-patch32":
+            if model_name != SEMANTIC_MODEL:
                 raise ValueError("provide an immutable revision for a nondefault semantic model")
-            revision = CLIP_REVISION
+            revision = SEMANTIC_REVISION
         if not re.fullmatch(r"[0-9a-fA-F]{40}", revision):
             raise ValueError("semantic revision must be an immutable 40-character commit hash")
         self._device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._model = AutoModel.from_pretrained(model_name, revision=revision).to(self._device)
         self._model.eval()
         self._processor = AutoProcessor.from_pretrained(model_name, revision=revision)
+        self._text_padding: dict[str, object] = (
+            {"padding": "max_length", "max_length": _SIGLIP_TEXT_LENGTH}
+            if self._model.config.model_type.startswith("siglip")
+            else {"padding": True}
+        )
         self.identity = identity(
             {
                 "model": model_name,
@@ -146,7 +154,7 @@ class SemanticEncoder:
         """
         phrase: str = place_phrase(query)
         prompts: list[str] = [t.format(phrase) for t in _PROMPT_TEMPLATES]
-        inputs = self._processor(text=prompts, return_tensors="pt", padding=True).to(self._device)
+        inputs = self._processor(text=prompts, return_tensors="pt", **self._text_padding).to(self._device)
         features: torch.Tensor = self._as_embedding(self._model.get_text_features(**inputs))
         features = features / features.norm(dim=-1, keepdim=True)
         mean: torch.Tensor = features.mean(dim=0)

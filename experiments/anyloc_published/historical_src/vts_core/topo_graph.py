@@ -35,6 +35,7 @@ class LoopClosureEvent:
     accepted: bool
     similarity: float | None
     reason: str
+    probability: float | None = None
 
 
 @dataclass
@@ -60,9 +61,8 @@ class TopoNode:
             CLIP semantics.
         view_embeddings: One semantic (CLIP/SigLIP) embedding per view,
             shape (n_views, d). Filled lazily by the semantic encoder.
-        pose_covariance: 2x2 covariance of (x, y) accumulated from odometry
-            at creation time. Used for probabilistic revisit gating instead
-            of fixed metric thresholds.
+        pose_covariance: Cumulative 3x3 odometry covariance of (x, y, theta)
+            at the representative frame, used by the revisit gate.
         extent_covariance: 2x2 spatial covariance of the camera poses assigned
             to this place. It represents how much two valid observations of
             the same topological node may differ in position.
@@ -84,7 +84,7 @@ class TopoNode:
     view_features: np.ndarray | None = None
     view_embeddings: np.ndarray | None = None
     semantic_model_identity: str | None = None
-    pose_covariance: np.ndarray = field(default_factory=lambda: np.zeros((2, 2), dtype=np.float64))
+    pose_covariance: np.ndarray = field(default_factory=lambda: np.zeros((3, 3), dtype=np.float64))
     extent_covariance: np.ndarray = field(
         default_factory=lambda: np.zeros((2, 2), dtype=np.float64)
     )

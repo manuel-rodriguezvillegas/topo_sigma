@@ -5,8 +5,7 @@
 TopoSIGMA is an online, training-free visual topological mapping system. It
 turns synchronized camera and wheel-odometry streams into a compact place graph
 and, as current work, associates a new session with a map built in an earlier
-one (multi-session topological map merging; see
-[the plan](docs/PLAN_B_MULTISESSION.md)).
+one (multi-session topological map merging).
 
 ![TopoSIGMA pipeline](assets/readme/toposigma_pipeline.webp)
 
@@ -21,10 +20,9 @@ one (multi-session topological map merging; see
 - Cross-session building blocks: batched appearance scores, sequence evidence
   aligned by travelled distance, and a bounded set of SE(2) anchor hypotheses.
 
-The code used for the manuscript submission (DINOv2/vMF variants, ablation and
-exploratory studies, experiment runners) is preserved at the git tag
-`manuscript-v1`. The rewrite and its equivalence checks are described in
-[docs/CORE_REWRITE_2026-10-02.md](docs/CORE_REWRITE_2026-10-02.md).
+The mapper evaluated in the paper and the scripts that produce every reported
+number and figure are in `experiments/`; `experiments/manuscript_gpu/run_all.sh`
+runs them end to end on a GPU.
 
 DINOv3 weights are gated: request access to the
 [official weights](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m)
@@ -35,7 +33,7 @@ and run `hf auth login` in the runtime before extracting descriptors.
 ```text
 .
 ├── assets/readme/                  README figures
-├── docs/                           Protocols, studies and plans (including negative results)
+├── experiments/                    Paper mapper, GPU runners and their results
 ├── encoder/                        Local datasets (ignored by Git)
 └── vts_devcontainer/
     ├── .devcontainer/              Ubuntu 24.04 / ROS 2 Jazzy environment
@@ -44,7 +42,7 @@ and run `hf auth login` in the runtime before extracting descriptors.
         ├── vts_core/               Pure-Python engine and the `toposigma` CLI (no ROS)
         ├── vts_players/            ROS dataset player over the vts_core adapters
         ├── vts_mapping/            ROS graph builder: thin wrapper of the engine
-        ├── vts_language/           Optional CLIP text-to-place suggestions
+        ├── vts_language/           Optional SigLIP 2 text-to-place suggestions
         └── vts_bringup/            Launch file
 ```
 

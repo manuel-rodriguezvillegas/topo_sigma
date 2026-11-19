@@ -3,8 +3,8 @@
 Official CID-SIMS sequence layout::
 
     color/<timestamp>.png
-    groundtruth.txt  # timestamp px py pz qx qy qz qw
-    odom.txt   # timestamp px py pz qx qy qz qw vx vy vz wx wy wz
+    groundtruth.txt  # timestamp px py pz qx qy qz qw  (camera, optical axes)
+    odom.txt   # timestamp px py pz qx qy qz qw vx vy vz wx wy wz  (base, x forward)
 
 Only planar pose components are exposed to the topological mapper. Ground
 truth remains a separate evaluation stream and is never used for mapping.
@@ -12,6 +12,7 @@ truth remains a separate evaluation stream and is never used for mapping.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,10 +27,13 @@ from vts_core.motion import (
 
 
 def quaternion_yaw(x: float, y: float, z: float, w: float) -> float:
-    """Return the standard Z-axis yaw of a unit quaternion."""
-    sin_yaw = 2.0 * (w * z + x * y)
-    cos_yaw = 1.0 - 2.0 * (y * y + z * z)
-    return float(np.arctan2(sin_yaw, cos_yaw))
+    """Heading in the world XY plane of the body x axis (ROS base convention)."""
+    return float(np.arctan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)))
+
+
+def optical_axis_yaw(x: float, y: float, z: float, w: float) -> float:
+    """Heading in the world XY plane of the body z axis (camera optical convention)."""
+    return float(np.arctan2(2.0 * (y * z - w * x), 2.0 * (x * z + w * y)))
 
 
 @dataclass(frozen=True)
@@ -85,7 +89,9 @@ class PlanarPoseStream:
         return pose, covariance
 
 
-def _load_pose_rows(path: str, minimum_fields: int) -> tuple[np.ndarray, np.ndarray]:
+def _load_pose_rows(
+    path: str, minimum_fields: int, heading: Callable[[float, float, float, float], float]
+) -> tuple[np.ndarray, np.ndarray]:
     timestamps: list[float] = []
     poses: list[Pose2D] = []
     with open(path, encoding="utf-8") as stream:
@@ -105,7 +111,7 @@ def _load_pose_rows(path: str, minimum_fields: int) -> tuple[np.ndarray, np.ndar
                 ) from error
             timestamp, px, py, _pz, qx, qy, qz, qw = values
             timestamps.append(timestamp)
-            poses.append((px, py, quaternion_yaw(qx, qy, qz, qw)))
+            poses.append((px, py, heading(qx, qy, qz, qw)))
 
     if len(timestamps) < 2:
         raise ValueError(f"{path}: expected at least two pose samples")
@@ -117,7 +123,7 @@ def _load_pose_rows(path: str, minimum_fields: int) -> tuple[np.ndarray, np.ndar
 
 def load_ground_truth(path: str) -> PlanarPoseStream:
     """Load ``groundtruth.txt`` as a planar ground-truth stream."""
-    timestamps, poses = _load_pose_rows(path, minimum_fields=8)
+    timestamps, poses = _load_pose_rows(path, minimum_fields=8, heading=optical_axis_yaw)
     return PlanarPoseStream(timestamps=timestamps, poses=poses)
 
 
@@ -125,7 +131,7 @@ def load_wheel_odometry(
     path: str, params: OdometryUncertaintyParams | None = None
 ) -> PlanarPoseStream:
     """Load recorded ``odom.txt`` and model its cumulative uncertainty."""
-    timestamps, poses = _load_pose_rows(path, minimum_fields=14)
+    timestamps, poses = _load_pose_rows(path, minimum_fields=14, heading=quaternion_yaw)
     tracker = OdometryUncertaintyTracker(params)
     covariances = np.stack(
         [tracker.step(tuple(float(value) for value in pose)) for pose in poses]

@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import traceback
 from concurrent.futures import ProcessPoolExecutor
@@ -27,7 +26,7 @@ from pathlib import Path
 
 import numpy as np
 
-from common import ALL, DEV, HELDOUT, HERE, MAPPER_OPTIONS, TOLERANCES, frames
+from common import ALL, DEV, HELDOUT, HERE, MAPPER_OPTIONS, TOLERANCES, breakdown, frames, load_descriptors
 from vts_core.mapper import TopologicalMapper
 from vts_evaluation.tolerance_sweep import EvaluationCase, evaluate_case
 
@@ -59,41 +58,6 @@ class _SegmentationOverride:
 
     def update(self, _descriptor):
         return self.inner.update(self.next)
-
-
-def load_descriptors(root: Path, seq: str, encoder: str) -> tuple[np.ndarray, np.ndarray]:
-    if encoder == "mac":
-        with np.load(HERE / "reference/dinov2_vits14_mac.npz") as data:
-            return data[f"{seq}/descriptors"], data[f"{seq}/frames"]
-    path = root / "descriptors" / seq / f"{encoder}.npy"
-    return np.load(path), np.load(path.with_suffix(".frames.npy"))
-
-
-def wrap(angle: float) -> float:
-    return (angle + math.pi) % (2 * math.pi) - math.pi
-
-
-def breakdown(graph, node_gt: dict[int, tuple], tolerance: float, aligned_deg: float = 45.0) -> dict:
-    """Split opportunities and true positives into aligned / opposed revisits (GT heading)."""
-    ids = sorted(graph.nodes)
-    counts = {"opp_aligned": 0, "opp_opposed": 0, "tp_aligned": 0, "tp_opposed": 0, "fp": 0}
-    for event in graph.loop_events:
-        q = event.query_node_id
-        qx, qy, qa = node_gt[q]
-        near = [j for j in ids if j < q - 2 and math.hypot(node_gt[j][0] - qx, node_gt[j][1] - qy) <= tolerance]
-        kind = None
-        if near:
-            aligned = any(abs(wrap(node_gt[j][2] - qa)) < math.radians(aligned_deg) for j in near)
-            kind = "aligned" if aligned else "opposed"
-            counts[f"opp_{kind}"] += 1
-        if event.accepted and event.matched_node_id is not None:
-            m = int(event.matched_node_id)
-            ok = math.hypot(node_gt[m][0] - qx, node_gt[m][1] - qy) <= tolerance
-            if ok:
-                counts[f"tp_{kind or 'unmatched'}"] = counts.get(f"tp_{kind or 'unmatched'}", 0) + 1
-            else:
-                counts["fp"] += 1
-    return counts
 
 
 def run_one(job: tuple[str, str, dict, str]) -> dict:

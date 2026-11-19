@@ -1,16 +1,14 @@
 """Shared definitions: sequences, frame stream, manuscript mapper settings.
 
 The frame stream reproduces the submission players without ROS: same images,
-odometry budgets, ground truth and labels, in the same order. The mapper is the
-exact submission source in ``historical_src`` (75/75 files matched the
-submission SHA-256 manifest). One deliberate change: ``cold_odometry.py`` is the
-``manuscript-v1`` version, which adds the Ljubljana microsecond-wrap repair; it
-does not change any of the seven manuscript sequences (checked by the
-reproduction step of ``replay.py``).
+odometry budgets, ground truth and labels, in the same order. ``historical_src``
+holds the submission mapper; its default options still reproduce the submission
+exactly (checked by the reproduction step of ``replay.py``).
 """
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import sys
@@ -78,7 +76,7 @@ DEV = [
     Sequence("cid_sims_apartment3_1", "cid", "apartment3_1", "dev"),
 ]
 
-# Held-out traversals, fixed in docs/HELDOUT_PROTOCOL_MANUSCRIPT_2026-11-13.md before any run.
+# Held-out traversals, fixed before any method was run on them.
 HELDOUT = [
     Sequence("heldout_freiburg_a_seq1", "cold", "cold-freiburg_part_a_seq1_cloudy2", "heldout"),
     Sequence("heldout_freiburg_a_seq2", "cold", "cold-freiburg_part_a_seq2_cloudy2", "heldout"),
@@ -169,3 +167,38 @@ def _frames(seq: Sequence) -> Iterator[tuple[str, tuple, tuple, np.ndarray, str 
             gt_pose = (float(match["x"]), float(match["y"]), float(match["a"]))
             pose, budget = odom.at(float(match["t"]), max_gap_s=1.0)
             yield str(image_path), gt_pose, pose, budget, labels.get(image_path.name)
+
+
+def load_descriptors(root: Path, seq: str, encoder: str) -> tuple[np.ndarray, np.ndarray]:
+    if encoder == "mac":
+        with np.load(HERE / "reference/dinov2_vits14_mac.npz") as data:
+            return data[f"{seq}/descriptors"], data[f"{seq}/frames"]
+    path = root / "descriptors" / seq / f"{encoder}.npy"
+    return np.load(path), np.load(path.with_suffix(".frames.npy"))
+
+
+def wrap(angle: float) -> float:
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+
+
+def breakdown(graph, node_gt: dict[int, tuple], tolerance: float, aligned_deg: float = 45.0) -> dict:
+    """Split opportunities and true positives into aligned / opposed revisits (GT heading)."""
+    ids = sorted(graph.nodes)
+    counts = {"opp_aligned": 0, "opp_opposed": 0, "tp_aligned": 0, "tp_opposed": 0, "fp": 0}
+    for event in graph.loop_events:
+        q = event.query_node_id
+        qx, qy, qa = node_gt[q]
+        near = [j for j in ids if j < q - 2 and math.hypot(node_gt[j][0] - qx, node_gt[j][1] - qy) <= tolerance]
+        kind = None
+        if near:
+            aligned = any(abs(wrap(node_gt[j][2] - qa)) < math.radians(aligned_deg) for j in near)
+            kind = "aligned" if aligned else "opposed"
+            counts[f"opp_{kind}"] += 1
+        if event.accepted and event.matched_node_id is not None:
+            m = int(event.matched_node_id)
+            ok = math.hypot(node_gt[m][0] - qx, node_gt[m][1] - qy) <= tolerance
+            if ok:
+                counts[f"tp_{kind or 'unmatched'}"] = counts.get(f"tp_{kind or 'unmatched'}", 0) + 1
+            else:
+                counts["fp"] += 1
+    return counts

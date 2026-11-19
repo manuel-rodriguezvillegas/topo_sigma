@@ -3,7 +3,7 @@
 There is no common odometry frame between sessions. Until an anchor exists,
 only appearance can associate places; after a few consistent associations an
 SE(2) transform between the frames can be estimated and geometry becomes
-informative again (docs/PLAN_B_MULTISESSION.md, section 2).
+informative again.
 
 * :func:`similarity_matrix`: B x A appearance scores (one batched product).
 * :func:`distance_sequence`: sequence evidence aligned by travelled distance,

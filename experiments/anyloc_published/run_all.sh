@@ -4,7 +4,7 @@
 #   1. Python environment: reuses experiments/gate_verification/.venv if it exists
 #      (PyTorch CUDA from the October run); otherwise creates one here.
 #   2. Downloads only what is missing: the 7 manuscript traversals and, with
-#      RUN_HELDOUT=1, the 12 held-out ones (docs/HELDOUT_PROTOCOL_MANUSCRIPT_2026-11-13.md).
+#      RUN_HELDOUT=1, the 12 held-out ones.
 #   3. GPU descriptors (DINOv2-S, AnyLoc-GeM S/G, AnyLoc-VLAD-G indoor vocabulary).
 #   4. Replay of the manuscript mapper. The development step must reproduce the
 #      manuscript exactly (25/2/23 at 2 m and the cosine ablation) or the script stops.

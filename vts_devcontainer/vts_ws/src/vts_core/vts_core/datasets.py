@@ -175,10 +175,16 @@ def read_cold(root: Path, recording: Recording, settings: dict) -> RawFrames:
 # CID-SIMS
 # --------------------------------------------------------------------------- #
 def quaternion_yaw(x, y, z, w):
+    """Heading in the world XY plane of the body x axis (ROS base convention)."""
     return np.arctan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
 
 
-def read_pose_rows(path: Path, minimum_fields: int) -> tuple[np.ndarray, np.ndarray]:
+def optical_axis_yaw(x, y, z, w):
+    """Heading in the world XY plane of the body z axis (camera optical convention)."""
+    return np.arctan2(2.0 * (y * z - w * x), 2.0 * (x * z + w * y))
+
+
+def read_pose_rows(path: Path, minimum_fields: int, heading) -> tuple[np.ndarray, np.ndarray]:
     """``timestamp px py pz qx qy qz qw ...`` rows as planar poses."""
     rows = [line.split() for line in path.read_text().splitlines() if line.strip()]
     if any(len(row) < minimum_fields for row in rows):
@@ -187,14 +193,14 @@ def read_pose_rows(path: Path, minimum_fields: int) -> tuple[np.ndarray, np.ndar
     times = values[:, 0]
     if len(times) < 2 or np.any(np.diff(times) <= 0.0):
         raise DataQualityError(f"{path}: timestamps must be strictly increasing")
-    yaw = np.asarray([float(quaternion_yaw(*q)) for q in values[:, 4:8]])
+    yaw = np.asarray([float(heading(*q)) for q in values[:, 4:8]])
     return times, np.column_stack([values[:, 1], values[:, 2], yaw])
 
 
 def read_cid(root: Path, recording: Recording, settings: dict) -> RawFrames:
     directory = root / recording.directory
-    gt_t, gt_poses = read_pose_rows(directory / settings["ground_truth_file"], 8)
-    odom_t, odom_poses = read_pose_rows(directory / settings["odometry_file"], 14)
+    gt_t, gt_poses = read_pose_rows(directory / settings["ground_truth_file"], 8, optical_axis_yaw)
+    odom_t, odom_poses = read_pose_rows(directory / settings["odometry_file"], 14, quaternion_yaw)
     images = []
     for path in (directory / settings["color_subdir"]).glob("*.png"):
         try:

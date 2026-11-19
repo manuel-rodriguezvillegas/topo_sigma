@@ -1,8 +1,8 @@
 """Dataset-agnostic online visual topological mapper.
 
-Consumes synchronized (image, pose, covariance) samples — wherever they come
-from a compatible additive-budget adapter — and incrementally builds
-a :class:`TopoGraph`.
+Consumes synchronized (image, pose, covariance) samples and incrementally
+builds a :class:`TopoGraph`. The covariance is the cumulative odometry
+covariance of :mod:`vts_core.motion` for the chosen ``uncertainty_model``.
 
 Design (deliberately simplified to a single, reliable run):
 
@@ -17,20 +17,26 @@ Design (deliberately simplified to a single, reliable run):
   either direction.
 - Every emitted node keeps its recorded odometry pose. Sequential and loop
   edges describe topology; place recognition never changes those poses.
-- Input covariance fields must carry the bundled players' monotonic additive
-  uncertainty budget. Ordinary pose marginals are not supported.
 """
 
 from __future__ import annotations
 
 import time
 from collections.abc import Callable, Sequence
+from typing import NamedTuple
 
 import numpy as np
 
 from vts_core.directional import _log_vmf_normalizer, fit_vmf_resultant, vmf_log_overlap_ratio
 from vts_core.frame_buffer import FrameBuffer, FrameRecord, StoredImage
-from vts_core.matching import _CHI2_GATE_2DOF, gaussian_position_statistics, mahalanobis_gate
+from vts_core.matching import (
+    _CHI2_GATE_2DOF,
+    VisualLikelihood,
+    disk_probability,
+    gaussian_position_statistics,
+    wrapped_interval_probability,
+)
+from vts_core.motion import UNCERTAINTY_MODELS, normalize_angle, relative_pose_covariance
 from vts_core.node_detection import (
     AdaptiveValleyDetector,
     ConnectivityMonitor,
@@ -68,10 +74,26 @@ _MIN_NODES_FOR_REVISIT: int = 5
 # each; "threshold" replaces the whole dual gate with a naive absolute
 # cosine-similarity threshold — the baseline the dual gate is argued against.
 GATE_MODES: tuple[str, ...] = ("both", "visual", "geometric", "threshold")
+# "gate": chi-square gate and visual outlier test. "disk": accept the most probable
+# earlier place when the probability of being within ``place_radius`` of it exceeds
+# _REVISIT_DECISION, optionally reweighted by visual evidence.
+ASSOCIATIONS: tuple[str, ...] = ("gate", "disk")
+# Bayes decision for equal costs of a false and a missed closure, the weighting of F1.
+_REVISIT_DECISION: float = 0.5
+# Heading difference below which a forward camera sees the same scene again.
+_ALIGNED_HEADING: float = np.pi / 4
 VISUAL_MODELS: tuple[str, ...] = ("vmf", "cosine")
 VALLEY_MODES: tuple[str, ...] = ("adaptive", "fixed")
 # Absolute cosine-similarity threshold used by the "threshold" ablation mode.
 _NAIVE_THRESHOLD: float = 0.7
+
+
+class RevisitDecision(NamedTuple):
+    accepted_id: int | None
+    proposed_id: int | None
+    similarity: float | None
+    probability: float | None
+    reason: str
 
 
 class TopologicalMapper:
@@ -88,6 +110,10 @@ class TopologicalMapper:
         gate_mode: str = "both",
         naive_threshold: float = _NAIVE_THRESHOLD,
         visual_model: str = "vmf",
+        uncertainty_model: str = "additive",
+        association: str = "gate",
+        place_radius: float = 2.0,
+        visual_likelihood: VisualLikelihood | None = None,
     ) -> None:
         """
         Args:
@@ -113,11 +139,28 @@ class TopologicalMapper:
             visual_model: Evidence model used to resolve ambiguous geometric
                 candidates: ``vmf`` for the final mapper or ``cosine`` for
                 controlled external descriptor baselines.
+            uncertainty_model: One of :data:`vts_core.motion.UNCERTAINTY_MODELS`;
+                it must match the tracker that produced the input covariances.
+            association: One of :data:`ASSOCIATIONS`.
+            place_radius: Distance in metres within which two nodes are the same place
+                (``disk`` association).
+            visual_likelihood: Visual likelihood ratio used by ``disk`` association
+                with ``gate_mode="both"``.
         """
         if gate_mode not in GATE_MODES:
             raise ValueError(f"gate_mode must be one of {GATE_MODES}, got {gate_mode!r}")
         if visual_model not in VISUAL_MODELS:
             raise ValueError(f"visual_model must be one of {VISUAL_MODELS}, got {visual_model!r}")
+        if association not in ASSOCIATIONS:
+            raise ValueError(f"association must be one of {ASSOCIATIONS}, got {association!r}")
+        if association == "disk" and gate_mode not in {"geometric", "both"}:
+            raise ValueError("disk association supports gate_mode 'geometric' or 'both'")
+        if association == "disk" and gate_mode == "both" and visual_likelihood is None:
+            raise ValueError("disk association with visual evidence needs a visual_likelihood")
+        if not place_radius > 0.0:
+            raise ValueError("place_radius must be positive")
+        if uncertainty_model not in UNCERTAINTY_MODELS:
+            raise ValueError(f"uncertainty_model must be one of {UNCERTAINTY_MODELS}, got {uncertainty_model!r}")
         if valley_mode not in VALLEY_MODES:
             raise ValueError(f"valley_mode must be one of {VALLEY_MODES}, got {valley_mode!r}")
         numeric = [valley_k, valley_delta, visual_outlier_k, naive_threshold]
@@ -129,6 +172,10 @@ class TopologicalMapper:
         self._gate_mode: str = gate_mode
         self._naive_threshold: float = naive_threshold
         self._visual_model = visual_model
+        self._uncertainty_model = uncertainty_model
+        self._association = association
+        self._place_radius = place_radius
+        self._visual_likelihood = visual_likelihood
 
         self._monitor: ConnectivityMonitor = ConnectivityMonitor(window_size)
         self._detector: AdaptiveValleyDetector | FixedValleyDetector = (
@@ -138,7 +185,6 @@ class TopologicalMapper:
         )
         self._frame_count: int = 0
         self._pending_frames = FrameBuffer()
-        self._previous_budget: np.ndarray | None = None
         self._visual_cache: dict[int, tuple] = {}
 
         # Wall-clock instrumentation for map maintenance and loop search.
@@ -167,7 +213,7 @@ class TopologicalMapper:
             image_bgr: Camera image.
             descriptor: L2-normalized place descriptor of the image.
             pose: Odometry pose (x, y, theta) at capture time.
-            covariance: Monotonic additive 3x3 uncertainty budget at capture time.
+            covariance: Cumulative 3x3 odometry covariance at capture time.
             gt_pose: Optional ground-truth pose at capture time, carried
                 through for evaluation only (never used to map). When given,
                 the node inherits the ground-truth pose of its representative
@@ -212,10 +258,6 @@ class TopologicalMapper:
             or not np.allclose(covariance, covariance.T, atol=1e-9)
         ):
             raise ValueError("uncertainty budget must be finite symmetric 3x3")
-        self._interval_covariance(
-            np.zeros((3, 3)) if self._previous_budget is None else self._previous_budget, covariance
-        )
-        self._previous_budget = covariance.copy()
         record: FrameRecord = FrameRecord(
             descriptor=descriptor.astype(np.float32),
             pose=pose,
@@ -290,17 +332,6 @@ class TopologicalMapper:
     # ------------------------------------------------------------------ #
     # Edge bookkeeping
     # ------------------------------------------------------------------ #
-    @staticmethod
-    def _interval_covariance(earlier: np.ndarray, later: np.ndarray) -> np.ndarray:
-        """PSD uncertainty accumulated between two cumulative snapshots."""
-        difference = np.asarray(later, dtype=np.float64) - np.asarray(earlier, dtype=np.float64)
-        difference = 0.5 * (difference + difference.T)
-        eigenvalues, eigenvectors = np.linalg.eigh(difference)
-        if np.min(eigenvalues) < -1e-9:
-            raise ValueError("uncertainty budget decreased; pose marginals are not supported")
-        # Clip roundoff only, never covariance resets.
-        return (eigenvectors * np.maximum(eigenvalues, 0.0)) @ eigenvectors.T
-
     def _segment_medoid(
         self, segment: Sequence[FrameRecord], mean_descriptor: np.ndarray
     ) -> FrameRecord:
@@ -333,7 +364,7 @@ class TopologicalMapper:
             visual_concentration=directional_model.concentration,
             visual_resultant_length=directional_model.mean_resultant_length,
             visual_sample_count=directional_model.sample_count,
-            pose_covariance=representative.covariance[:2, :2].copy(),
+            pose_covariance=representative.covariance.copy(),
             extent_covariance=extent_covariance,
             # Evaluation-only: pin the node's GT to the SAME frame whose pose
             # became the node pose, so placement error reflects odometric
@@ -363,7 +394,7 @@ class TopologicalMapper:
             return candidate.node_id
 
         search_start: float = time.perf_counter()
-        revisited_id, proposed_id, similarity, reason = self._find_revisit(candidate)
+        decision = self._find_revisit(candidate)
         self._revisit_search_time_s += time.perf_counter() - search_start
         self._revisit_search_count += 1
         self.graph.add_node(candidate)
@@ -371,14 +402,15 @@ class TopologicalMapper:
         self.graph.loop_events.append(
             LoopClosureEvent(
                 query_node_id=candidate.node_id,
-                matched_node_id=proposed_id,
-                accepted=revisited_id is not None,
-                similarity=similarity,
-                reason=reason,
+                matched_node_id=decision.proposed_id,
+                accepted=decision.accepted_id is not None,
+                similarity=decision.similarity,
+                reason=decision.reason,
+                probability=decision.probability,
             )
         )
-        if revisited_id is not None:
-            self.graph.add_edge(revisited_id, candidate.node_id, edge_type="loop")
+        if decision.accepted_id is not None:
+            self.graph.add_edge(decision.accepted_id, candidate.node_id, edge_type="loop")
         self.current_node_id = candidate.node_id
         return candidate.node_id
 
@@ -402,14 +434,6 @@ class TopologicalMapper:
         # Strict inequality makes the zero-MAD/all-equal case deterministic:
         # an indistinctive tie is rejected rather than accepted.
         return match_sim > threshold
-
-    def _passes_gates(
-        self,
-        delta_xy: np.ndarray,
-        combined_cov: np.ndarray,
-    ) -> bool:
-        """Single uncertainty-aware chi-square gate for co-location."""
-        return mahalanobis_gate(delta_xy, combined_cov)
 
     def _distinctive_within_geometry(
         self,
@@ -568,26 +592,43 @@ class TopologicalMapper:
         """Bidirectional sequence score using vMF overlap evidence."""
         return self._sequence_score(candidate, matched_id, self._cached_vmf_evidence)
 
-    def _revisit_covariance(self, candidate: TopoNode, matched: TopoNode) -> np.ndarray:
-        """Uncertainty of the relative odometric displacement.
-
-        A node's spatial extent describes the region it covers; it is not
-        measurement uncertainty. Mixing the two made long corridor segments
-        increasingly easy to accept as co-located. The cumulative covariance
-        snapshots already encode uncertainty at the current and revisited
-        observations through their interval-relative difference.
-        """
-        return (
-            self._interval_covariance(matched.pose_covariance, candidate.pose_covariance)
-            + np.eye(2) * _PLACE_LOCALIZATION_SIGMA**2
+    def _disk_revisit(self, candidate: TopoNode, eligible_ids: list[int]) -> RevisitDecision:
+        """Most probable earlier place, given the odometry covariance accumulated since each was seen."""
+        nodes = [self.graph.nodes[node_id] for node_id in eligible_ids]
+        poses = np.asarray([node.pose for node in nodes])
+        relative = relative_pose_covariance(
+            self._uncertainty_model,
+            candidate.pose,
+            candidate.pose_covariance,
+            poses,
+            np.asarray([node.pose_covariance for node in nodes]),
+        )
+        displacement = np.asarray(candidate.pose[:2]) - poses[:, :2]
+        probability = disk_probability(displacement, relative[:, :2, :2], self._place_radius)
+        scores = None
+        if self._gate_mode == "both":
+            heading_change = np.asarray([normalize_angle(candidate.pose[2] - pose[2]) for pose in poses])
+            aligned = wrapped_interval_probability(heading_change, relative[:, 2, 2], _ALIGNED_HEADING)
+            similarity = self._cached_vmf_evidence if self._visual_model == "vmf" else self._cached_similarity
+            scores = np.asarray([similarity(candidate, node) for node in nodes])
+            ratio = aligned * self._visual_likelihood.ratio(scores) + (1.0 - aligned)
+            prior = np.clip(probability, 1e-12, 1.0 - 1e-12)
+            odds = prior / (1.0 - prior) * ratio
+            probability = odds / (1.0 + odds)
+        best = int(np.argmax(probability))
+        accepted = bool(probability[best] > _REVISIT_DECISION)
+        return RevisitDecision(
+            eligible_ids[best] if accepted else None,
+            eligible_ids[best],
+            None if scores is None else float(scores[best]),
+            float(probability[best]),
+            "accepted" if accepted else "rejected_by_probability",
         )
 
-    def _find_revisit(
-        self, candidate: TopoNode
-    ) -> tuple[int | None, int | None, float | None, str]:
-        """Find a revisit using odometry-first, bidirectional sequence gating.
+    def _find_revisit(self, candidate: TopoNode) -> RevisitDecision:
+        """Find a revisit with the configured association.
 
-        The full method intentionally gives the two signals asymmetric jobs:
+        With ``gate`` association, the full method intentionally gives the two signals asymmetric jobs:
         odometry generates and ranks every statistically compatible place. A
         sole compatible place needs no appearance tie-break; when several
         remain, visual sequence evidence disambiguates them in odometric order.
@@ -596,8 +637,12 @@ class TopologicalMapper:
         """
         ids = sorted(self.graph.nodes)
         eligible_count = len(ids) - LOOP_TEMPORAL_EXCLUSION_NODES
+        if self._association == "disk":
+            if eligible_count < 1:
+                return RevisitDecision(None, None, None, None, "no_candidates")
+            return self._disk_revisit(candidate, ids[:eligible_count])
         if eligible_count < _MIN_NODES_FOR_REVISIT:
-            return None, None, None, "no_distinctive_match"
+            return RevisitDecision(None, None, None, None, "no_distinctive_match")
 
         eligible_ids = ids[:eligible_count]
         scorer = (
@@ -622,20 +667,26 @@ class TopologicalMapper:
                 if self._gate_mode == "threshold"
                 else self._visual_outlier(scores, selected)
             )
-            return (
+            return RevisitDecision(
                 proposed_id if accepted else None,
                 proposed_id,
                 float(scores[selected]),
+                None,
                 "accepted" if accepted else "rejected_by_gate",
             )
 
         nodes = [self.graph.nodes[node_id] for node_id in eligible_ids]
-        deltas = np.asarray(candidate.pose[:2]) - np.asarray([node.pose[:2] for node in nodes])
-        budgets = np.asarray([node.pose_covariance for node in nodes])
-        covariance = candidate.pose_covariance - budgets
-        covariance = 0.5 * (covariance + covariance.swapaxes(-1, -2))
+        poses = np.asarray([node.pose for node in nodes])
+        deltas = np.asarray(candidate.pose[:2]) - poses[:, :2]
+        covariance = relative_pose_covariance(
+            self._uncertainty_model,
+            candidate.pose,
+            candidate.pose_covariance,
+            poses,
+            np.asarray([node.pose_covariance for node in nodes]),
+        )[:, :2, :2]
         if np.min(np.linalg.eigvalsh(covariance)) < -1e-9:
-            raise ValueError("uncertainty budget decreased between nodes")
+            raise ValueError("odometry covariance between nodes is not positive semidefinite")
         covariance += np.eye(2) * _PLACE_LOCALIZATION_SIGMA**2
         d2, nll = gaussian_position_statistics(deltas, covariance)
         order = np.argsort(nll, kind="stable")
@@ -643,16 +694,16 @@ class TopologicalMapper:
         proposed = geometric_indices[0] if geometric_indices else int(order[0])
         proposed_id = eligible_ids[proposed]
         if not geometric_indices:
-            return None, proposed_id, None, "rejected_by_gate"
+            return RevisitDecision(None, proposed_id, None, None, "rejected_by_gate")
         if self._gate_mode == "geometric":
-            return proposed_id, proposed_id, None, "accepted"
+            return RevisitDecision(proposed_id, proposed_id, None, None, "accepted")
         if len(geometric_indices) == 1:
-            return proposed_id, proposed_id, scorer(candidate, proposed_id), "accepted"
+            return RevisitDecision(proposed_id, proposed_id, scorer(candidate, proposed_id), None, "accepted")
 
         # Preserve the complete weaker-score background for ambiguous geometry.
         scores = np.asarray([scorer(candidate, node_id) for node_id in eligible_ids])
         for selected in geometric_indices:
             if self._distinctive_within_geometry(scores, selected, geometric_indices):
                 accepted_id = eligible_ids[selected]
-                return accepted_id, accepted_id, float(scores[selected]), "accepted"
-        return None, proposed_id, float(scores[proposed]), "rejected_by_gate"
+                return RevisitDecision(accepted_id, accepted_id, float(scores[selected]), None, "accepted")
+        return RevisitDecision(None, proposed_id, float(scores[proposed]), None, "rejected_by_gate")

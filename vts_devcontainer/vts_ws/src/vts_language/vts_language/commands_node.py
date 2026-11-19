@@ -22,7 +22,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 
 from vts_core.provenance import atomic_json
-from vts_language.retrieval import MapPlace, PlaceRetriever, SemanticEncoder, load_map
+from vts_language.retrieval import SEMANTIC_MODEL, MapPlace, PlaceRetriever, SemanticEncoder, load_map
 from vts_language.selection import PendingSelection
 
 
@@ -33,7 +33,7 @@ class CommandsNode(Node):
         super().__init__("commands")
 
         self.declare_parameter("graph_path", "output/ros/graph_0.npz")
-        self.declare_parameter("semantic_model", "openai/clip-vit-base-patch32")
+        self.declare_parameter("semantic_model", SEMANTIC_MODEL)
         self.declare_parameter("semantic_revision", "")
         self.declare_parameter("mode", "manual")
         self.declare_parameter("query_sentence", "corridor")

@@ -288,7 +288,24 @@ def run_experiment(
     """Run the sensitivity sweep and calibrated fixed-baseline comparison."""
     if len({case.name for case in cases}) != len(cases):
         raise ValueError("case names must be unique")
-    if calibration_case not in {case.name for case in cases}:
+    loaded = {case.name: _load_case(case) for case in cases}
+    return run_experiment_on_signals(
+        loaded, calibration_case, k_values, final_k, history, warmup, tolerance_frames, frame_rate_hz
+    )
+
+
+def run_experiment_on_signals(
+    loaded: dict[str, tuple[np.ndarray, list[str] | None]],
+    calibration_case: str,
+    k_values: list[float],
+    final_k: float,
+    history: int,
+    warmup: int,
+    tolerance_frames: int,
+    frame_rate_hz: float,
+) -> tuple[Calibration, list[dict[str, object]]]:
+    """Same as :func:`run_experiment` on in-memory lambda_2 signals and frame labels."""
+    if calibration_case not in loaded:
         raise ValueError(f"unknown calibration case: {calibration_case}")
     if not k_values or any(not math.isfinite(k) or k <= 0.0 for k in k_values):
         raise ValueError("k values must be positive and finite")
@@ -299,7 +316,6 @@ def run_experiment(
     if not math.isfinite(frame_rate_hz) or frame_rate_hz <= 0.0:
         raise ValueError("frame_rate_hz must be positive and finite")
 
-    loaded = {case.name: _load_case(case) for case in cases}
     calibration_signal = loaded[calibration_case][0]
     target = len(
         detect_valleys(
@@ -317,8 +333,7 @@ def run_experiment(
     )
 
     rows: list[dict[str, object]] = []
-    for case in cases:
-        signal, labels = loaded[case.name]
+    for name, (signal, labels) in loaded.items():
         for k in k_values:
             valleys = detect_valleys(
                 signal,
@@ -326,7 +341,7 @@ def run_experiment(
             )
             rows.append(
                 {
-                    "environment": case.name,
+                    "environment": name,
                     "method": "adaptive",
                     "parameter_name": "k",
                     "parameter_value": k,
@@ -342,7 +357,7 @@ def run_experiment(
         fixed_valleys = detect_valleys(signal, FixedValleyDetector(calibration.delta, warmup))
         rows.append(
             {
-                "environment": case.name,
+                "environment": name,
                 "method": "fixed",
                 "parameter_name": "delta",
                 "parameter_value": calibration.delta,
