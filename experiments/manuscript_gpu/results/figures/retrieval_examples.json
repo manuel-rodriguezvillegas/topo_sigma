@@ -1,0 +1,34 @@
+[
+ {
+  "sequence": "freiburg_a",
+  "request": "Take me to the kitchen",
+  "expected": "KT",
+  "top1": "KT",
+  "correct": true,
+  "image": "retrieval_1_freiburg_a.png"
+ },
+ {
+  "sequence": "freiburg_a",
+  "request": "Go to the large office",
+  "expected": "LO",
+  "top1": "CR",
+  "correct": false,
+  "image": "retrieval_2_freiburg_a.png"
+ },
+ {
+  "sequence": "freiburg_ext",
+  "request": "Take me to the stairs",
+  "expected": "ST",
+  "top1": "CR",
+  "correct": false,
+  "image": "retrieval_3_freiburg_ext.png"
+ },
+ {
+  "sequence": "saarbruecken_a",
+  "request": "Take me to the terminal room",
+  "expected": "TR",
+  "top1": "CR",
+  "correct": false,
+  "image": "retrieval_4_saarbruecken_a.png"
+ }
+]
