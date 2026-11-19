@@ -26,66 +26,78 @@ from vts_evaluation.tolerance_sweep import EvaluationCase, evaluate_case
 
 TOLERANCES = [0.5, 1.0, 2.0, 3.0]
 MAIN_GATE = "propagated_calibrated"
-DESCRIPTOR = "dinov2_s"
+DESCRIPTOR = "dinov3_s"
 MAPPER_OPTIONS = dict(window_size=30, valley_k=2.0, valley_mode="adaptive", valley_delta=0.1,
                       visual_outlier_k=2.0, naive_threshold=0.7)
 NODE_SENSITIVITY_FILE = RESULTS / "node_sensitivity.json"
 VISUAL_FILE = RESULTS / "visual_likelihood.json"
 PLACE_RADIUS_M = 2.0
 DUMMY_IMAGE = np.zeros((1, 1, 3), dtype=np.uint8)
+DESCRIPTOR_ABLATIONS = ("dinov2_s", "anyloc_vlad_g", "anyloc_gem_g")
+VISUAL_SCORES = {"dinov3_s": ("cosine", "vmf"), **{e: ("cosine",) for e in DESCRIPTOR_ABLATIONS}}
 
 
-def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="geometric", visual_model="vmf",
+def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="both", visual_model="cosine",
           images=False, **mapper) -> dict:
     return dict(gate=gate, encoder=encoder, association=association, gate_mode=gate_mode,
                 visual_model=visual_model, images=images, mapper={**MAPPER_OPTIONS, **mapper})
 
 
-COMPARISON_ENCODERS = ("anyloc_vlad_g", "anyloc_gem_g", "dinov3_s")
-RETRIEVAL_SCORE = {"anyloc_vlad_g": "cosine", "anyloc_gem_g": "cosine", "dinov3_s": "vmf"}
+def geometric_source(encoder: str) -> str:
+    """Variant whose graphs (same nodes, no visual evidence) calibrate the visual ratio of ``encoder``."""
+    return "geometry_only" if encoder == DESCRIPTOR else f"{encoder}_geometry"
 
 
 def variants(split: str) -> dict[str, dict]:
-    """Geometric variants; visual ones, which need ``VISUAL_FILE``, are in :func:`visual_variants`."""
+    """Variants that need no visual likelihood ratio; they run first."""
     v = {
-        "topo": _spec(images=split == "dev"),
-        "disk_isotropic_default": _spec(gate="isotropic_default"),
-        "disk_isotropic_calibrated": _spec(gate="isotropic_calibrated"),
-        "gate_propagated": _spec(association="gate", gate_mode="both"),
-        "gate_propagated_geometry_only": _spec(association="gate"),
-        "paper": _spec(gate="isotropic_default", association="gate", gate_mode="both"),
-        "paper_geometry_only": _spec(gate="isotropic_default", association="gate"),
+        "geometry_only": _spec(gate_mode="geometric"),
+        "gate_propagated": _spec(association="gate"),
+        "previous_system": _spec(gate="isotropic_default", encoder="dinov2_s", association="gate",
+                                 visual_model="vmf"),
         "threshold": _spec(association="gate", gate_mode="threshold"),
         "visual_only": _spec(association="gate", gate_mode="visual"),
     }
-    for encoder in COMPARISON_ENCODERS:
-        v[encoder] = _spec(encoder=encoder)
-    if split == "dev":
-        for k in (1.0, 1.5, 2.5, 3.0):
-            v[f"valley_k{k}"] = _spec(valley_k=k)
-        v["valley_fixed"] = _spec(valley_mode="fixed")
-    v["topo_cut"] = _spec(boundary="cut")
-    v["dinov3_s_cut"] = _spec(encoder="dinov3_s", boundary="cut")
+    for encoder in DESCRIPTOR_ABLATIONS:
+        v[geometric_source(encoder)] = _spec(encoder=encoder, gate_mode="geometric")
     return v
 
 
 def visual_variants(split: str) -> dict[str, dict]:
-    """Disk association reweighted by visual evidence of aligned revisits."""
-    return {
-        "topo_visual": _spec(gate_mode="both"),
-        "topo_visual_cosine": _spec(gate_mode="both", visual_model="cosine"),
-        **{f"{e}_visual": _spec(encoder=e, gate_mode="both", visual_model=RETRIEVAL_SCORE[e])
-           for e in COMPARISON_ENCODERS},
+    """The method and its ablations; they need ``VISUAL_FILE``."""
+    v = {
+        "topo": _spec(images=split == "dev"),
+        "vmf": _spec(visual_model="vmf"),
+        "isotropic_default": _spec(gate="isotropic_default"),
+        "isotropic_calibrated": _spec(gate="isotropic_calibrated"),
+        "boundary_cut": _spec(boundary="cut"),
+        **{encoder: _spec(encoder=encoder) for encoder in DESCRIPTOR_ABLATIONS},
     }
+    if split == "dev":
+        for k in (1.0, 1.5, 2.5, 3.0):
+            v[f"valley_k{k}"] = _spec(valley_k=k)
+        v["valley_fixed"] = _spec(valley_mode="fixed")
+    return v
 
 
-def visual_likelihood(spec: dict, seq_name: str, split: str) -> VisualLikelihood | None:
-    """Development traversals use the fit that left them out; unseen ones the fit on all seven."""
+def visual_likelihood(spec: dict, seq_name: str, split: str) -> dict | None:
+    """Design traversals use the fit that left them out; test traversals the fit on all design traversals."""
     if spec["gate_mode"] != "both" or spec["association"] != "disk":
         return None
     fits = json.loads(VISUAL_FILE.read_text())[f"{spec['encoder']}:{spec['visual_model']}"]
-    fit = fits["leave_out"][seq_name] if split == "dev" else fits["all"]
-    return VisualLikelihood(fit["intercept"], fit["slope"])
+    return fits["all"] if split == "test" else fits["leave_out"][seq_name]
+
+
+def resolved_inputs(spec: dict, seq_name: str, split: str) -> dict:
+    """Everything a run depends on, including values read from calibration files."""
+    gate = gates()[spec["gate"]]
+    delta = spec["mapper"]["valley_delta"]
+    if spec["mapper"]["valley_mode"] == "fixed":
+        delta = json.loads(NODE_SENSITIVITY_FILE.read_text())["fixed_delta"]
+    fit = visual_likelihood(spec, seq_name, split)
+    return {"spec": spec, "uncertainty_model": gate.model, "alpha": gate.params.as_array().tolist(),
+            "valley_delta": delta,
+            "visual_likelihood": None if fit is None else {k: fit[k] for k in ("intercept", "slope")}}
 
 
 def scored_decisions(graph, node_gt: dict[int, tuple], tolerance: float) -> list[tuple[float, bool]]:
@@ -102,12 +114,13 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
     seq = ALL[seq_name]
     target = Path(out) / "replay" / seq_name / variant
     result_path = target / "result.json"
-    if result_path.exists():
-        return json.loads(result_path.read_text())
     try:
-        mapper_options = dict(spec["mapper"])
-        if mapper_options["valley_mode"] == "fixed":
-            mapper_options["valley_delta"] = json.loads(NODE_SENSITIVITY_FILE.read_text())["fixed_delta"]
+        inputs = resolved_inputs(spec, seq_name, seq.split)
+        if result_path.exists():
+            previous = json.loads(result_path.read_text())
+            if previous.get("inputs") == inputs:
+                return previous
+        mapper_options = {**spec["mapper"], "valley_delta": inputs["valley_delta"]}
         gate = gates()[spec["gate"]]
         stream = load_stream(seq)
         covariances = cumulative_covariances(gate.model, gate.params, stream.odometry)
@@ -119,7 +132,8 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
         mapper = TopologicalMapper(
             frame_id=seq_name, gate_mode=spec["gate_mode"], visual_model=spec["visual_model"],
             uncertainty_model=gate.model, association=spec["association"], place_radius=PLACE_RADIUS_M,
-            visual_likelihood=visual_likelihood(spec, seq_name, seq.split), **mapper_options,
+            visual_likelihood=None if inputs["visual_likelihood"] is None
+            else VisualLikelihood(**inputs["visual_likelihood"]), **mapper_options,
         )
         for k, image_path in enumerate(stream.image_paths):
             image = cv2.imread(image_path, cv2.IMREAD_COLOR) if spec["images"] else DUMMY_IMAGE
@@ -139,8 +153,8 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
         rmse = graph_metrics(mapper.graph, trajectory,
                              node_gt_xy={k: np.asarray(v[:2]) for k, v in node_gt.items()}).node_placement_rmse
         result = {
-            "sequence": seq_name, "variant": variant, "split": seq.split, "domain": seq.domain, "spec": spec,
-            "valley_delta": mapper_options["valley_delta"], "frames": len(names), "nodes": len(mapper.graph.nodes),
+            "sequence": seq_name, "variant": variant, "split": seq.split, "domain": seq.domain, "route": seq.route,
+            "inputs": inputs, "frames": len(names), "nodes": len(mapper.graph.nodes),
             "node_placement_rmse_m": float(rmse),
             "metrics": [{k: r[k] for k in ("tolerance_m", "n_nodes", "n_loop_edges", "loop_opportunities", "loop_tp",
                                             "loop_fp", "loop_fn", "loop_precision", "loop_recall", "loop_f1",

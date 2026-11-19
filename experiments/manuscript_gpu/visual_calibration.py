@@ -1,10 +1,10 @@
-"""Likelihood ratio of visual node scores, fitted on the development graphs of the geometric runs.
+"""Likelihood ratio of visual node scores, fitted on the design graphs (development and validation) of the geometric runs.
 
 Positive pairs are earlier nodes within the place radius and seen with a ground-truth heading
 within 45 degrees; negative pairs are earlier nodes farther than the place radius. Opposed
 revisits are left out because the mapper treats their appearance as uninformative. A logistic
 regression of the class on the score gives the log ratio after removing the class prior.
-Each development traversal gets the fit that left it out; unseen traversals use the fit on all.
+Each design traversal gets the fit that left it out; test traversals use the fit on all of them.
 """
 
 from __future__ import annotations
@@ -16,16 +16,14 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import minimize
 
-from mapper_runs import COMPARISON_ENCODERS, PLACE_RADIUS_M, RETRIEVAL_SCORE, VISUAL_FILE
-from stream import DEV
+from mapper_runs import PLACE_RADIUS_M, VISUAL_FILE, VISUAL_SCORES, geometric_source
+from stream import DESIGN
 from vts_core.mapper import TopologicalMapper
 from vts_core.motion import normalize_angle
 from vts_core.topo_graph import LOOP_TEMPORAL_EXCLUSION_NODES, TopoGraph
 
 ALIGNED_HEADING = np.pi / 4
 SCORES = {"vmf": TopologicalMapper._node_vmf_evidence, "cosine": TopologicalMapper._node_similarity}
-SOURCES = {"dinov2_s": "topo", **{e: e for e in COMPARISON_ENCODERS}}
-SCORE_TYPES = {"dinov2_s": ("vmf", "cosine"), **{e: (score,) for e, score in RETRIEVAL_SCORE.items()}}
 
 
 def labelled_scores(run: Path, score: str) -> tuple[np.ndarray, np.ndarray]:
@@ -61,12 +59,13 @@ def fit_log_ratio(values: np.ndarray, labels: np.ndarray) -> dict[str, float]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--encoders", nargs="*", default=list(SOURCES))
+    parser.add_argument("--encoders", nargs="*", default=list(VISUAL_SCORES))
     args = parser.parse_args()
     report = json.loads(VISUAL_FILE.read_text()) if VISUAL_FILE.exists() else {}
     for encoder in args.encoders:
-        for score in SCORE_TYPES[encoder]:
-            data = {s.name: labelled_scores(args.out / "replay" / s.name / SOURCES[encoder], score) for s in DEV}
+        for score in VISUAL_SCORES[encoder]:
+            data = {s.name: labelled_scores(args.out / "replay" / s.name / geometric_source(encoder), score)
+                    for s in DESIGN}
 
             def pooled(names: list[str]) -> tuple[np.ndarray, np.ndarray]:
                 return tuple(np.concatenate([data[n][i] for n in names]) for i in (0, 1))

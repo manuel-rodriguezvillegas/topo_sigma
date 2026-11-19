@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Every number and figure of the manuscript, on the university GPU.
+# Design runs of the manuscript (7 development and 12 validation traversals), on the university GPU.
+# The test traversals are evaluated separately, once the design is frozen.
 #
 #   nohup bash experiments/manuscript_gpu/run_all.sh > manuscript_gpu.log 2>&1 &
 #   tail -f manuscript_gpu.log
@@ -33,18 +34,17 @@ cd "$HERE"
 step "3. Tests"
 $PY -m pytest -q tests
 
-step "4. Odometry calibration (development ground truth only)"
+step "4. Odometry calibration (ground truth of the design traversals)"
 $PY calibrate.py
 
-step "5. Geometric replays"
-$PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --exclude valley_fixed --jobs "$JOBS"
+step "5. Replays without visual evidence"
+$PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --jobs "$JOBS"
 $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split heldout --jobs "$JOBS"
 
-step "6. Node-creation sensitivity, then the fixed-prominence detector"
+step "6. Node-creation sensitivity (sets the fixed prominence)"
 $PY segmentation.py --descriptors "$ANYLOC_OUT"
-$PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --variants valley_fixed --jobs "$JOBS"
 
-step "7. Visual likelihood ratios, then the visual replays"
+step "7. Visual likelihood ratios, then the method and its ablations"
 $PY visual_calibration.py --out "$OUT"
 $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --visual --jobs "$JOBS"
 $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split heldout --visual --jobs "$JOBS"

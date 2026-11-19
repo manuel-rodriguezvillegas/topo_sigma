@@ -22,7 +22,7 @@ K_VALUES = [1.0, 1.5, 2.0, 2.5, 3.0]
 FINAL_K = 2.0
 WINDOW = 30
 CALIBRATION_CASE = "freiburg_a"
-FIXED_DELTA_SOURCE = ("dinov2_s", "minimum")
+FIXED_DELTA_SOURCE = ("dinov3_s", "minimum")
 
 
 def connectivity(descriptors: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

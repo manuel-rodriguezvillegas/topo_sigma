@@ -13,23 +13,16 @@ from mapper_runs import NODE_SENSITIVITY_FILE, TOLERANCES
 from summarize import bootstrap, bootstrap_abs, counts, prf
 
 SPLIT_VARIANTS = [
-    "topo", "topo_visual", "topo_visual_cosine",
-    "disk_isotropic_default", "disk_isotropic_calibrated",
-    "gate_propagated", "gate_propagated_geometry_only", "paper", "paper_geometry_only",
-    "threshold", "visual_only",
-    "anyloc_vlad_g", "anyloc_vlad_g_visual", "anyloc_gem_g", "anyloc_gem_g_visual",
-    "dinov3_s", "dinov3_s_visual", "topo_cut", "dinov3_s_cut",
+    "topo", "geometry_only", "vmf", "isotropic_default", "isotropic_calibrated", "gate_propagated",
+    "boundary_cut", "dinov2_s", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "threshold", "visual_only",
 ]
-SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "topo_cut",
-               "dinov3_s", "dinov3_s_cut"]
+SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "boundary_cut"]
 PAIRED_TESTS = [
-    ("topo", "paper", 2, "F1"), ("topo", "paper", 0, "P"), ("topo", "paper", 1, "R"),
-    ("topo", "disk_isotropic_default", 2, "F1"), ("topo", "disk_isotropic_calibrated", 2, "F1"),
-    ("topo", "gate_propagated", 2, "F1"),
-    ("topo_visual", "topo", 2, "F1"), ("topo_visual_cosine", "topo", 2, "F1"),
-    ("topo", "anyloc_vlad_g", 2, "F1"), ("topo_visual_cosine", "anyloc_vlad_g_visual", 2, "F1"),
-    ("topo", "anyloc_gem_g", 2, "F1"), ("topo_visual_cosine", "anyloc_gem_g_visual", 2, "F1"),
-    ("topo", "dinov3_s", 2, "F1"), ("topo_visual", "dinov3_s_visual", 2, "F1"),
+    ("topo", "previous_system", 2, "F1"), ("topo", "previous_system", 0, "P"), ("topo", "previous_system", 1, "R"),
+    ("topo", "geometry_only", 2, "F1"), ("topo", "vmf", 2, "F1"),
+    ("topo", "isotropic_calibrated", 2, "F1"), ("topo", "isotropic_default", 2, "F1"),
+    ("topo", "gate_propagated", 2, "F1"), ("topo", "boundary_cut", 2, "F1"),
+    ("topo", "dinov2_s", 2, "F1"), ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "anyloc_gem_g", 2, "F1"),
 ]
 
 
@@ -222,7 +215,7 @@ def main() -> None:
         "calibration": calibration_section(),
         "node_sensitivity": sensitivity_section(dev),
         "development": split_section(dev, DEV, "Development traversals (7)", SPLIT_VARIANTS),
-        "unseen": split_section(held, HELDOUT, "Unseen traversals (12)", SPLIT_VARIANTS),
+        "validation": split_section(held, HELDOUT, "Validation traversals (12)", SPLIT_VARIANTS),
         "language": language_section(),
     }.items():
         lines += section

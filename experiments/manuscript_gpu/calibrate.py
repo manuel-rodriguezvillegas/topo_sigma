@@ -1,4 +1,4 @@
-"""Maximum-likelihood calibration of the odometry noise coefficients on the development traversals.
+"""Maximum-likelihood calibration of the odometry noise coefficients on the design traversals.
 
 Frame pairs a fixed travelled distance apart give the drift of the recorded odometry against
 ground truth, expressed in the frame of the earlier pose so that the unknown transform between
@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.optimize import minimize
 
-from stream import CALIBRATION_FILE, DEFAULT_PARAMS, DEV, RESULTS, Stream, cumulative_covariances, load_stream
+from stream import CALIBRATION_FILE, DEFAULT_PARAMS, DESIGN, RESULTS, Stream, cumulative_covariances, load_stream
 from vts_core.matching import _CHI2_GATE_2DOF
 from vts_core.motion import OdometryUncertaintyParams, relative_pose_covariance
 
@@ -142,8 +142,8 @@ def gate_coverage(pairs: list[Pairs], alpha: np.ndarray, floor_variance: float) 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args()
-    names = [s.name for s in DEV]
-    streams = {s.name: load_stream(s) for s in DEV}
+    names = [s.name for s in DESIGN]
+    streams = {s.name: load_stream(s) for s in DESIGN}
     pairs = {model: {n: build_pairs(streams[n], model) for n in names} for model in FREE_COEFFICIENTS}
 
     fits = {model: fit(list(pairs[model].values()), model) for model in FREE_COEFFICIENTS}

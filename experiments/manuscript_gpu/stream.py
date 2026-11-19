@@ -16,6 +16,7 @@ from common import ALL, DEV, HELDOUT, TEST, Sequence, frames  # noqa: E402,F401
 from vts_core.motion import OdometryUncertaintyParams, make_tracker  # noqa: E402
 
 RESULTS = HERE / "results"
+DESIGN = DEV + HELDOUT
 CALIBRATION_FILE = RESULTS / "calibration.json"
 DEFAULT_PARAMS = OdometryUncertaintyParams()
 
