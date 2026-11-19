@@ -189,6 +189,6 @@ step "5. Summary"
 (cd "$HERE" && $PY summarize.py "$OUT/diagnostic") > /dev/null
 cp "$WS/output/toposigma/evaluate/loops.json" "$OUT/diagnostic/loops.json"
 nvidia-smi --query-gpu=name --format=csv,noheader > "$OUT/diagnostic/gpu.txt"
-tar -czf "$REPO/gate_verification_results.tar.gz" -C "$OUT" diagnostic mast3r_commit.txt
+tar -czf "$OUT/gate_verification_results.tar.gz" -C "$OUT" diagnostic mast3r_commit.txt
 cat "$OUT/diagnostic/summary.md"
-step "Done. Bring back: $REPO/gate_verification_results.tar.gz"
+step "Done. Results archive (not for the repository): $OUT/gate_verification_results.tar.gz"

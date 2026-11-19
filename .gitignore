@@ -7,6 +7,12 @@ CLAUDE.md
 # Local datasets and model caches are not redistributed.
 encoder/
 
+# Archives of datasets or results never belong in the repository
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
 # ROS2
 build/
 install/
