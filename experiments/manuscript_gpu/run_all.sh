@@ -24,11 +24,7 @@ step "1. Data and GPU descriptors of all 19 traversals (AnyLoc runner; resumes)"
 RUN_HELDOUT=1 OUT=$ANYLOC_OUT bash "$REPO/experiments/anyloc_published/run_all.sh"
 
 step "2. Python environment"
-VENV=$REPO/experiments/gate_verification/.venv
-[ -x "$VENV/bin/python" ] || VENV=$REPO/experiments/anyloc_published/.venv
-PY=$VENV/bin/python
-uv pip install --python "$PY" -q pytest matplotlib "transformers>=5.2,<6" sentencepiece
-$PY -c "import torch; assert torch.cuda.is_available(), 'PyTorch does not see the GPU'; print(torch.cuda.get_device_name(0))"
+source "$HERE/env.sh"
 
 step "2b. DINOv3 descriptors (gated weights: request access on Hugging Face and run hf auth login first)"
 (cd "$REPO/experiments/anyloc_published" && $PY extract.py --out "$ANYLOC_OUT" --encoders dinov3_s --batch 16)
@@ -45,7 +41,7 @@ $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --exclud
 $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split heldout --jobs "$JOBS"
 
 step "6. Node-creation sensitivity, then the fixed-prominence detector"
-$PY segmentation.py --out "$OUT"
+$PY segmentation.py --descriptors "$ANYLOC_OUT"
 $PY mapper_runs.py --out "$OUT" --descriptors "$ANYLOC_OUT" --split dev --variants valley_fixed --jobs "$JOBS"
 
 step "7. Visual likelihood ratios, then the visual replays"

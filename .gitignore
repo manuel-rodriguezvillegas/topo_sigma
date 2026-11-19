@@ -7,6 +7,9 @@ CLAUDE.md
 # Local datasets and model caches are not redistributed.
 encoder/
 
+# Generated figures stay on the machine that made them (dataset frames are not redistributed)
+experiments/*/results/figures/
+
 # Archives of datasets or results never belong in the repository
 *.tar
 *.tar.gz

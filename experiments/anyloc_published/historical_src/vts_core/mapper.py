@@ -84,6 +84,9 @@ _REVISIT_DECISION: float = 0.5
 _ALIGNED_HEADING: float = np.pi / 4
 VISUAL_MODELS: tuple[str, ...] = ("vmf", "cosine")
 VALLEY_MODES: tuple[str, ...] = ("adaptive", "fixed")
+# Where a confirmed valley splits the stream: at the newest frame of the window of least
+# lambda_2 ("minimum"), or at that window's least-normalized-cut split ("cut").
+BOUNDARIES: tuple[str, ...] = ("minimum", "cut")
 # Absolute cosine-similarity threshold used by the "threshold" ablation mode.
 _NAIVE_THRESHOLD: float = 0.7
 
@@ -114,6 +117,7 @@ class TopologicalMapper:
         association: str = "gate",
         place_radius: float = 2.0,
         visual_likelihood: VisualLikelihood | None = None,
+        boundary: str = "minimum",
     ) -> None:
         """
         Args:
@@ -146,11 +150,14 @@ class TopologicalMapper:
                 (``disk`` association).
             visual_likelihood: Visual likelihood ratio used by ``disk`` association
                 with ``gate_mode="both"``.
+            boundary: One of :data:`BOUNDARIES`.
         """
         if gate_mode not in GATE_MODES:
             raise ValueError(f"gate_mode must be one of {GATE_MODES}, got {gate_mode!r}")
         if visual_model not in VISUAL_MODELS:
             raise ValueError(f"visual_model must be one of {VISUAL_MODELS}, got {visual_model!r}")
+        if boundary not in BOUNDARIES:
+            raise ValueError(f"boundary must be one of {BOUNDARIES}, got {boundary!r}")
         if association not in ASSOCIATIONS:
             raise ValueError(f"association must be one of {ASSOCIATIONS}, got {association!r}")
         if association == "disk" and gate_mode not in {"geometric", "both"}:
@@ -176,6 +183,7 @@ class TopologicalMapper:
         self._association = association
         self._place_radius = place_radius
         self._visual_likelihood = visual_likelihood
+        self._boundary = boundary
 
         self._monitor: ConnectivityMonitor = ConnectivityMonitor(window_size)
         self._detector: AdaptiveValleyDetector | FixedValleyDetector = (
@@ -280,6 +288,8 @@ class TopologicalMapper:
         # Connectivity sample zero is produced by camera frame one, so the
         # detector's lambda-series index maps to camera index + 1.
         boundary_frame_index = valley_index + 1
+        if self._boundary == "cut":
+            boundary_frame_index -= self._monitor.frames_after_cut[valley_index]
         segment = self._pending_frames.segment(boundary_frame_index)
         if not segment:
             return None

@@ -89,17 +89,6 @@ def main() -> None:
         help="Where to save the map PNG (default: <graph_dir>/images/<stem>_map.png)",
     )
     parser.add_argument(
-        "--legend-loc",
-        default="best",
-        help="Matplotlib location for the map legend (default: best)",
-    )
-    parser.add_argument(
-        "--legend-ncol",
-        type=int,
-        default=1,
-        help="Number of map-legend columns (default: 1)",
-    )
-    parser.add_argument(
         "--floorplan",
         default="",
         help="Floorplan image to overlay the map on (needs a <floorplan>.calib.json)",
@@ -205,8 +194,6 @@ def main() -> None:
                 viz_path,
                 gt_xy=gt_xy,
                 node_gt=node_gt,
-                legend_loc=args.legend_loc,
-                legend_ncol=args.legend_ncol,
             )
         report["map_image"] = viz_path
 

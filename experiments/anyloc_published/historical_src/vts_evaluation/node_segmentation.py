@@ -124,12 +124,19 @@ def detect_valleys(signal: np.ndarray, detector: ValleyDetector) -> list[int]:
     return valleys
 
 
-def valley_indices_to_splits(valleys: list[int], frame_count: int) -> list[int]:
-    """Convert lambda_2 indices to exclusive frame-segment split positions."""
+def valley_indices_to_splits(
+    valleys: list[int], frame_count: int, frames_after_cut: np.ndarray | None = None
+) -> list[int]:
+    """Convert lambda_2 indices to exclusive frame-segment split positions.
+
+    ``frames_after_cut`` (one per lambda_2 sample) moves each split back to the
+    least-normalized-cut split of its window, as the mapper's ``cut`` boundary does.
+    """
     # lambda_2[0] is produced by camera frame 1.  The mapper assigns the
     # valley frame to the preceding node, hence the following node starts at
     # valley_index + 2.
-    return sorted({index + 2 for index in valleys if 0 < index + 2 < frame_count})
+    shift = np.zeros(frame_count, dtype=np.int64) if frames_after_cut is None else frames_after_cut
+    return sorted({index + 2 - int(shift[index]) for index in valleys if 0 < index + 2 - int(shift[index]) < frame_count})
 
 
 def _segments(splits: list[int], frame_count: int) -> list[tuple[int, int]]:
@@ -191,6 +198,7 @@ def segmentation_metrics(
     labels: list[str] | None,
     tolerance_frames: int,
     frame_rate_hz: float,
+    frames_after_cut: np.ndarray | None = None,
 ) -> dict[str, int | float | None]:
     """Compute granularity and optional semantic segmentation metrics."""
     frame_count = int(signal.size) + 1
@@ -198,7 +206,7 @@ def segmentation_metrics(
         raise ValueError(
             f"Expected {frame_count} labels for the lambda_2 signal, got {len(labels)}"
         )
-    splits = valley_indices_to_splits(valleys, frame_count)
+    splits = valley_indices_to_splits(valleys, frame_count, frames_after_cut)
     lengths = np.diff(np.asarray([0, *splits, frame_count], dtype=np.int64))
     result: dict[str, int | float | None] = {
         "frames": frame_count,
@@ -288,14 +296,14 @@ def run_experiment(
     """Run the sensitivity sweep and calibrated fixed-baseline comparison."""
     if len({case.name for case in cases}) != len(cases):
         raise ValueError("case names must be unique")
-    loaded = {case.name: _load_case(case) for case in cases}
+    loaded = {case.name: (*_load_case(case), None) for case in cases}
     return run_experiment_on_signals(
         loaded, calibration_case, k_values, final_k, history, warmup, tolerance_frames, frame_rate_hz
     )
 
 
 def run_experiment_on_signals(
-    loaded: dict[str, tuple[np.ndarray, list[str] | None]],
+    loaded: dict[str, tuple[np.ndarray, list[str] | None, np.ndarray | None]],
     calibration_case: str,
     k_values: list[float],
     final_k: float,
@@ -304,7 +312,7 @@ def run_experiment_on_signals(
     tolerance_frames: int,
     frame_rate_hz: float,
 ) -> tuple[Calibration, list[dict[str, object]]]:
-    """Same as :func:`run_experiment` on in-memory lambda_2 signals and frame labels."""
+    """Same as :func:`run_experiment` on in-memory lambda_2 signals, frame labels and cut shifts."""
     if calibration_case not in loaded:
         raise ValueError(f"unknown calibration case: {calibration_case}")
     if not k_values or any(not math.isfinite(k) or k <= 0.0 for k in k_values):
@@ -333,7 +341,7 @@ def run_experiment_on_signals(
     )
 
     rows: list[dict[str, object]] = []
-    for name, (signal, labels) in loaded.items():
+    for name, (signal, labels, frames_after_cut) in loaded.items():
         for k in k_values:
             valleys = detect_valleys(
                 signal,
@@ -351,6 +359,7 @@ def run_experiment_on_signals(
                         labels,
                         tolerance_frames,
                         frame_rate_hz,
+                        frames_after_cut,
                     ),
                 }
             )
@@ -367,6 +376,7 @@ def run_experiment_on_signals(
                     labels,
                     tolerance_frames,
                     frame_rate_hz,
+                    frames_after_cut,
                 ),
             }
         )

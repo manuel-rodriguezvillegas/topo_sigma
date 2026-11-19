@@ -64,6 +64,8 @@ def variants(split: str) -> dict[str, dict]:
         for k in (1.0, 1.5, 2.5, 3.0):
             v[f"valley_k{k}"] = _spec(valley_k=k)
         v["valley_fixed"] = _spec(valley_mode="fixed")
+    v["topo_cut"] = _spec(boundary="cut")
+    v["dinov3_s_cut"] = _spec(encoder="dinov3_s", boundary="cut")
     return v
 
 
@@ -84,19 +86,6 @@ def visual_likelihood(spec: dict, seq_name: str, split: str) -> VisualLikelihood
     fits = json.loads(VISUAL_FILE.read_text())[f"{spec['encoder']}:{spec['visual_model']}"]
     fit = fits["leave_out"][seq_name] if split == "dev" else fits["all"]
     return VisualLikelihood(fit["intercept"], fit["slope"])
-
-
-class _RecordingMonitor:
-    """Records the lambda_2 series of the connectivity monitor."""
-
-    def __init__(self, inner):
-        self.inner, self.series = inner, []
-
-    def update(self, descriptor):
-        value = self.inner.update(descriptor)
-        if value is not None:
-            self.series.append(value)
-        return value
 
 
 def scored_decisions(graph, node_gt: dict[int, tuple], tolerance: float) -> list[tuple[float, bool]]:
@@ -132,8 +121,6 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
             uncertainty_model=gate.model, association=spec["association"], place_radius=PLACE_RADIUS_M,
             visual_likelihood=visual_likelihood(spec, seq_name, seq.split), **mapper_options,
         )
-        monitor = _RecordingMonitor(mapper._monitor)
-        mapper._monitor = monitor
         for k, image_path in enumerate(stream.image_paths):
             image = cv2.imread(image_path, cv2.IMREAD_COLOR) if spec["images"] else DUMMY_IMAGE
             mapper.process_frame(image, descriptors[k].astype(np.float32), tuple(stream.odometry[k]), covariances[k],
@@ -145,7 +132,8 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
         mapper.graph.save(str(graph_path))
         node_gt = {n.node_id: tuple(n.gt_pose) for n in mapper.graph.nodes.values()}
         gt_path.write_text(json.dumps({str(k): v for k, v in node_gt.items()}))
-        np.save(target / "lambda2.npy", np.asarray(monitor.series))
+        np.save(target / "lambda2.npy", np.asarray(mapper._monitor.eigenvalues))
+        np.save(target / "frames_after_cut.npy", np.asarray(mapper._monitor.frames_after_cut))
         rows = evaluate_case(EvaluationCase(seq_name, str(graph_path), str(gt_path), str(seq.trajectory_gt)), TOLERANCES)
         trajectory = load_ground_truth_xy(str(seq.trajectory_gt))
         rmse = graph_metrics(mapper.graph, trajectory,

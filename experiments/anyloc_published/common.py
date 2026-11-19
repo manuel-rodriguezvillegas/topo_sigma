@@ -51,7 +51,7 @@ class Sequence:
     name: str
     dataset: str  # "cold" | "cid"
     recording: str
-    split: str  # "dev" (manuscript) | "heldout"
+    split: str  # "dev" | "heldout" | "test"
 
     @property
     def path(self) -> Path:
@@ -64,6 +64,11 @@ class Sequence:
     @property
     def trajectory_gt(self) -> Path:
         return self.path / "std_cam" if self.dataset == "cold" else self.path / "groundtruth.txt"
+
+    @property
+    def route(self) -> str:
+        """Recordings of one route (COLD lab/part/sequence, CID-SIMS area) share it; resampling units."""
+        return self.recording.rsplit("_", 1)[0]
 
 
 DEV = [
@@ -92,7 +97,17 @@ HELDOUT = [
     Sequence("heldout_cid_apartment3_2", "cid", "apartment3_2", "heldout"),
 ]
 
-ALL = {s.name: s for s in DEV + HELDOUT}
+TEST_LIST = HERE / "test_traversals.tsv"
+
+
+def _test_traversals() -> list[Sequence]:
+    """Final test traversals, never used to design or tune the method; downloaded by fetch_test_set.sh."""
+    rows = [line.split("\t") for line in TEST_LIST.read_text().splitlines() if line and not line.startswith("#")]
+    return [Sequence(name, dataset, recording, "test") for name, dataset, recording, _ in rows]
+
+
+TEST = _test_traversals()
+ALL = {s.name: s for s in DEV + HELDOUT + TEST}
 
 _COLD_NAME = re.compile(r"t(?P<t>\d+\.\d+)_x(?P<x>-?\d+\.?\d*)_y(?P<y>-?\d+\.?\d*)_a(?P<a>-?\d+\.?\d*)")
 _COLD_CLASSES = ("CR", "2PO", "RL", "TL", "TR", "LO", "1PO", "KT", "CNR", "PA", "LAB", "ST")

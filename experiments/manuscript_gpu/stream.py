@@ -12,7 +12,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.append(str(HERE.parent / "anyloc_published"))
 
-from common import ALL, DEV, HELDOUT, Sequence, frames  # noqa: E402,F401
+from common import ALL, DEV, HELDOUT, TEST, Sequence, frames  # noqa: E402,F401
 from vts_core.motion import OdometryUncertaintyParams, make_tracker  # noqa: E402
 
 RESULTS = HERE / "results"

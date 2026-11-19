@@ -18,9 +18,10 @@ SPLIT_VARIANTS = [
     "gate_propagated", "gate_propagated_geometry_only", "paper", "paper_geometry_only",
     "threshold", "visual_only",
     "anyloc_vlad_g", "anyloc_vlad_g_visual", "anyloc_gem_g", "anyloc_gem_g_visual",
-    "dinov3_s", "dinov3_s_visual",
+    "dinov3_s", "dinov3_s_visual", "topo_cut", "dinov3_s_cut",
 ]
-SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed"]
+SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "topo_cut",
+               "dinov3_s", "dinov3_s_cut"]
 PAIRED_TESTS = [
     ("topo", "paper", 2, "F1"), ("topo", "paper", 0, "P"), ("topo", "paper", 1, "R"),
     ("topo", "disk_isotropic_default", 2, "F1"), ("topo", "disk_isotropic_calibrated", 2, "F1"),
@@ -171,14 +172,14 @@ def sensitivity_section(results: dict) -> tuple[list[str], dict]:
     lines = ["## Node creation sensitivity (development)", "", f"Fixed δ calibrated on {report['calibration_case']}: "
              f"{report['fixed_delta']:.4f}", ""]
     rows_by = {}
-    for row in report["rows"]:
-        key = (row["method"], row["parameter_value"])
-        rows_by.setdefault(key, []).append(row)
+    for detector, result in report["detectors"].items():
+        for row in result["rows"]:
+            rows_by.setdefault((detector, row["method"], row["parameter_value"]), []).append(row)
     out = []
-    for (method, value), rows in rows_by.items():
+    for (detector, method, value), rows in rows_by.items():
         rates = np.array([r["nodes_per_1000_frames"] for r in rows])
         labeled = [r for r in rows if r["transition_recall"] is not None]
-        out.append([f"{method} {value:.4g}", str(sum(r["nodes"] for r in rows)), f"{rates.mean():.3f}",
+        out.append([f"{detector} {method} {value:.4g}", str(sum(r["nodes"] for r in rows)), f"{rates.mean():.3f}",
                     f"{rates.std() / rates.mean():.3f}",
                     f"{np.mean([r['transition_recall'] for r in labeled]):.3f}",
                     f"{np.mean([r['frame_weighted_node_purity'] for r in labeled]):.3f}",

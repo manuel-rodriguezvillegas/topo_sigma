@@ -34,6 +34,7 @@ from vts_core.topo_graph import TopoGraph
 _LEGEND_FONTSIZE: int = 16
 _LEGEND_TITLE_FONTSIZE: int = 18
 _LEGEND_MARKERSIZE: int = 11
+_LEGEND_COLUMNS: int = 4
 
 
 def _save_latex_figure(fig, out_path: str) -> str | None:
@@ -71,10 +72,8 @@ def render_map(
     gt_xy: np.ndarray | None = None,
     node_gt: dict[int, np.ndarray] | None = None,
     title: str | None = None,
-    legend_loc: str = "best",
-    legend_ncol: int = 1,
 ) -> bool:
-    """Render the map to ``out_path`` and export an editable SVG copy.
+    """Render the map to ``out_path``, legend below the axes, and export an editable SVG copy.
 
     Returns ``True`` on success.
 
@@ -152,11 +151,11 @@ def render_map(
         ),
     ]
     ax.legend(
-        handles=room_handles + edge_handles, loc=legend_loc,
+        handles=room_handles + edge_handles, loc="upper center", bbox_to_anchor=(0.5, -0.1),
         fontsize=_LEGEND_FONTSIZE, title="Room" if has_room_labels else None,
         title_fontsize=_LEGEND_TITLE_FONTSIZE,
         framealpha=0.9,
-        ncol=legend_ncol,
+        ncol=_LEGEND_COLUMNS,
     )
 
     ax.set_aspect("equal", adjustable="datalim")

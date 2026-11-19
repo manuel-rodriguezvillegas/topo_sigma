@@ -15,6 +15,26 @@ import numpy as np
 _MAD_TO_STD: float = 1.4826  # consistency constant for Gaussian data
 
 
+def contiguous_normalized_cut(affinity: np.ndarray) -> int:
+    """Split ``s`` of a time-ordered window, frames ``[0, s)`` against ``[s, n)``, of least normalized cut.
+
+    The contiguous counterpart of the sign change of the Fiedler vector (Shi and Malik, 2000).
+    """
+    degrees = affinity.sum(axis=1)
+    total = degrees.sum()
+    best_split, best_value = 1, np.inf
+    for split in range(1, affinity.shape[0]):
+        cut = affinity[:split, split:].sum()
+        left = degrees[:split].sum()
+        right = total - left
+        if left <= 0.0 or right <= 0.0:
+            continue
+        value = cut / left + cut / right
+        if value < best_value:
+            best_split, best_value = split, value
+    return best_split
+
+
 class ConnectivityMonitor:
     """Maintains the windowed affinity graph and its algebraic connectivity."""
 
@@ -29,6 +49,8 @@ class ConnectivityMonitor:
         self.window_features: np.ndarray | None = None
         self.affinity: np.ndarray | None = None
         self.eigenvalues: list[float] = []
+        # Frames of the window after its least-normalized-cut split, one per lambda_2 sample.
+        self.frames_after_cut: list[int] = []
 
     @property
     def window_length(self) -> int:
@@ -89,6 +111,7 @@ class ConnectivityMonitor:
         lambda_2: float = max(float(values[1]), 0.0)
 
         self.eigenvalues.append(lambda_2)
+        self.frames_after_cut.append(self.window_length - contiguous_normalized_cut(self.affinity))
         return lambda_2
 
 
