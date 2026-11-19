@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import minimize
 
-from mapper_runs import PLACE_RADIUS_M, VISUAL_FILE
+from mapper_runs import COMPARISON_ENCODERS, PLACE_RADIUS_M, RETRIEVAL_SCORE, VISUAL_FILE
 from stream import DEV
 from vts_core.mapper import TopologicalMapper
 from vts_core.motion import normalize_angle
@@ -24,8 +24,8 @@ from vts_core.topo_graph import LOOP_TEMPORAL_EXCLUSION_NODES, TopoGraph
 
 ALIGNED_HEADING = np.pi / 4
 SCORES = {"vmf": TopologicalMapper._node_vmf_evidence, "cosine": TopologicalMapper._node_similarity}
-SOURCES = {"dinov2_s": "topo", "anyloc_vlad_g": "anyloc_vlad_g", "anyloc_gem_g": "anyloc_gem_g"}
-SCORE_TYPES = {"dinov2_s": ("vmf", "cosine"), "anyloc_vlad_g": ("cosine",), "anyloc_gem_g": ("cosine",)}
+SOURCES = {"dinov2_s": "topo", **{e: e for e in COMPARISON_ENCODERS}}
+SCORE_TYPES = {"dinov2_s": ("vmf", "cosine"), **{e: (score,) for e, score in RETRIEVAL_SCORE.items()}}
 
 
 def labelled_scores(run: Path, score: str) -> tuple[np.ndarray, np.ndarray]:

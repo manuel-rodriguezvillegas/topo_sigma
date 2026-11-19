@@ -18,6 +18,7 @@ SPLIT_VARIANTS = [
     "gate_propagated", "gate_propagated_geometry_only", "paper", "paper_geometry_only",
     "threshold", "visual_only",
     "anyloc_vlad_g", "anyloc_vlad_g_visual", "anyloc_gem_g", "anyloc_gem_g_visual",
+    "dinov3_s", "dinov3_s_visual",
 ]
 SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed"]
 PAIRED_TESTS = [
@@ -27,6 +28,7 @@ PAIRED_TESTS = [
     ("topo_visual", "topo", 2, "F1"), ("topo_visual_cosine", "topo", 2, "F1"),
     ("topo", "anyloc_vlad_g", 2, "F1"), ("topo_visual_cosine", "anyloc_vlad_g_visual", 2, "F1"),
     ("topo", "anyloc_gem_g", 2, "F1"), ("topo_visual_cosine", "anyloc_gem_g_visual", 2, "F1"),
+    ("topo", "dinov3_s", 2, "F1"), ("topo_visual", "dinov3_s_visual", 2, "F1"),
 ]
 
 

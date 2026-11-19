@@ -11,6 +11,8 @@ Encoders (all frozen, no fitting on these data):
                       resolution (centre crop to a multiple of 14, no resize), GeM p=3.
 - ``anyloc_vlad_g``   Published AnyLoc-VLAD-DINOv2: same features, hard VLAD with the
                       released 32-cluster *indoor* vocabulary, intra-normalised (49,152-D).
+- ``dinov3_s``        DINOv3 ViT-S/16 CLS, pinned revision; the encoder of the current
+                      ``vts_core`` (gated weights: needs ``hf auth login``). Not in the default list.
 
 ``anyloc_gem_g`` and ``anyloc_vlad_g`` share one forward pass. Outputs go to
 ``$OUT/descriptors/<sequence>/<encoder>.npy`` with the frame names; finished
@@ -20,6 +22,7 @@ files are skipped, so the script resumes.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import time
@@ -34,6 +37,8 @@ from torchvision import transforms
 from common import ALL, frames
 from vts_core.features import DINO_REVISION, AnyLocGeMExtractor, FrozenDinoV2Extractor, generalized_mean
 
+CURRENT_DESCRIPTORS = (Path(__file__).resolve().parents[2]
+                       / "vts_devcontainer/vts_ws/src/vts_core/vts_core/descriptors.py")
 VOCAB_URL = "https://github.com/AnyLoc/DINO/releases/download/v1/dinov2_vitg14_l31_value_c32_indoor_c_centers.pt"
 NATIVE = transforms.Compose([
     transforms.ToTensor(),
@@ -95,6 +100,14 @@ class AnyLocViTG:
         return gem.cpu().numpy().astype(np.float32), vlad.cpu().numpy().astype(np.float16)
 
 
+def current_descriptors():
+    """The self-contained descriptor module of the current ``vts_core``, loaded beside the historical one."""
+    spec = importlib.util.spec_from_file_location("current_vts_descriptors", CURRENT_DESCRIPTORS)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
@@ -131,6 +144,22 @@ def main() -> None:
         del extractor
         torch.cuda.empty_cache()
 
+    if "dinov3_s" in args.encoders:
+        descriptors = current_descriptors()
+        encoder = descriptors.DinoV3(device)
+        identities["dinov3_s"] = encoder.identity
+        for seq_name in args.sequences:
+            target = args.out / "descriptors" / seq_name / "dinov3_s.npy"
+            if target.exists():
+                continue
+            paths = [Path(p) for p, *_ in frames(ALL[seq_name])]
+            vectors = descriptors.encode_paths(encoder, paths, batch_size=args.batch, label=f"dinov3_s {seq_name}")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            np.save(target.with_suffix(".frames.npy"), np.array([p.name for p in paths]))
+            np.save(target, vectors)
+        del encoder
+        torch.cuda.empty_cache()
+
     if {"anyloc_gem_g", "anyloc_vlad_g"} & set(args.encoders):
         vitg = AnyLocViTG(device)
         identities["anyloc_vitg_native"] = {"vocabulary": VOCAB_URL, "vocabulary_sha256": vitg.vocab_sha,
@@ -140,7 +169,7 @@ def main() -> None:
             vlad_t = args.out / "descriptors" / seq_name / "anyloc_vlad_g.npy"
             if gem_t.exists() and vlad_t.exists():
                 continue
-            start, names, gems, vlads, pending = time.time(), [], [], [], []
+            start, names, gems, vlads = time.time(), [], [], []
             stream = [p for p, *_ in frames(ALL[seq_name])]
             for k in range(0, len(stream), args.batch):
                 paths = stream[k:k + args.batch]
@@ -155,7 +184,9 @@ def main() -> None:
             np.save(vlad_t, np.concatenate(vlads))
             print(f"anyloc_vitg {seq_name}: {len(names)} frames, {time.time() - start:.0f} s", flush=True)
     (args.out / "descriptors").mkdir(parents=True, exist_ok=True)
-    (args.out / "descriptors" / "identities.json").write_text(json.dumps(identities, indent=2))
+    path = args.out / "descriptors" / "identities.json"
+    previous = json.loads(path.read_text()) if path.exists() else {}
+    path.write_text(json.dumps(previous | identities, indent=2, default=str))
 
 
 if __name__ == "__main__":

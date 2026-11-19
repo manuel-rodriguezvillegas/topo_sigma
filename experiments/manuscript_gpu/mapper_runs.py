@@ -41,7 +41,8 @@ def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="geo
                 visual_model=visual_model, images=images, mapper={**MAPPER_OPTIONS, **mapper})
 
 
-GEOMETRIC_ENCODERS = ("anyloc_vlad_g", "anyloc_gem_g")
+COMPARISON_ENCODERS = ("anyloc_vlad_g", "anyloc_gem_g", "dinov3_s")
+RETRIEVAL_SCORE = {"anyloc_vlad_g": "cosine", "anyloc_gem_g": "cosine", "dinov3_s": "vmf"}
 
 
 def variants(split: str) -> dict[str, dict]:
@@ -57,7 +58,7 @@ def variants(split: str) -> dict[str, dict]:
         "threshold": _spec(association="gate", gate_mode="threshold"),
         "visual_only": _spec(association="gate", gate_mode="visual"),
     }
-    for encoder in GEOMETRIC_ENCODERS:
+    for encoder in COMPARISON_ENCODERS:
         v[encoder] = _spec(encoder=encoder)
     if split == "dev":
         for k in (1.0, 1.5, 2.5, 3.0):
@@ -71,7 +72,8 @@ def visual_variants(split: str) -> dict[str, dict]:
     return {
         "topo_visual": _spec(gate_mode="both"),
         "topo_visual_cosine": _spec(gate_mode="both", visual_model="cosine"),
-        **{f"{e}_visual": _spec(encoder=e, gate_mode="both", visual_model="cosine") for e in GEOMETRIC_ENCODERS},
+        **{f"{e}_visual": _spec(encoder=e, gate_mode="both", visual_model=RETRIEVAL_SCORE[e])
+           for e in COMPARISON_ENCODERS},
     }
 
 
