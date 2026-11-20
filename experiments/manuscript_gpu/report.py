@@ -14,11 +14,13 @@ from mapper_runs import NODE_SENSITIVITY_FILE, TOLERANCES
 from summarize import bootstrap, bootstrap_abs, counts, prf
 
 SPLIT_VARIANTS = [
-    "topo", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf", "isotropic_default",
-    "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s", "threshold", "visual_only",
+    "topo", "topo_debiased", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
+    "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s", "threshold",
+    "visual_only",
 ]
 SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "boundary_cut"]
 PAIRED_TESTS = [
+    ("topo_debiased", "topo", 2, "F1"), ("topo_debiased", "topo", 0, "P"), ("topo_debiased", "topo", 1, "R"),
     ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "anyloc_gem_g", 2, "F1"),
     ("topo", "previous_system", 2, "F1"), ("topo", "previous_system", 0, "P"), ("topo", "previous_system", 1, "R"),
     ("topo", "gate_propagated", 2, "F1"), ("topo", "geometry_only", 2, "F1"), ("topo", "vmf", 2, "F1"),
@@ -172,7 +174,8 @@ def calibration_section() -> tuple[list[str], dict]:
     lines = ["## Odometry calibration (development ground truth only)", "",
              f"Pairs per traversal: {report['pairs_per_traversal']}", ""]
     rows = [["isotropic, original", *(f"{a:.4g}" for a in report["default_alpha"]), f"{report['default_alpha_floor_m']:.3f}", "–"]]
-    for model, label in (("additive", "isotropic, calibrated"), ("propagated", "propagated, calibrated")):
+    for model, label in (("additive", "isotropic, calibrated"), ("propagated", "propagated, calibrated"),
+                         ("propagated_debiased", "propagated, debiased heading")):
         m = report["models"][model]
         ci = m["ci95_alpha_then_floor"]
         cells = [f"{v:.4g} [{lo:.3g}; {hi:.3g}]" if i + 1 in m["free_coefficients"] else f"{v:.4g} (unused)"

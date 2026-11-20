@@ -19,14 +19,16 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.optimize import minimize
 
-from stream import CALIBRATION_FILE, DEFAULT_PARAMS, DESIGN, RESULTS, Stream, cumulative_covariances, load_stream
+from stream import (CALIBRATION_FILE, DEFAULT_PARAMS, DESIGN, RESULTS, Stream, cumulative_covariances, debiased_stream,
+                    load_stream)
 from vts_core.matching import _CHI2_GATE_2DOF
 from vts_core.motion import OdometryUncertaintyParams, relative_pose_covariance
 
 HORIZONS_M = (1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0)
 ANCHOR_SPACING_M = 1.0
 PLACE_SIGMA_M = 0.5
-FREE_COEFFICIENTS = {"additive": (2, 3), "propagated": (0, 1, 2, 3)}
+FREE_COEFFICIENTS = {"additive": (2, 3), "propagated": (0, 1, 2, 3), "propagated_debiased": (0, 1, 2, 3)}
+TRACKER = {"additive": "additive", "propagated": "propagated", "propagated_debiased": "propagated"}
 LOG_BOUNDS = (-18.0, 3.0)
 BOOTSTRAP_RESAMPLES = 200
 
@@ -48,6 +50,7 @@ def _in_frame(rotation: np.ndarray, vectors: np.ndarray) -> np.ndarray:
 
 
 def build_pairs(stream: Stream, model: str) -> Pairs:
+    """Pairs of ``stream`` with the covariance basis of calibration model ``model``."""
     odometry, truth = stream.odometry, stream.ground_truth
     steps = np.hypot(*np.diff(odometry[:, :2], axis=0).T)
     travelled = np.concatenate([[0.0], np.cumsum(steps)])
@@ -69,8 +72,8 @@ def build_pairs(stream: Stream, model: str) -> Pairs:
     for k in range(4):
         unit = np.zeros(4)
         unit[k] = 1.0
-        cumulative = cumulative_covariances(model, OdometryUncertaintyParams(*unit), odometry)
-        world = relative_pose_covariance(model, odometry[later], cumulative[later], odometry[earlier],
+        cumulative = cumulative_covariances(TRACKER[model], OdometryUncertaintyParams(*unit), odometry)
+        world = relative_pose_covariance(TRACKER[model], odometry[later], cumulative[later], odometry[earlier],
                                          cumulative[earlier])[:, :2, :2]
         basis.append(odometry_frame.swapaxes(-1, -2) @ world @ odometry_frame)
     return Pairs(residual, np.stack(basis), horizon)
@@ -143,8 +146,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args()
     names = [s.name for s in DESIGN]
-    streams = {s.name: load_stream(s) for s in DESIGN}
-    pairs = {model: {n: build_pairs(streams[n], model) for n in names} for model in FREE_COEFFICIENTS}
+    raw = {s.name: load_stream(s) for s in DESIGN}
+    corrected = {s.name: debiased_stream(s, raw[s.name]) for s in DESIGN}
+    pairs = {model: {n: build_pairs((corrected if model == "propagated_debiased" else raw)[n], model) for n in names}
+             for model in FREE_COEFFICIENTS}
 
     fits = {model: fit(list(pairs[model].values()), model) for model in FREE_COEFFICIENTS}
     default_floor = fit(list(pairs["additive"].values()), "additive", fixed_alpha=DEFAULT_PARAMS.as_array())
@@ -167,10 +172,13 @@ def main() -> None:
         iso_default = fit([pairs["additive"][n] for n in rest], "additive", fixed_alpha=DEFAULT_PARAMS.as_array())
         iso = fit([pairs["additive"][n] for n in rest], "additive")
         prop = fit([pairs["propagated"][n] for n in rest], "propagated")
+        debiased = fit([pairs["propagated_debiased"][n] for n in rest], "propagated_debiased")
         leave_one_out[held] = {
             "isotropic_default": mean_nll(pairs["additive"][held], iso_default.alpha, iso_default.floor_variance),
             "isotropic_calibrated": mean_nll(pairs["additive"][held], iso.alpha, iso.floor_variance),
             "propagated_calibrated": mean_nll(pairs["propagated"][held], prop.alpha, prop.floor_variance),
+            "propagated_debiased": mean_nll(pairs["propagated_debiased"][held], debiased.alpha,
+                                            debiased.floor_variance),
         }
 
     gate_variance = PLACE_SIGMA_M**2 + 1e-6
@@ -178,6 +186,8 @@ def main() -> None:
         "isotropic_default": gate_coverage(list(pairs["additive"].values()), DEFAULT_PARAMS.as_array(), gate_variance),
         "isotropic_calibrated": gate_coverage(list(pairs["additive"].values()), fits["additive"].alpha, gate_variance),
         "propagated_calibrated": gate_coverage(list(pairs["propagated"].values()), fits["propagated"].alpha, gate_variance),
+        "propagated_debiased": gate_coverage(list(pairs["propagated_debiased"].values()),
+                                             fits["propagated_debiased"].alpha, gate_variance),
     }
     report = {
         "horizons_m": HORIZONS_M,

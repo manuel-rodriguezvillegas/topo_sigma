@@ -34,7 +34,8 @@ cd "$HERE"
 step "3. Tests"
 $PY -m pytest -q tests
 
-step "4. Odometry calibration (ground truth of the design traversals)"
+step "4. Odometry calibration (ground truth of the design traversals): heading drift per robot, then noise"
+$PY odometry_bias.py
 $PY calibrate.py
 
 step "5. Replays without visual evidence"

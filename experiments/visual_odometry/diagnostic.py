@@ -23,7 +23,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.append(str(HERE.parents[0] / "manuscript_gpu"))
-from stream import CALIBRATION_FILE, DESIGN, Sequence, Stream, load_stream  # noqa: E402
+from stream import CALIBRATION_FILE, DESIGN, Sequence, Stream, load_stream, signed_step_lengths  # noqa: E402
 
 RESULTS = HERE / "results"
 IMAGE_SIZE = (640, 480)
@@ -69,11 +69,7 @@ class Traversal:
 
     @property
     def step_length(self) -> np.ndarray:
-        """Wheel step length, negative when the robot reverses."""
-        displacement = np.diff(self.stream.odometry[:, :2], axis=0)
-        heading = self.stream.odometry[:-1, 2]
-        forward = displacement[:, 0] * np.cos(heading) + displacement[:, 1] * np.sin(heading)
-        return np.sign(forward) * np.hypot(*displacement.T)
+        return signed_step_lengths(self.stream.odometry)
 
     def pair(self, k: int) -> tuple[np.ndarray, np.ndarray]:
         lo, hi = self.matches["offsets"][k], self.matches["offsets"][k + 1]

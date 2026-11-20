@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +20,7 @@ RESULTS = HERE / "results"
 DESIGN = DEV + HELDOUT
 CALIBRATION_FILE = RESULTS / "calibration.json"
 TEST_INVENTORY_FILE = RESULTS / "test_inventory.json"
+BIAS_FILE = RESULTS / "odometry_bias.json"
 DEFAULT_PARAMS = OdometryUncertaintyParams()
 
 
@@ -32,6 +33,32 @@ class Stream:
     odometry: np.ndarray
     ground_truth: np.ndarray
     labels: list[str | None]
+
+
+def signed_step_lengths(odometry: np.ndarray) -> np.ndarray:
+    """Length of each odometry step, negative when the robot reverses."""
+    displacement = np.diff(odometry[:, :2], axis=0)
+    heading = odometry[:-1, 2]
+    forward = displacement[:, 0] * np.cos(heading) + displacement[:, 1] * np.sin(heading)
+    return np.sign(forward) * np.hypot(*displacement.T)
+
+
+def platform(seq: Sequence) -> str:
+    """Robot that recorded the traversal: one per COLD lab, one for CID-SIMS."""
+    return "cid-sims" if seq.dataset == "cid" else seq.recording.removeprefix("cold-").split("_")[0]
+
+
+def debiased(odometry: np.ndarray, heading_rate: float) -> np.ndarray:
+    """Odometry with a heading drift of ``heading_rate`` rad per signed metre removed, re-integrated from the first pose."""
+    steps = signed_step_lengths(odometry)
+    correction = -heading_rate * np.concatenate([[0.0], np.cumsum(steps)])
+    midpoint = (correction[:-1] + correction[1:]) / 2
+    c, s = np.cos(midpoint), np.sin(midpoint)
+    d = np.diff(odometry[:, :2], axis=0)
+    rotated = np.stack([c * d[:, 0] - s * d[:, 1], s * d[:, 0] + c * d[:, 1]], axis=1)
+    xy = odometry[0, :2] + np.concatenate([np.zeros((1, 2)), np.cumsum(rotated, axis=0)])
+    heading = (odometry[:, 2] + correction + np.pi) % (2 * np.pi) - np.pi
+    return np.column_stack([xy, heading])
 
 
 def ground_truth_start(rows: np.ndarray) -> int:
@@ -68,10 +95,11 @@ class Gate:
     name: str
     model: str
     params: OdometryUncertaintyParams
+    debiased: bool = False
 
 
 def gates() -> dict[str, Gate]:
-    """The isotropic gate with its original coefficients and both calibrated gates."""
+    """The isotropic gate with its original coefficients and the calibrated gates."""
     fitted = json.loads(CALIBRATION_FILE.read_text())["models"]
     return {
         "isotropic_default": Gate("isotropic_default", "additive", DEFAULT_PARAMS),
@@ -79,8 +107,18 @@ def gates() -> dict[str, Gate]:
                                      OdometryUncertaintyParams(*fitted["additive"]["alpha"])),
         "propagated_calibrated": Gate("propagated_calibrated", "propagated",
                                       OdometryUncertaintyParams(*fitted["propagated"]["alpha"])),
+        "propagated_debiased": Gate("propagated_debiased", "propagated",
+                                    OdometryUncertaintyParams(*fitted["propagated_debiased"]["alpha"]), debiased=True),
     }
 
+
+def heading_rate(seq: Sequence) -> float:
+    """Heading drift of the robot of ``seq`` in rad per signed metre, fitted on the design traversals."""
+    return float(np.radians(json.loads(BIAS_FILE.read_text())[platform(seq)]["rate_deg_per_m"]))
+
+
+def debiased_stream(seq: Sequence, stream: Stream) -> Stream:
+    return replace(stream, odometry=debiased(stream.odometry, heading_rate(seq)))
 
 def readable_test() -> list[Sequence]:
     """Test traversals that the inventory found readable, in list order."""

@@ -16,7 +16,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from stream import ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, evaluated_trajectory, gates, load_stream, readable_test
+from stream import (ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, debiased_stream, evaluated_trajectory, gates,
+                    heading_rate, load_stream, readable_test)
 from vts_core.matching import VisualLikelihood
 from common import breakdown, load_descriptors
 from vts_core.mapper import TopologicalMapper
@@ -68,6 +69,7 @@ def visual_variants(split: str) -> dict[str, dict]:
     """The method and its ablations; they need ``VISUAL_FILE``."""
     v = {
         "topo": _spec(images=split == "dev"),
+        "topo_debiased": _spec(gate="propagated_debiased"),
         "vmf": _spec(visual_model="vmf"),
         "isotropic_default": _spec(gate="isotropic_default"),
         "isotropic_calibrated": _spec(gate="isotropic_calibrated"),
@@ -92,11 +94,13 @@ def visual_likelihood(spec: dict, seq_name: str, split: str) -> dict | None:
 def resolved_inputs(spec: dict, seq_name: str, split: str) -> dict:
     """Everything a run depends on, including values read from calibration files."""
     gate = gates()[spec["gate"]]
+    rate = heading_rate(ALL[seq_name]) if gate.debiased else 0.0
     delta = spec["mapper"]["valley_delta"]
     if spec["mapper"]["valley_mode"] == "fixed":
         delta = json.loads(NODE_SENSITIVITY_FILE.read_text())["fixed_delta"]
     fit = visual_likelihood(spec, seq_name, split)
     return {"spec": spec, "uncertainty_model": gate.model, "alpha": gate.params.as_array().tolist(),
+            "heading_rate_rad_per_m": rate,
             "valley_delta": delta,
             "visual_likelihood": None if fit is None else {k: fit[k] for k in ("intercept", "slope")}}
 
@@ -124,6 +128,8 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
                 return previous
         mapper_options = {**spec["mapper"], "valley_delta": inputs["valley_delta"]}
         gate = gates()[spec["gate"]]
+        if gate.debiased:
+            stream = debiased_stream(seq, stream)
         covariances = cumulative_covariances(gate.model, gate.params, stream.odometry)
         descriptors, descriptor_frames = load_descriptors(Path(descriptor_root), seq_name, spec["encoder"])
         descriptors, descriptor_frames = descriptors[stream.first:], descriptor_frames[stream.first:]
