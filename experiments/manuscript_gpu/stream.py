@@ -19,6 +19,7 @@ from vts_evaluation.ground_truth import load_ground_truth_xy  # noqa: E402
 RESULTS = HERE / "results"
 DESIGN = DEV + HELDOUT
 CALIBRATION_FILE = RESULTS / "calibration.json"
+TEST_INVENTORY_FILE = RESULTS / "test_inventory.json"
 DEFAULT_PARAMS = OdometryUncertaintyParams()
 
 
@@ -79,3 +80,9 @@ def gates() -> dict[str, Gate]:
         "propagated_calibrated": Gate("propagated_calibrated", "propagated",
                                       OdometryUncertaintyParams(*fitted["propagated"]["alpha"])),
     }
+
+
+def readable_test() -> list[Sequence]:
+    """Test traversals that the inventory found readable, in list order."""
+    inventory = json.loads(TEST_INVENTORY_FILE.read_text())
+    return [seq for seq in TEST if "frames" in inventory[seq.name]]

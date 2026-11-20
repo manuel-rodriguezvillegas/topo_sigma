@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
 
-from stream import CALIBRATION_FILE, DEV, HELDOUT, RESULTS
+from stream import CALIBRATION_FILE, DEV, HELDOUT, RESULTS, Sequence
 from mapper_runs import NODE_SENSITIVITY_FILE, TOLERANCES
 from summarize import bootstrap, bootstrap_abs, counts, prf
 
@@ -36,20 +37,49 @@ def average_precision(scored: list[tuple[float, bool]], opportunities: int) -> f
     return float(sum(precision[i] for i, (_, correct) in enumerate(ranked) if correct) / opportunities)
 
 
-def ap_with_interval(results: dict, seqs, variant: str, tolerance: str = "2.0", resamples: int = 10000):
-    names = [s.name for s in seqs if (s.name, variant) in results and results[(s.name, variant)]["scored"][tolerance]]
-    if len(names) < len(seqs):
+UnitOf = Callable[[Sequence], str]
+
+
+def by_traversal(seq: Sequence) -> str:
+    return seq.name
+
+
+def by_route(seq: Sequence) -> str:
+    return seq.route
+
+
+def ap_with_interval(results: dict, seqs, variant: str, unit_of: UnitOf, tolerance: str = "2.0",
+                     resamples: int = 10000):
+    """Pooled AP with a 95 % interval from resampling sampling units (all their traversals together)."""
+    if any((s.name, variant) not in results or not results[(s.name, variant)]["scored"][tolerance] for s in seqs):
         return None
-    scored = {n: results[(n, variant)]["scored"][tolerance] for n in names}
-    opportunities = {n: next(m["loop_opportunities"] for m in results[(n, variant)]["metrics"]
-                             if str(m["tolerance_m"]) == tolerance) for n in names}
+    units: dict[str, list[str]] = {}
+    for s in seqs:
+        units.setdefault(unit_of(s), []).append(s.name)
+    names = list(units)
+    scored = {s.name: results[(s.name, variant)]["scored"][tolerance] for s in seqs}
+    opportunities = {s.name: next(m["loop_opportunities"] for m in results[(s.name, variant)]["metrics"]
+                                  if str(m["tolerance_m"]) == tolerance) for s in seqs}
 
     def pooled(sample: list[str]) -> float:
-        return average_precision([d for n in sample for d in scored[n]], sum(opportunities[n] for n in sample))
+        members = [n for unit in sample for n in units[unit]]
+        return average_precision([d for n in members for d in scored[n]], sum(opportunities[n] for n in members))
 
     rng = np.random.default_rng(0)
     draws = [pooled([names[i] for i in rng.integers(0, len(names), len(names))]) for _ in range(resamples)]
     return {"point": pooled(names), "ci95": [float(np.percentile(draws, 2.5)), float(np.percentile(draws, 97.5))]}
+
+
+def unit_counts(results: dict, seqs, variants: list[str], unit_of: UnitOf,
+                tolerance: float = 2.0) -> dict[str, dict[str, np.ndarray]]:
+    """Loop counts summed per sampling unit, for the variants that ran on every traversal."""
+    complete = [v for v in variants if all((s.name, v) in results for s in seqs)]
+    units: dict[str, dict[str, np.ndarray]] = {}
+    for s in seqs:
+        unit = units.setdefault(unit_of(s), {})
+        for v in complete:
+            unit[v] = unit.get(v, 0) + counts(results[(s.name, v)], tolerance)
+    return units
 
 
 def load(root: Path, seqs) -> dict:
@@ -81,17 +111,18 @@ def loop_rows(results: dict, seqs, variants: list[str], tolerance: float = 2.0) 
     return rows, data
 
 
-def split_section(results: dict, seqs, title: str, variants: list[str]) -> tuple[list[str], dict]:
+def split_section(results: dict, seqs, title: str, variants: list[str], unit_of: UnitOf = by_traversal,
+                  unit_label: str = "traversals") -> tuple[list[str], dict]:
     lines, data = [f"## {title}", ""], {}
     header = ["Variant", "Nodes", "Opp.", "TP", "FP", "FN", "P", "R", "F1"]
     for tolerance in TOLERANCES:
         rows, data[str(tolerance)] = loop_rows(results, seqs, variants, tolerance)
         lines += [f"### {tolerance} m", "", *table(header, rows)]
-    per_seq = {s.name: {v: counts(results[(s.name, v)], 2.0) for v in variants if (s.name, v) in results} for s in seqs}
-    lines += ["### 2 m with 95 % CI (bootstrap over traversals)", ""]
+    per_unit = unit_counts(results, seqs, variants, unit_of)
+    lines += [f"### 2 m with 95 % CI (bootstrap over {unit_label})", ""]
     data["ci_2m"] = {}
     for v in variants:
-        res = bootstrap_abs(per_seq, v)
+        res = bootstrap_abs(per_unit, v)
         if res:
             data["ci_2m"][v] = res
             lines.append(f"- {v}: " + ", ".join(
@@ -100,14 +131,14 @@ def split_section(results: dict, seqs, title: str, variants: list[str]) -> tuple
     lines += ["", "### Average precision at 2 m (decisions ranked by probability)", ""]
     data["ap_2m"] = {}
     for v in variants:
-        res = ap_with_interval(results, seqs, v)
+        res = ap_with_interval(results, seqs, v, unit_of)
         if res:
             data["ap_2m"][v] = res
             lines.append(f"- {v}: AP {res['point']:.3f} [{res['ci95'][0]:.3f}; {res['ci95'][1]:.3f}]")
-    lines += ["", "### Paired differences at 2 m (bootstrap over traversals)", ""]
+    lines += ["", f"### Paired differences at 2 m (bootstrap over {unit_label})", ""]
     data["paired_2m"] = {}
     for a, b, stat, label in PAIRED_TESTS:
-        res = bootstrap(per_seq, a, b, stat)
+        res = bootstrap(per_unit, a, b, stat)
         if res:
             data["paired_2m"][f"{label}:{a}-{b}"] = res
             lines.append(f"- {label} {a} − {b}: {res['point']:+.3f} [{res['ci95'][0]:+.3f}; {res['ci95'][1]:+.3f}]")

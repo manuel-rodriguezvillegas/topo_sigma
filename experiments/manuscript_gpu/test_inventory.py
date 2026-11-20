@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import sys
 
-from stream import RESULTS, TEST, frames
+from stream import RESULTS, TEST, TEST_INVENTORY_FILE, frames
 
 
 def main() -> None:
@@ -22,7 +22,7 @@ def main() -> None:
         except (ValueError, OSError) as error:
             inventory[seq.name] = {"route": seq.route, "error": str(error)}
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / "test_inventory.json").write_text(json.dumps(inventory, indent=1))
+    TEST_INVENTORY_FILE.write_text(json.dumps(inventory, indent=1))
     for name, entry in inventory.items():
         print(f"{name:40s} {entry.get('frames', entry.get('error'))}", file=sys.stderr)
     print(" ".join(name for name, entry in inventory.items() if "frames" in entry))

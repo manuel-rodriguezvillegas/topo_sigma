@@ -16,7 +16,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from stream import ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, evaluated_trajectory, gates, load_stream
+from stream import ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, evaluated_trajectory, gates, load_stream, readable_test
 from vts_core.matching import VisualLikelihood
 from common import breakdown, load_descriptors
 from vts_core.mapper import TopologicalMapper
@@ -34,6 +34,8 @@ PLACE_RADIUS_M = 2.0
 DUMMY_IMAGE = np.zeros((1, 1, 3), dtype=np.uint8)
 DESCRIPTOR_ABLATIONS = ("dinov2_s", "anyloc_vlad_g", "anyloc_gem_g")
 VISUAL_SCORES = {"dinov3_s": ("cosine", "vmf"), **{e: ("cosine",) for e in DESCRIPTOR_ABLATIONS}}
+TEST_VARIANTS = ("topo", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
+                 "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s")
 
 
 def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="both", visual_model="cosine",
@@ -179,15 +181,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--descriptors", type=Path, required=True, help="AnyLoc runner output directory")
-    parser.add_argument("--split", choices=["dev", "heldout"], required=True)
-    parser.add_argument("--visual", action="store_true", help="run the visual variants")
+    parser.add_argument("--split", choices=["dev", "heldout", "test"], required=True)
+    parser.add_argument("--visual", action="store_true", help="run the visual variants (design splits)")
     parser.add_argument("--variants", nargs="*")
     parser.add_argument("--exclude", nargs="*", default=[])
     parser.add_argument("--sequences", nargs="*")
     parser.add_argument("--jobs", type=int, default=4)
     args = parser.parse_args()
-    seqs = args.sequences or [s.name for s in (DEV if args.split == "dev" else HELDOUT)]
-    specs = visual_variants(args.split) if args.visual else variants(args.split)
+    if args.split == "test":
+        split_seqs = readable_test()
+        every = {**variants("test"), **visual_variants("test")}
+        specs = {v: every[v] for v in TEST_VARIANTS}
+    else:
+        split_seqs = DEV if args.split == "dev" else HELDOUT
+        specs = visual_variants(args.split) if args.visual else variants(args.split)
+    seqs = args.sequences or [s.name for s in split_seqs]
     chosen = [v for v in (args.variants or specs) if v not in args.exclude]
     jobs = [(s, v, specs[v], str(args.out), str(args.descriptors)) for s in seqs for v in chosen]
     jobs.sort(key=lambda j: ("vlad" in j[1], j[1]))
