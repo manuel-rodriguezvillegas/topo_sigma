@@ -17,11 +17,11 @@
  },
  "test_freiburg_a_seq1_night3": {
   "route": "cold-freiburg_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 1.257s around timestamp 1152911212.711545 exceeds the 1.000s limit"
  },
  "test_freiburg_a_seq1_sunny1": {
   "route": "cold-freiburg_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 1.222s around timestamp 1152873116.161393 exceeds the 1.000s limit"
  },
  "test_freiburg_a_seq1_sunny2": {
   "route": "cold-freiburg_part_a_seq1",
@@ -29,7 +29,7 @@
  },
  "test_freiburg_a_seq1_sunny3": {
   "route": "cold-freiburg_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 1.067s around timestamp 1152883251.077805 exceeds the 1.000s limit"
  },
  "test_freiburg_a_seq1_sunny4": {
   "route": "cold-freiburg_part_a_seq1",
@@ -77,75 +77,75 @@
  },
  "test_freiburg_b_seq3_sunny2": {
   "route": "cold-freiburg_part_b_seq3",
-  "error": "not downloaded"
+  "error": "odometry gap 1.106s around timestamp 1152959271.816848 exceeds the 1.000s limit"
  },
  "test_freiburg_b_seq3_sunny3": {
   "route": "cold-freiburg_part_b_seq3",
-  "error": "not downloaded"
+  "error": "odometry gap 1.077s around timestamp 1152960330.691521 exceeds the 1.000s limit"
  },
  "test_ljubljana_a_seq1_cloudy1": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 2.504s around timestamp 1151922902.602441 exceeds the 1.000s limit"
  },
  "test_ljubljana_a_seq1_cloudy2": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "frames": 2765
  },
  "test_ljubljana_a_seq1_cloudy3": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "error": "[Errno 2] No such file or directory: '/home/ia/202114339/topo_sigma/encoder/seq_data/cold-ljubljana_part_a_seq1_cloudy3/odom_scans/odom.tdf'"
  },
  "test_ljubljana_a_seq1_night1": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "error": "/home/ia/202114339/topo_sigma/encoder/seq_data/cold-ljubljana_part_a_seq1_night1/odom_scans/odom.tdf: odometry timestamps must be strictly increasing"
  },
  "test_ljubljana_a_seq1_night2": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 2.884s around timestamp 1152043530.419008 exceeds the 1.000s limit"
  },
  "test_ljubljana_a_seq1_sunny1": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "frames": 2061
  },
  "test_ljubljana_a_seq1_sunny2": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "frames": 2207
  },
  "test_ljubljana_a_seq1_sunny3": {
   "route": "cold-ljubljana_part_a_seq1",
-  "error": "not downloaded"
+  "error": "odometry gap 2.452s around timestamp 1152029121.503566 exceeds the 1.000s limit"
  },
  "test_ljubljana_a_seq2_cloudy1": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "frames": 2267
  },
  "test_ljubljana_a_seq2_cloudy3": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "frames": 855
  },
  "test_ljubljana_a_seq2_night1": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "frames": 2777
  },
  "test_ljubljana_a_seq2_night2": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "error": "/home/ia/202114339/topo_sigma/encoder/seq_data/cold-ljubljana_part_a_seq2_night2/odom_scans/odom.tdf: odometry timestamps must be strictly increasing"
  },
  "test_ljubljana_a_seq2_night3": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "frames": 620
  },
  "test_ljubljana_a_seq2_sunny1": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "error": "/home/ia/202114339/topo_sigma/encoder/seq_data/cold-ljubljana_part_a_seq2_sunny1/odom_scans/odom.tdf: odometry timestamps must be strictly increasing"
  },
  "test_ljubljana_a_seq2_sunny2": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "error": "odometry gap 2.608s around timestamp 1152023309.293748 exceeds the 1.000s limit"
  },
  "test_ljubljana_a_seq2_sunny3": {
   "route": "cold-ljubljana_part_a_seq2",
-  "error": "not downloaded"
+  "error": "odometry gap 2.496s around timestamp 1152030534.363222 exceeds the 1.000s limit"
  },
  "test_saarbruecken_a_seq1_cloudy2": {
   "route": "cold-saarbruecken_part_a_seq1",
@@ -189,7 +189,7 @@
  },
  "test_saarbruecken_b_seq3_cloudy3": {
   "route": "cold-saarbruecken_part_b_seq3",
-  "error": "not downloaded"
+  "error": "odometry gap 3.360s around timestamp 1152298503.122793 exceeds the 1.000s limit"
  },
  "test_saarbruecken_b_seq3_cloudy4": {
   "route": "cold-saarbruecken_part_b_seq3",
@@ -253,7 +253,7 @@
  },
  "test_cid_apartment1_3": {
   "route": "apartment1",
-  "error": "not downloaded"
+  "frames": 1880
  },
  "test_cid_apartment2_3": {
   "route": "apartment2",
