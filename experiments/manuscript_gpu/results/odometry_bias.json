@@ -1,0 +1,84 @@
+{
+ "cid-sims": {
+  "rate_deg_per_m": 0.19449018166765916,
+  "per_traversal_deg_per_m": {
+   "cid_sims_apartment1_1": -0.7737876775036364,
+   "cid_sims_apartment2_1": 0.12563567122266506,
+   "cid_sims_apartment3_1": -0.12094934646002953,
+   "heldout_cid_apartment1_2": 0.7852009559325744,
+   "heldout_cid_apartment2_2": 1.0565035248888082,
+   "heldout_cid_apartment3_2": -0.5764861816602469
+  },
+  "leave_one_out_deg_per_m": {
+   "cid_sims_apartment1_1": 0.3151740769505278,
+   "cid_sims_apartment2_1": 0.207918962156564,
+   "cid_sims_apartment3_1": 0.23749996584408306,
+   "heldout_cid_apartment1_2": 0.001171826081098257,
+   "heldout_cid_apartment2_2": 0.010030468152549061,
+   "heldout_cid_apartment3_2": 0.36735073446054867
+  },
+  "heading_error_rms_over_8m_deg": {
+   "raw": 8.429914766136097,
+   "corrected": 8.372139374791399
+  }
+ },
+ "freiburg": {
+  "rate_deg_per_m": 1.570596410875984,
+  "per_traversal_deg_per_m": {
+   "freiburg_a": 1.5110094028956138,
+   "freiburg_ext": 1.6990088236640661,
+   "heldout_freiburg_a_seq1": 1.401609565620957,
+   "heldout_freiburg_a_seq2": 1.5914141028230895,
+   "heldout_freiburg_b_seq3": 1.70449457747352
+  },
+  "leave_one_out_deg_per_m": {
+   "freiburg_a": 1.5932687603046891,
+   "freiburg_ext": 1.5482948366131188,
+   "heldout_freiburg_a_seq1": 1.6026908411275036,
+   "heldout_freiburg_a_seq2": 1.5625883744082434,
+   "heldout_freiburg_b_seq3": 1.5489818559331272
+  },
+  "heading_error_rms_over_8m_deg": {
+   "raw": 12.986643606473152,
+   "corrected": 3.2975843807665886
+  }
+ },
+ "ljubljana": {
+  "rate_deg_per_m": 0.07599244431172711,
+  "per_traversal_deg_per_m": {
+   "heldout_ljubljana_a_seq1": -0.0010556129358712308,
+   "heldout_ljubljana_a_seq2": 0.1442116556861167
+  },
+  "leave_one_out_deg_per_m": {
+   "heldout_ljubljana_a_seq1": 0.1442116556861167,
+   "heldout_ljubljana_a_seq2": -0.0010556129358712308
+  },
+  "heading_error_rms_over_8m_deg": {
+   "raw": 7.5790506327719145,
+   "corrected": 7.554282360616425
+  }
+ },
+ "saarbruecken": {
+  "rate_deg_per_m": 1.0307415356418694,
+  "per_traversal_deg_per_m": {
+   "saarbruecken_a": 1.0304619008706721,
+   "saarbruecken_ext": 1.010437567320175,
+   "heldout_saarbruecken_a_seq1": 1.160909503616673,
+   "heldout_saarbruecken_a_seq2": 1.012182916564329,
+   "heldout_saarbruecken_b_seq3": 0.9385255115569638,
+   "heldout_saarbruecken_b_seq4": 1.0394521289355736
+  },
+  "leave_one_out_deg_per_m": {
+   "saarbruecken_a": 1.0308725073161684,
+   "saarbruecken_ext": 1.0331235438364665,
+   "heldout_saarbruecken_a_seq1": 1.016586862650545,
+   "heldout_saarbruecken_a_seq2": 1.0393527981488087,
+   "heldout_saarbruecken_b_seq3": 1.0366382632569209,
+   "heldout_saarbruecken_b_seq4": 1.0297638968142935
+  },
+  "heading_error_rms_over_8m_deg": {
+   "raw": 9.003954374822547,
+   "corrected": 3.5506312025268643
+  }
+ }
+}

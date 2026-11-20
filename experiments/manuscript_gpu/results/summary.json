@@ -100,103 +100,154 @@
       0.15266384426971918
      ]
     }
+   },
+   "propagated_debiased": {
+    "alpha": [
+     0.0015608957099888191,
+     2.2793483499884583e-05,
+     1.522997974471263e-08,
+     0.02438494793695223
+    ],
+    "free_coefficients": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "floor_m": 0.14484249137385433,
+    "mean_nll": 0.48464731182582854,
+    "ci95_alpha_then_floor": {
+     "lower": [
+      2.376296138892026e-08,
+      1.522997974471263e-08,
+      1.522997974471263e-08,
+      0.018931207050084883,
+      0.11103457754898807
+     ],
+     "upper": [
+      0.003933233494612726,
+      0.000595843133695283,
+      1.5242375572384415e-08,
+      0.03211886142154694,
+      0.1782996018095802
+     ]
+    }
    }
   },
   "leave_one_traversal_out_nll": {
    "freiburg_a": {
     "isotropic_default": 5.008500902757449,
     "isotropic_calibrated": 2.372100666939061,
-    "propagated_calibrated": 1.3601440323328686
+    "propagated_calibrated": 1.3601440323328686,
+    "propagated_debiased": 0.12949936289935626
    },
    "freiburg_ext": {
     "isotropic_default": 3.3954130894125947,
     "isotropic_calibrated": 1.6570445022094271,
-    "propagated_calibrated": 0.5766591294162132
+    "propagated_calibrated": 0.5766591294162132,
+    "propagated_debiased": -0.1023563373147958
    },
    "saarbruecken_a": {
     "isotropic_default": 5.388573782178447,
     "isotropic_calibrated": 2.42357613812461,
-    "propagated_calibrated": 1.4129309073803125
+    "propagated_calibrated": 1.4129309073803125,
+    "propagated_debiased": 0.5606307036648726
    },
    "saarbruecken_ext": {
     "isotropic_default": 2.492670218030059,
     "isotropic_calibrated": 1.0859615900297035,
-    "propagated_calibrated": 0.5462451929595843
+    "propagated_calibrated": 0.5462451929595843,
+    "propagated_debiased": 0.13739848365707857
    },
    "cid_sims_apartment1_1": {
     "isotropic_default": 2.0879012795561436,
     "isotropic_calibrated": 1.287225732316549,
-    "propagated_calibrated": 1.269071024982219
+    "propagated_calibrated": 1.269071024982219,
+    "propagated_debiased": 1.3490860724634848
    },
    "cid_sims_apartment2_1": {
     "isotropic_default": 2.0619638500799318,
     "isotropic_calibrated": 1.4480850913442187,
-    "propagated_calibrated": 1.1844327024891899
+    "propagated_calibrated": 1.1844327024891899,
+    "propagated_debiased": 0.9504351876257605
    },
    "cid_sims_apartment3_1": {
     "isotropic_default": 2.0760570260058198,
     "isotropic_calibrated": 1.1361043078472721,
-    "propagated_calibrated": 0.7356690902532645
+    "propagated_calibrated": 0.7356690902532645,
+    "propagated_debiased": 0.7429632633725014
    },
    "heldout_freiburg_a_seq1": {
     "isotropic_default": 3.0614031086549462,
     "isotropic_calibrated": 1.5190387009863566,
-    "propagated_calibrated": 0.669289296369872
+    "propagated_calibrated": 0.669289296369872,
+    "propagated_debiased": 0.0319886421432545
    },
    "heldout_freiburg_a_seq2": {
     "isotropic_default": 5.7987418061301375,
     "isotropic_calibrated": 2.729293906700158,
-    "propagated_calibrated": 1.4872947513527863
+    "propagated_calibrated": 1.4872947513527863,
+    "propagated_debiased": 0.185669674769214
    },
    "heldout_freiburg_b_seq3": {
     "isotropic_default": 3.2948923831088,
     "isotropic_calibrated": 1.6497052530096672,
-    "propagated_calibrated": 0.6385403415347904
+    "propagated_calibrated": 0.6385403415347904,
+    "propagated_debiased": -0.0024100179973134007
    },
    "heldout_saarbruecken_a_seq1": {
     "isotropic_default": 2.282820573474557,
     "isotropic_calibrated": 1.0044252417240191,
-    "propagated_calibrated": 0.3640244273046697
+    "propagated_calibrated": 0.3640244273046697,
+    "propagated_debiased": -0.12175559600726138
    },
    "heldout_saarbruecken_a_seq2": {
     "isotropic_default": 5.777993999680078,
     "isotropic_calibrated": 2.4995034892646095,
-    "propagated_calibrated": 1.439664913070797
+    "propagated_calibrated": 1.439664913070797,
+    "propagated_debiased": 0.5102456546922566
    },
    "heldout_saarbruecken_b_seq3": {
     "isotropic_default": 2.0492232943140576,
     "isotropic_calibrated": 0.6187357226143467,
-    "propagated_calibrated": 0.2144453859756942
+    "propagated_calibrated": 0.2144453859756942,
+    "propagated_debiased": -0.11298731413062857
    },
    "heldout_saarbruecken_b_seq4": {
     "isotropic_default": 2.4850897006187944,
     "isotropic_calibrated": 1.12381949533059,
-    "propagated_calibrated": 0.5203163743675713
+    "propagated_calibrated": 0.5203163743675713,
+    "propagated_debiased": 0.11021743658061146
    },
    "heldout_ljubljana_a_seq1": {
     "isotropic_default": 2.5491418381057307,
     "isotropic_calibrated": 1.386344146290989,
-    "propagated_calibrated": 0.5612368000057122
+    "propagated_calibrated": 0.5612368000057122,
+    "propagated_debiased": -0.0023519680893509904
    },
    "heldout_ljubljana_a_seq2": {
     "isotropic_default": 9.092701802247353,
     "isotropic_calibrated": 4.684651545093236,
-    "propagated_calibrated": 1.576759863338222
+    "propagated_calibrated": 1.576759863338222,
+    "propagated_debiased": 2.6709574609919637
    },
    "heldout_cid_apartment1_2": {
     "isotropic_default": 2.187848787049667,
     "isotropic_calibrated": 1.4285752940485674,
-    "propagated_calibrated": 0.8417442525840607
+    "propagated_calibrated": 0.8417442525840607,
+    "propagated_debiased": 0.6738538763484586
    },
    "heldout_cid_apartment2_2": {
     "isotropic_default": 2.149909224666529,
     "isotropic_calibrated": 1.6012539087904891,
-    "propagated_calibrated": 0.8269087372958166
+    "propagated_calibrated": 0.8269087372958166,
+    "propagated_debiased": 0.6318452634178572
    },
    "heldout_cid_apartment3_2": {
     "isotropic_default": 2.3301000475260234,
     "isotropic_calibrated": 1.6045269420742823,
-    "propagated_calibrated": 1.644396669148021
+    "propagated_calibrated": 1.644396669148021,
+    "propagated_debiased": 1.9897675497242977
    }
   },
   "gate_coverage_with_place_sigma": {
@@ -229,6 +280,16 @@
     "32.0": 0.9677113010446344,
     "64.0": 0.8159392789373814,
     "128.0": 0.9056603773584906
+   },
+   "propagated_debiased": {
+    "1.0": 1.0,
+    "2.0": 1.0,
+    "4.0": 0.9987365761212887,
+    "8.0": 0.9927007299270073,
+    "16.0": 0.9704797047970479,
+    "32.0": 0.9420702754036088,
+    "64.0": 0.9335863377609108,
+    "128.0": 0.9433962264150944
    }
   }
  },
@@ -4022,6 +4083,16 @@
     "recall": 0.7777777777777778,
     "f1": 0.34146341463414637
    },
+   "topo_debiased": {
+    "tp": 9,
+    "fp": 29,
+    "fn": 0,
+    "opportunities": 9,
+    "nodes": 139,
+    "precision": 0.23684210526315788,
+    "recall": 1.0,
+    "f1": 0.3829787234042553
+   },
    "anyloc_vlad_g": {
     "tp": 5,
     "fp": 29,
@@ -4153,6 +4224,16 @@
     "precision": 0.46875,
     "recall": 0.7142857142857143,
     "f1": 0.5660377358490566
+   },
+   "topo_debiased": {
+    "tp": 19,
+    "fp": 19,
+    "fn": 2,
+    "opportunities": 21,
+    "nodes": 139,
+    "precision": 0.5,
+    "recall": 0.9047619047619048,
+    "f1": 0.6440677966101694
    },
    "anyloc_vlad_g": {
     "tp": 15,
@@ -4286,6 +4367,16 @@
     "recall": 0.7,
     "f1": 0.7777777777777778
    },
+   "topo_debiased": {
+    "tp": 35,
+    "fp": 3,
+    "fn": 5,
+    "opportunities": 40,
+    "nodes": 139,
+    "precision": 0.9210526315789473,
+    "recall": 0.875,
+    "f1": 0.8974358974358975
+   },
    "anyloc_vlad_g": {
     "tp": 23,
     "fp": 11,
@@ -4417,6 +4508,16 @@
     "precision": 0.96875,
     "recall": 0.484375,
     "f1": 0.6458333333333334
+   },
+   "topo_debiased": {
+    "tp": 38,
+    "fp": 0,
+    "fn": 26,
+    "opportunities": 64,
+    "nodes": 139,
+    "precision": 1.0,
+    "recall": 0.59375,
+    "f1": 0.7450980392156863
    },
    "anyloc_vlad_g": {
     "tp": 32,
@@ -4560,6 +4661,30 @@
      "ci95": [
       0.5454545454545454,
       0.9117647058823529
+     ]
+    },
+    "sequences": 7
+   },
+   "topo_debiased": {
+    "precision": {
+     "point": 0.9210526315789473,
+     "ci95": [
+      0.8484848484848485,
+      0.9777777777777777
+     ]
+    },
+    "recall": {
+     "point": 0.875,
+     "ci95": [
+      0.7297297297297297,
+      0.9767441860465116
+     ]
+    },
+    "f1": {
+     "point": 0.8974358974358975,
+     "ci95": [
+      0.8108108108108109,
+      0.9655172413793104
      ]
     },
     "sequences": 7
@@ -4861,6 +4986,13 @@
      0.9195690707851771
     ]
    },
+   "topo_debiased": {
+    "point": 0.8928882158468134,
+    "ci95": [
+     0.8088600560320414,
+     0.9662246806315626
+    ]
+   },
    "anyloc_vlad_g": {
     "point": 0.6580381531246337,
     "ci95": [
@@ -4919,6 +5051,30 @@
    }
   },
   "paired_2m": {
+   "F1:topo_debiased-topo": {
+    "point": 0.11965811965811968,
+    "ci95": [
+     0.002290950744558984,
+     0.2841614906832298
+    ],
+    "sequences": 7
+   },
+   "P:topo_debiased-topo": {
+    "point": 0.046052631578947345,
+    "ci95": [
+     -0.05345622119815674,
+     0.14132104454685102
+    ],
+    "sequences": 7
+   },
+   "R:topo_debiased-topo": {
+    "point": 0.17500000000000004,
+    "ci95": [
+     0.022727272727272707,
+     0.375
+    ],
+    "sequences": 7
+   },
    "F1:topo-anyloc_vlad_g": {
     "point": 0.14764079147640796,
     "ci95": [
@@ -5028,6 +5184,16 @@
     "precision": 0.2571428571428571,
     "recall": 0.75,
     "f1": 0.3829787234042553
+   },
+   "topo_debiased": {
+    "tp": 11,
+    "fp": 32,
+    "fn": 1,
+    "opportunities": 12,
+    "nodes": 217,
+    "precision": 0.2558139534883721,
+    "recall": 0.9166666666666666,
+    "f1": 0.4
    },
    "anyloc_vlad_g": {
     "tp": 5,
@@ -5161,6 +5327,16 @@
     "recall": 0.7083333333333334,
     "f1": 0.576271186440678
    },
+   "topo_debiased": {
+    "tp": 22,
+    "fp": 21,
+    "fn": 2,
+    "opportunities": 24,
+    "nodes": 217,
+    "precision": 0.5116279069767442,
+    "recall": 0.9166666666666666,
+    "f1": 0.6567164179104478
+   },
    "anyloc_vlad_g": {
     "tp": 14,
     "fp": 14,
@@ -5293,6 +5469,16 @@
     "recall": 0.6304347826086957,
     "f1": 0.7160493827160493
    },
+   "topo_debiased": {
+    "tp": 38,
+    "fp": 5,
+    "fn": 8,
+    "opportunities": 46,
+    "nodes": 217,
+    "precision": 0.8837209302325582,
+    "recall": 0.8260869565217391,
+    "f1": 0.8539325842696629
+   },
    "anyloc_vlad_g": {
     "tp": 24,
     "fp": 4,
@@ -5424,6 +5610,16 @@
     "precision": 0.9714285714285714,
     "recall": 0.4722222222222222,
     "f1": 0.6355140186915887
+   },
+   "topo_debiased": {
+    "tp": 42,
+    "fp": 1,
+    "fn": 30,
+    "opportunities": 72,
+    "nodes": 217,
+    "precision": 0.9767441860465116,
+    "recall": 0.5833333333333334,
+    "f1": 0.7304347826086957
    },
    "anyloc_vlad_g": {
     "tp": 26,
@@ -5567,6 +5763,30 @@
      "ci95": [
       0.5783132530120482,
       0.8108108108108109
+     ]
+    },
+    "sequences": 12
+   },
+   "topo_debiased": {
+    "precision": {
+     "point": 0.8837209302325582,
+     "ci95": [
+      0.7307432432432432,
+      1.0
+     ]
+    },
+    "recall": {
+     "point": 0.8260869565217391,
+     "ci95": [
+      0.675,
+      0.9666666666666667
+     ]
+    },
+    "f1": {
+     "point": 0.8539325842696629,
+     "ci95": [
+      0.7160493827160493,
+      0.9767441860465116
      ]
     },
     "sequences": 12
@@ -5868,6 +6088,13 @@
      0.8799662165791199
     ]
    },
+   "topo_debiased": {
+    "point": 0.8846846674239243,
+    "ci95": [
+     0.7480049754367519,
+     0.9958706221456461
+    ]
+   },
    "anyloc_vlad_g": {
     "point": 0.7019811340550915,
     "ci95": [
@@ -5926,6 +6153,30 @@
    }
   },
   "paired_2m": {
+   "F1:topo_debiased-topo": {
+    "point": 0.13788320155361355,
+    "ci95": [
+     0.05281171363260924,
+     0.22222698684962827
+    ],
+    "sequences": 12
+   },
+   "P:topo_debiased-topo": {
+    "point": 0.05514950166112953,
+    "ci95": [
+     -0.08571428571428563,
+     0.1724137931034483
+    ],
+    "sequences": 12
+   },
+   "R:topo_debiased-topo": {
+    "point": 0.19565217391304346,
+    "ci95": [
+     0.1063829787234043,
+     0.3207715633423179
+    ],
+    "sequences": 12
+   },
    "F1:topo-anyloc_vlad_g": {
     "point": 0.030335097001763622,
     "ci95": [

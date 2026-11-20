@@ -9,31 +9,32 @@ Pairs per traversal: {'freiburg_a': 594, 'freiburg_ext': 291, 'saarbruecken_a': 
 | isotropic, original | 0.025 | 0.005 | 0.01 | 0.0025 | 0.950 | – |
 | isotropic, calibrated | 0.025 (unused) | 0.005 (unused) | 0.002345 [0.000993; 0.0599] | 0.1202 [9.74e-07; 0.177] | 0.000 [0.000; 0.000] | 1.623 |
 | propagated, calibrated | 0.00948 [2.65e-07; 0.0141] | 0.0009416 [1.52e-08; 0.00631] | 1.523e-08 [1.52e-08; 1.52e-08] | 0.02419 [0.0175; 0.0309] | 0.111 [0.080; 0.153] | 0.902 |
+| propagated, debiased heading | 0.001561 [2.38e-08; 0.00393] | 2.279e-05 [1.52e-08; 0.000596] | 1.523e-08 [1.52e-08; 1.52e-08] | 0.02438 [0.0189; 0.0321] | 0.145 [0.111; 0.178] | 0.485 |
 
 Leave-one-traversal-out mean NLL (lower is better):
 
-| Traversal | isotropic_default | isotropic_calibrated | propagated_calibrated |
-|---|---|---|---|
-| freiburg_a | 5.009 | 2.372 | 1.360 |
-| freiburg_ext | 3.395 | 1.657 | 0.577 |
-| saarbruecken_a | 5.389 | 2.424 | 1.413 |
-| saarbruecken_ext | 2.493 | 1.086 | 0.546 |
-| cid_sims_apartment1_1 | 2.088 | 1.287 | 1.269 |
-| cid_sims_apartment2_1 | 2.062 | 1.448 | 1.184 |
-| cid_sims_apartment3_1 | 2.076 | 1.136 | 0.736 |
-| heldout_freiburg_a_seq1 | 3.061 | 1.519 | 0.669 |
-| heldout_freiburg_a_seq2 | 5.799 | 2.729 | 1.487 |
-| heldout_freiburg_b_seq3 | 3.295 | 1.650 | 0.639 |
-| heldout_saarbruecken_a_seq1 | 2.283 | 1.004 | 0.364 |
-| heldout_saarbruecken_a_seq2 | 5.778 | 2.500 | 1.440 |
-| heldout_saarbruecken_b_seq3 | 2.049 | 0.619 | 0.214 |
-| heldout_saarbruecken_b_seq4 | 2.485 | 1.124 | 0.520 |
-| heldout_ljubljana_a_seq1 | 2.549 | 1.386 | 0.561 |
-| heldout_ljubljana_a_seq2 | 9.093 | 4.685 | 1.577 |
-| heldout_cid_apartment1_2 | 2.188 | 1.429 | 0.842 |
-| heldout_cid_apartment2_2 | 2.150 | 1.601 | 0.827 |
-| heldout_cid_apartment3_2 | 2.330 | 1.605 | 1.644 |
-| mean | 3.451 | 1.751 | 0.941 |
+| Traversal | isotropic_default | isotropic_calibrated | propagated_calibrated | propagated_debiased |
+|---|---|---|---|---|
+| freiburg_a | 5.009 | 2.372 | 1.360 | 0.129 |
+| freiburg_ext | 3.395 | 1.657 | 0.577 | -0.102 |
+| saarbruecken_a | 5.389 | 2.424 | 1.413 | 0.561 |
+| saarbruecken_ext | 2.493 | 1.086 | 0.546 | 0.137 |
+| cid_sims_apartment1_1 | 2.088 | 1.287 | 1.269 | 1.349 |
+| cid_sims_apartment2_1 | 2.062 | 1.448 | 1.184 | 0.950 |
+| cid_sims_apartment3_1 | 2.076 | 1.136 | 0.736 | 0.743 |
+| heldout_freiburg_a_seq1 | 3.061 | 1.519 | 0.669 | 0.032 |
+| heldout_freiburg_a_seq2 | 5.799 | 2.729 | 1.487 | 0.186 |
+| heldout_freiburg_b_seq3 | 3.295 | 1.650 | 0.639 | -0.002 |
+| heldout_saarbruecken_a_seq1 | 2.283 | 1.004 | 0.364 | -0.122 |
+| heldout_saarbruecken_a_seq2 | 5.778 | 2.500 | 1.440 | 0.510 |
+| heldout_saarbruecken_b_seq3 | 2.049 | 0.619 | 0.214 | -0.113 |
+| heldout_saarbruecken_b_seq4 | 2.485 | 1.124 | 0.520 | 0.110 |
+| heldout_ljubljana_a_seq1 | 2.549 | 1.386 | 0.561 | -0.002 |
+| heldout_ljubljana_a_seq2 | 9.093 | 4.685 | 1.577 | 2.671 |
+| heldout_cid_apartment1_2 | 2.188 | 1.429 | 0.842 | 0.674 |
+| heldout_cid_apartment2_2 | 2.150 | 1.601 | 0.827 | 0.632 |
+| heldout_cid_apartment3_2 | 2.330 | 1.605 | 1.644 | 1.990 |
+| mean | 3.451 | 1.751 | 0.941 | 0.544 |
 
 Fraction of true drifts inside the 95 % gate (with σ_place), by travelled distance [m]:
 
@@ -42,6 +43,7 @@ Fraction of true drifts inside the 95 % gate (with σ_place), by travelled dista
 | isotropic_default | 1.00 | 1.00 | 1.00 | 0.98 | 0.77 | 0.47 | 0.17 | 0.01 |
 | isotropic_calibrated | 1.00 | 1.00 | 1.00 | 1.00 | 0.96 | 0.76 | 0.39 | 0.13 |
 | propagated_calibrated | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.97 | 0.82 | 0.91 |
+| propagated_debiased | 1.00 | 1.00 | 1.00 | 0.99 | 0.97 | 0.94 | 0.93 | 0.94 |
 
 ## Node creation sensitivity (development)
 
@@ -93,6 +95,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 139 | 9 | 7 | 25 | 2 | 0.219 | 0.778 | 0.341 |
+| topo_debiased | 139 | 9 | 9 | 29 | 0 | 0.237 | 1.000 | 0.383 |
 | anyloc_vlad_g | 138 | 7 | 5 | 29 | 2 | 0.147 | 0.714 | 0.244 |
 | anyloc_gem_g | 131 | 9 | 8 | 20 | 1 | 0.286 | 0.889 | 0.432 |
 | previous_system | 147 | 9 | 5 | 22 | 4 | 0.185 | 0.556 | 0.278 |
@@ -111,6 +114,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 139 | 21 | 15 | 17 | 6 | 0.469 | 0.714 | 0.566 |
+| topo_debiased | 139 | 21 | 19 | 19 | 2 | 0.500 | 0.905 | 0.644 |
 | anyloc_vlad_g | 138 | 20 | 15 | 19 | 5 | 0.441 | 0.750 | 0.556 |
 | anyloc_gem_g | 131 | 16 | 13 | 15 | 3 | 0.464 | 0.812 | 0.591 |
 | previous_system | 147 | 23 | 8 | 19 | 15 | 0.296 | 0.348 | 0.320 |
@@ -129,6 +133,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 139 | 40 | 28 | 4 | 12 | 0.875 | 0.700 | 0.778 |
+| topo_debiased | 139 | 40 | 35 | 3 | 5 | 0.921 | 0.875 | 0.897 |
 | anyloc_vlad_g | 138 | 39 | 23 | 11 | 16 | 0.676 | 0.590 | 0.630 |
 | anyloc_gem_g | 131 | 37 | 24 | 4 | 13 | 0.857 | 0.649 | 0.738 |
 | previous_system | 147 | 48 | 25 | 2 | 23 | 0.926 | 0.521 | 0.667 |
@@ -147,6 +152,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 139 | 64 | 31 | 1 | 33 | 0.969 | 0.484 | 0.646 |
+| topo_debiased | 139 | 64 | 38 | 0 | 26 | 1.000 | 0.594 | 0.745 |
 | anyloc_vlad_g | 138 | 66 | 32 | 2 | 34 | 0.941 | 0.485 | 0.640 |
 | anyloc_gem_g | 131 | 59 | 27 | 1 | 32 | 0.964 | 0.458 | 0.621 |
 | previous_system | 147 | 72 | 25 | 2 | 47 | 0.926 | 0.347 | 0.505 |
@@ -163,6 +169,7 @@ Loop closure F1 of the mapper run with each detector:
 ### 2 m with 95 % CI (bootstrap over traversals)
 
 - topo: P 0.875 [0.727; 0.976], R 0.700 [0.421; 0.889], F 0.778 [0.545; 0.912]
+- topo_debiased: P 0.921 [0.848; 0.978], R 0.875 [0.730; 0.977], F 0.897 [0.811; 0.966]
 - anyloc_vlad_g: P 0.676 [0.545; 0.800], R 0.590 [0.388; 0.750], F 0.630 [0.475; 0.743]
 - anyloc_gem_g: P 0.857 [0.778; 0.957], R 0.649 [0.435; 0.804], F 0.738 [0.571; 0.849]
 - previous_system: P 0.926 [0.727; 1.000], R 0.521 [0.325; 0.722], F 0.667 [0.455; 0.837]
@@ -179,6 +186,7 @@ Loop closure F1 of the mapper run with each detector:
 ### Average precision at 2 m (decisions ranked by probability)
 
 - topo: AP 0.743 [0.524; 0.920]
+- topo_debiased: AP 0.893 [0.809; 0.966]
 - anyloc_vlad_g: AP 0.658 [0.472; 0.803]
 - anyloc_gem_g: AP 0.725 [0.622; 0.770]
 - geometry_only: AP 0.732 [0.540; 0.857]
@@ -190,6 +198,9 @@ Loop closure F1 of the mapper run with each detector:
 
 ### Paired differences at 2 m (bootstrap over traversals)
 
+- F1 topo_debiased − topo: +0.120 [+0.002; +0.284]
+- P topo_debiased − topo: +0.046 [-0.053; +0.141]
+- R topo_debiased − topo: +0.175 [+0.023; +0.375]
 - F1 topo − anyloc_vlad_g: +0.148 [+0.014; +0.272]
 - F1 topo − anyloc_gem_g: +0.039 [-0.213; +0.235]
 - F1 topo − previous_system: +0.111 [-0.142; +0.359]
@@ -208,6 +219,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
 | topo | 12 | 10 | 28 | 18 | 4 |
+| topo_debiased | 12 | 11 | 28 | 24 | 3 |
 | anyloc_vlad_g | 10 | 9 | 29 | 14 | 11 |
 | anyloc_gem_g | 13 | 11 | 24 | 13 | 4 |
 | previous_system | 15 | 11 | 33 | 14 | 2 |
@@ -240,6 +252,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 217 | 12 | 9 | 26 | 3 | 0.257 | 0.750 | 0.383 |
+| topo_debiased | 217 | 12 | 11 | 32 | 1 | 0.256 | 0.917 | 0.400 |
 | anyloc_vlad_g | 210 | 7 | 5 | 23 | 2 | 0.179 | 0.714 | 0.286 |
 | anyloc_gem_g | 214 | 8 | 6 | 29 | 2 | 0.171 | 0.750 | 0.279 |
 | previous_system | 223 | 10 | 6 | 20 | 4 | 0.231 | 0.600 | 0.333 |
@@ -258,6 +271,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 217 | 24 | 17 | 18 | 7 | 0.486 | 0.708 | 0.576 |
+| topo_debiased | 217 | 24 | 22 | 21 | 2 | 0.512 | 0.917 | 0.657 |
 | anyloc_vlad_g | 210 | 22 | 14 | 14 | 8 | 0.500 | 0.636 | 0.560 |
 | anyloc_gem_g | 214 | 25 | 16 | 19 | 9 | 0.457 | 0.640 | 0.533 |
 | previous_system | 223 | 19 | 9 | 17 | 10 | 0.346 | 0.474 | 0.400 |
@@ -276,6 +290,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 217 | 46 | 29 | 6 | 17 | 0.829 | 0.630 | 0.716 |
+| topo_debiased | 217 | 46 | 38 | 5 | 8 | 0.884 | 0.826 | 0.854 |
 | anyloc_vlad_g | 210 | 42 | 24 | 4 | 18 | 0.857 | 0.571 | 0.686 |
 | anyloc_gem_g | 214 | 49 | 29 | 6 | 20 | 0.829 | 0.592 | 0.690 |
 | previous_system | 223 | 53 | 18 | 8 | 35 | 0.692 | 0.340 | 0.456 |
@@ -294,6 +309,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 217 | 72 | 34 | 1 | 38 | 0.971 | 0.472 | 0.636 |
+| topo_debiased | 217 | 72 | 42 | 1 | 30 | 0.977 | 0.583 | 0.730 |
 | anyloc_vlad_g | 210 | 70 | 26 | 2 | 44 | 0.929 | 0.371 | 0.531 |
 | anyloc_gem_g | 214 | 71 | 32 | 3 | 39 | 0.914 | 0.451 | 0.604 |
 | previous_system | 223 | 80 | 21 | 5 | 59 | 0.808 | 0.263 | 0.396 |
@@ -310,6 +326,7 @@ Loop closure F1 of the mapper run with each detector:
 ### 2 m with 95 % CI (bootstrap over traversals)
 
 - topo: P 0.829 [0.742; 0.952], R 0.630 [0.439; 0.775], F 0.716 [0.578; 0.811]
+- topo_debiased: P 0.884 [0.731; 1.000], R 0.826 [0.675; 0.967], F 0.854 [0.716; 0.977]
 - anyloc_vlad_g: P 0.857 [0.786; 0.955], R 0.571 [0.471; 0.676], F 0.686 [0.600; 0.772]
 - anyloc_gem_g: P 0.829 [0.675; 0.966], R 0.592 [0.458; 0.738], F 0.690 [0.564; 0.814]
 - previous_system: P 0.692 [0.478; 1.000], R 0.340 [0.229; 0.475], F 0.456 [0.323; 0.620]
@@ -326,6 +343,7 @@ Loop closure F1 of the mapper run with each detector:
 ### Average precision at 2 m (decisions ranked by probability)
 
 - topo: AP 0.751 [0.625; 0.880]
+- topo_debiased: AP 0.885 [0.748; 0.996]
 - anyloc_vlad_g: AP 0.702 [0.525; 0.885]
 - anyloc_gem_g: AP 0.779 [0.603; 0.943]
 - geometry_only: AP 0.709 [0.548; 0.866]
@@ -337,6 +355,9 @@ Loop closure F1 of the mapper run with each detector:
 
 ### Paired differences at 2 m (bootstrap over traversals)
 
+- F1 topo_debiased − topo: +0.138 [+0.053; +0.222]
+- P topo_debiased − topo: +0.055 [-0.086; +0.172]
+- R topo_debiased − topo: +0.196 [+0.106; +0.321]
 - F1 topo − anyloc_vlad_g: +0.030 [-0.104; +0.122]
 - F1 topo − anyloc_gem_g: +0.026 [-0.132; +0.159]
 - F1 topo − previous_system: +0.260 [+0.053; +0.409]
@@ -355,6 +376,7 @@ Loop closure F1 of the mapper run with each detector:
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
 | topo | 5 | 3 | 41 | 26 | 6 |
+| topo_debiased | 5 | 4 | 41 | 34 | 5 |
 | anyloc_vlad_g | 3 | 3 | 39 | 21 | 4 |
 | anyloc_gem_g | 5 | 5 | 44 | 24 | 6 |
 | previous_system | 8 | 1 | 45 | 17 | 8 |
