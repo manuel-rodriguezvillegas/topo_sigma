@@ -1,0 +1,310 @@
+{
+ "test_freiburg_a_seq1_cloudy1": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1459
+ },
+ "test_freiburg_a_seq1_cloudy3": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1672
+ },
+ "test_freiburg_a_seq1_night1": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1911
+ },
+ "test_freiburg_a_seq1_night2": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1582
+ },
+ "test_freiburg_a_seq1_night3": {
+  "route": "cold-freiburg_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_freiburg_a_seq1_sunny1": {
+  "route": "cold-freiburg_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_freiburg_a_seq1_sunny2": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1514
+ },
+ "test_freiburg_a_seq1_sunny3": {
+  "route": "cold-freiburg_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_freiburg_a_seq1_sunny4": {
+  "route": "cold-freiburg_part_a_seq1",
+  "frames": 1777
+ },
+ "test_freiburg_a_seq2_cloudy1": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2146
+ },
+ "test_freiburg_a_seq2_cloudy3": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2778
+ },
+ "test_freiburg_a_seq2_night2": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2707
+ },
+ "test_freiburg_a_seq2_night3": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2896
+ },
+ "test_freiburg_a_seq2_sunny1": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2319
+ },
+ "test_freiburg_a_seq2_sunny2": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2114
+ },
+ "test_freiburg_a_seq2_sunny3": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2231
+ },
+ "test_freiburg_a_seq2_sunny4": {
+  "route": "cold-freiburg_part_a_seq2",
+  "frames": 2807
+ },
+ "test_freiburg_b_seq3_cloudy1": {
+  "route": "cold-freiburg_part_b_seq3",
+  "frames": 2236
+ },
+ "test_freiburg_b_seq3_cloudy3": {
+  "route": "cold-freiburg_part_b_seq3",
+  "frames": 1898
+ },
+ "test_freiburg_b_seq3_sunny2": {
+  "route": "cold-freiburg_part_b_seq3",
+  "error": "not downloaded"
+ },
+ "test_freiburg_b_seq3_sunny3": {
+  "route": "cold-freiburg_part_b_seq3",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_cloudy1": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_cloudy2": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_cloudy3": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_night1": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_night2": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_sunny1": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_sunny2": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq1_sunny3": {
+  "route": "cold-ljubljana_part_a_seq1",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_cloudy1": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_cloudy3": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_night1": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_night2": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_night3": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_sunny1": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_sunny2": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_ljubljana_a_seq2_sunny3": {
+  "route": "cold-ljubljana_part_a_seq2",
+  "error": "not downloaded"
+ },
+ "test_saarbruecken_a_seq1_cloudy2": {
+  "route": "cold-saarbruecken_part_a_seq1",
+  "frames": 1211
+ },
+ "test_saarbruecken_a_seq1_cloudy3": {
+  "route": "cold-saarbruecken_part_a_seq1",
+  "frames": 1307
+ },
+ "test_saarbruecken_a_seq1_night1": {
+  "route": "cold-saarbruecken_part_a_seq1",
+  "frames": 1216
+ },
+ "test_saarbruecken_a_seq1_night2": {
+  "route": "cold-saarbruecken_part_a_seq1",
+  "frames": 1180
+ },
+ "test_saarbruecken_a_seq1_night3": {
+  "route": "cold-saarbruecken_part_a_seq1",
+  "frames": 1093
+ },
+ "test_saarbruecken_a_seq2_cloudy1": {
+  "route": "cold-saarbruecken_part_a_seq2",
+  "frames": 2815
+ },
+ "test_saarbruecken_a_seq2_cloudy3": {
+  "route": "cold-saarbruecken_part_a_seq2",
+  "frames": 2942
+ },
+ "test_saarbruecken_a_seq2_night1": {
+  "route": "cold-saarbruecken_part_a_seq2",
+  "frames": 2827
+ },
+ "test_saarbruecken_a_seq2_night3": {
+  "route": "cold-saarbruecken_part_a_seq2",
+  "frames": 2602
+ },
+ "test_saarbruecken_b_seq3_cloudy2": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 720
+ },
+ "test_saarbruecken_b_seq3_cloudy3": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "error": "not downloaded"
+ },
+ "test_saarbruecken_b_seq3_cloudy4": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 899
+ },
+ "test_saarbruecken_b_seq3_cloudy5": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 810
+ },
+ "test_saarbruecken_b_seq3_night1": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 764
+ },
+ "test_saarbruecken_b_seq3_night2": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 866
+ },
+ "test_saarbruecken_b_seq3_night3": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 690
+ },
+ "test_saarbruecken_b_seq3_sunny1": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 753
+ },
+ "test_saarbruecken_b_seq3_sunny2": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 799
+ },
+ "test_saarbruecken_b_seq3_sunny3": {
+  "route": "cold-saarbruecken_part_b_seq3",
+  "frames": 786
+ },
+ "test_saarbruecken_b_seq4_cloudy1": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1371
+ },
+ "test_saarbruecken_b_seq4_cloudy3": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1064
+ },
+ "test_saarbruecken_b_seq4_night1": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1027
+ },
+ "test_saarbruecken_b_seq4_night2": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1029
+ },
+ "test_saarbruecken_b_seq4_night3": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 970
+ },
+ "test_saarbruecken_b_seq4_sunny2": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1068
+ },
+ "test_saarbruecken_b_seq4_sunny3": {
+  "route": "cold-saarbruecken_part_b_seq4",
+  "frames": 1036
+ },
+ "test_cid_apartment1_3": {
+  "route": "apartment1",
+  "error": "not downloaded"
+ },
+ "test_cid_apartment2_3": {
+  "route": "apartment2",
+  "frames": 1933
+ },
+ "test_cid_apartment3_3": {
+  "route": "apartment3",
+  "frames": 1800
+ },
+ "test_cid_floor3_1": {
+  "route": "office_building_floor3",
+  "frames": 639
+ },
+ "test_cid_floor3_2": {
+  "route": "office_building_floor3",
+  "frames": 934
+ },
+ "test_cid_floor3_3": {
+  "route": "office_building_floor3",
+  "frames": 1217
+ },
+ "test_cid_floor13_1": {
+  "route": "office_building_floor13",
+  "frames": 885
+ },
+ "test_cid_floor13_2": {
+  "route": "office_building_floor13",
+  "frames": 969
+ },
+ "test_cid_floor14_1": {
+  "route": "office_building_floor14",
+  "frames": 919
+ },
+ "test_cid_floor14_2": {
+  "route": "office_building_floor14",
+  "frames": 910
+ },
+ "test_cid_floor14_3": {
+  "route": "office_building_floor14",
+  "frames": 1487
+ },
+ "test_cid_office_1": {
+  "route": "office_building_office",
+  "frames": 705
+ },
+ "test_cid_office_2": {
+  "route": "office_building_office",
+  "frames": 1233
+ },
+ "test_cid_office_3": {
+  "route": "office_building_office",
+  "frames": 1188
+ }
+}
