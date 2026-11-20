@@ -32,8 +32,7 @@ source "$HERE/env.sh"
 
 step "2. Downloads ($(grep -vc '^#' "$LIST") traversals)"
 source "$REPO/experiments/datasets.sh"
-awk -F'\t' '!/^#/ { print $2, $4, ($2 == "cid" ? $3 : "") }' "$LIST" \
-  | xargs -P "$DL_PARALLEL" -L 1 bash -c 'kind=$1; shift; if [ "$kind" = cold ]; then cold_get "$@"; else cid_get "$@"; fi' _ \
+awk -F'\t' '!/^#/ { print $2, $4, ($2 == "cid" ? $3 : "") }' "$LIST" | fetch_all \
   || echo "Some downloads failed (see above); rerun to retry them. The inventory lists what is missing."
 
 step "3. Frame streams (inventory in experiments/manuscript_gpu/results/test_inventory.json)"

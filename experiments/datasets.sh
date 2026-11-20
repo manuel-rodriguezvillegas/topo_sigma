@@ -1,6 +1,7 @@
 # Resumable dataset downloads shared by the GPU runners. Source it with DATA_ROOT set.
 # cold_get <lab> <part> <seq_cond>: COLD recording into $DATA_ROOT/seq_data (images, odometry, places).
 # cid_get <file_id> <zip> <md5> <target>: CID-SIMS sequence into $DATA_ROOT/<target>, MD5-checked.
+# fetch_all: one cold_get/cid_get argument line per stdin line, DL_PARALLEL (4) at a time.
 
 cold_get() {  # lab part seq_cond
   local lab=$1 part=$2 name=$3
@@ -38,3 +39,9 @@ cid_get() {  # file_id zip md5 target
   echo "$target: OK ($(ls "$target/color" | wc -l) images)"
 }
 export -f cold_get cid_get
+
+fetch_all() {
+  # xargs -L joins a line ending in a blank with the next one, so trailing blanks are removed.
+  sed 's/[[:space:]]*$//' | xargs -P "${DL_PARALLEL:-4}" -L 1 bash -c \
+    'kind=$1; shift; if [ "$kind" = cold ]; then cold_get "$@"; else cid_get "$@"; fi' _
+}

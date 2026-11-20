@@ -82,8 +82,7 @@ source "$REPO/experiments/datasets.sh"
     echo "cid 0926aed6b63f3caefdb0e7ba18f0b4bf apartment3_2.zip fb1010f6354f36b97038da4025db679a apartment3_2"
   fi
 } > "$OUT/downloads.txt"
-xargs -P "$DL_PARALLEL" -L 1 bash -c 'kind=$1; shift; if [ "$kind" = cold ]; then cold_get "$@"; else cid_get "$@"; fi' _ \
-  < "$OUT/downloads.txt"
+fetch_all < "$OUT/downloads.txt"
 
 # --------------------------------------------------------------------------- #
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 HF_HUB_DISABLE_TELEMETRY=1 \

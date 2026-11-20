@@ -23,18 +23,48 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import dataclass, field
 
 import numpy as np
 
 from vts_core.topo_graph import TopoGraph
 
-# Legend text sizes for the raster (PNG) preview. These only affect the PNG;
-# the LaTeX-editable .pgf/.svg twin re-typesets all text in the document's font,
-# so final publication sizing is controlled from Overleaf, not here.
 _LEGEND_FONTSIZE: int = 16
 _LEGEND_TITLE_FONTSIZE: int = 18
 _LEGEND_MARKERSIZE: int = 11
 _LEGEND_COLUMNS: int = 4
+
+ROOM_COLORS: dict[str, str] = {
+    "1PO": "#1f77b4", "2PO": "#ff7f0e", "CR": "#2ca02c", "CNR": "#9467bd", "KT": "#8c564b",
+    "LO": "#e377c2", "PA": "#bcbd22", "RL": "#17becf", "ST": "#aec7e8", "TL": "#ffbb78",
+    "TR": "#98df8a", "LAB": "#c5b0d5",
+}
+UNLABELLED_COLOR: str = "#8da0b5"
+TRAJECTORY_COLOR: str = "#d1d1d1"
+SEQUENTIAL_EDGE_COLOR: str = "#737373"
+LOOP_EDGE_COLOR: str = "#dc143c"
+
+
+@dataclass(frozen=True)
+class MapStyle:
+    """Figure size in inches, node marker area in points squared and line widths in points."""
+
+    size_in: tuple[float, float]
+    node_area: float
+    node_edge_width: float
+    sequential_width: float
+    loop_width: float
+    trajectory_width: float
+    legend: bool
+    rc: dict = field(default_factory=dict)
+
+
+REPORT_STYLE = MapStyle(size_in=(11.0, 8.0), node_area=90.0, node_edge_width=0.5, sequential_width=1.1,
+                        loop_width=2.0, trajectory_width=1.0, legend=True)
+
+
+def room_color(label: str | None) -> str:
+    return ROOM_COLORS.get(label, UNLABELLED_COLOR) if label else UNLABELLED_COLOR
 
 
 def _save_latex_figure(fig, out_path: str) -> str | None:
@@ -72,15 +102,12 @@ def render_map(
     gt_xy: np.ndarray | None = None,
     node_gt: dict[int, np.ndarray] | None = None,
     title: str | None = None,
+    style: MapStyle = REPORT_STYLE,
 ) -> bool:
-    """Render the map to ``out_path``, legend below the axes, and export an editable SVG copy.
+    """Render the map to ``out_path`` and export an editable twin. Returns ``True`` on success.
 
-    Returns ``True`` on success.
-
-    When ``node_gt`` covers every node, nodes are painted at their
-    ground-truth coordinates (paint-time only — the mapper placed them from
-    odometry); otherwise the mapper's own odometry-frame positions are
-    drawn.
+    When ``node_gt`` covers every node, nodes are painted at their ground-truth coordinates
+    (paint-time only: the mapper placed them from odometry); otherwise at the mapper's positions.
     """
     try:
         import matplotlib
@@ -103,73 +130,57 @@ def render_map(
         gt_pos = np.array([node_gt[i] for i in ids], dtype=np.float64)
     drawn: np.ndarray = gt_pos if gt_pos is not None else map_pos
 
-    fig, ax = plt.subplots(figsize=(11, 8))
+    with plt.rc_context(style.rc):
+        fig, ax = plt.subplots(figsize=style.size_in)
+        if gt_xy is not None and gt_xy.size:
+            ax.plot(gt_xy[:, 0], gt_xy[:, 1], color=TRAJECTORY_COLOR, lw=style.trajectory_width, zorder=1)
 
-    if gt_xy is not None and gt_xy.size:
-        ax.plot(
-            gt_xy[:, 0], gt_xy[:, 1], color="0.82", lw=1.0, zorder=1,
-            label="Ground-truth trajectory",
-        )
+        for id_a, id_b in graph.edges():
+            ka, kb = index[id_a], index[id_b]
+            is_loop = graph.edge_types.get((id_a, id_b), "odometry") == "loop"
+            ax.plot(
+                [drawn[ka, 0], drawn[kb, 0]],
+                [drawn[ka, 1], drawn[kb, 1]],
+                color=LOOP_EDGE_COLOR if is_loop else SEQUENTIAL_EDGE_COLOR,
+                linestyle="--" if is_loop else "-",
+                lw=style.loop_width if is_loop else style.sequential_width,
+                zorder=4 if is_loop else 2,
+            )
 
-    for id_a, id_b in graph.edges():
-        ka, kb = index[id_a], index[id_b]
-        edge_type = graph.edge_types.get((id_a, id_b), "odometry")
-        is_loop = edge_type == "loop"
-        ax.plot(
-            [drawn[ka, 0], drawn[kb, 0]],
-            [drawn[ka, 1], drawn[kb, 1]],
-            color="crimson" if is_loop else "0.45",
-            linestyle="--" if is_loop else "-",
-            lw=2.0 if is_loop else 1.1,
-            alpha=0.95 if is_loop else 0.75,
-            zorder=4 if is_loop else 2,
-        )
+        labels: list[str | None] = [graph.nodes[i].room_label for i in ids]
+        ax.scatter(drawn[:, 0], drawn[:, 1], c=[room_color(label) for label in labels],
+                   s=style.node_area, edgecolors="black", linewidths=style.node_edge_width, zorder=5)
 
-    has_room_labels: bool = any(graph.nodes[i].room_label for i in ids)
-    labels: list[str] = [graph.nodes[i].room_label or "Node" for i in ids]
-    unique: list[str] = sorted(set(labels))
-    cmap = plt.get_cmap("tab10" if len(unique) <= 10 else "tab20")
-    color_of: dict[str, tuple] = {
-        label: cmap(k % cmap.N) for k, label in enumerate(unique)
-    }
-    ax.scatter(
-        drawn[:, 0], drawn[:, 1],
-        c=[color_of[label] for label in labels],
-        s=90, edgecolors="black", linewidths=0.5, zorder=5,
-    )
-
-    room_handles = [
-        plt.Line2D([0], [0], marker="o", linestyle="", markerfacecolor=color_of[label],
-                   markeredgecolor="black", markersize=_LEGEND_MARKERSIZE, label=label)
-        for label in unique
-    ]
-    edge_handles = [
-        plt.Line2D([0], [0], color="0.45", lw=2, label="Sequential edge"),
-        plt.Line2D(
-            [0], [0], color="crimson", lw=2, linestyle="--",
-            label="Loop closure",
-        ),
-    ]
-    ax.legend(
-        handles=room_handles + edge_handles, loc="upper center", bbox_to_anchor=(0.5, -0.1),
-        fontsize=_LEGEND_FONTSIZE, title="Room" if has_room_labels else None,
-        title_fontsize=_LEGEND_TITLE_FONTSIZE,
-        framealpha=0.9,
-        ncol=_LEGEND_COLUMNS,
-    )
-
-    ax.set_aspect("equal", adjustable="datalim")
-    ax.grid(True, alpha=0.3)
-    ax.set_xlabel("x [m]")
-    ax.set_ylabel("y [m]")
-    if title:
-        ax.set_title(title)
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=150, bbox_inches="tight")
-    _save_latex_figure(fig, out_path)
+        if style.legend:
+            ax.legend(
+                handles=_legend_handles(plt, labels), loc="upper center", bbox_to_anchor=(0.5, -0.1),
+                fontsize=_LEGEND_FONTSIZE, title="Room" if any(labels) else None,
+                title_fontsize=_LEGEND_TITLE_FONTSIZE, framealpha=0.9, ncol=_LEGEND_COLUMNS,
+            )
+        ax.set_aspect("equal", adjustable="datalim")
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
+        if title:
+            ax.set_title(title)
+        fig.tight_layout()
+        fig.savefig(out_path, dpi=150, bbox_inches="tight" if style.legend else None)
+        _save_latex_figure(fig, out_path)
     plt.close(fig)
     print(f"[viz] map image saved to {out_path}")
     return True
+
+
+def _legend_handles(plt, labels: list[str | None]) -> list:
+    handles = [
+        plt.Line2D([0], [0], marker="o", linestyle="", markerfacecolor=room_color(label),
+                   markeredgecolor="black", markersize=_LEGEND_MARKERSIZE, label=label or "Node")
+        for label in sorted(set(labels), key=lambda label: label or "")
+    ]
+    return handles + [
+        plt.Line2D([0], [0], color=SEQUENTIAL_EDGE_COLOR, lw=2, label="Sequential edge"),
+        plt.Line2D([0], [0], color=LOOP_EDGE_COLOR, lw=2, linestyle="--", label="Loop closure"),
+    ]
 
 
 def render_confusion(
@@ -342,42 +353,23 @@ def render_on_floorplan(
         is_loop = edge_type == "loop"
         ax.plot(
             [cols[ka], cols[kb]], [rows[ka], rows[kb]],
-            color="crimson" if is_loop else "0.45",
+            color=LOOP_EDGE_COLOR if is_loop else SEQUENTIAL_EDGE_COLOR,
             linestyle="--" if is_loop else "-",
             lw=2.0 if is_loop else 1.1,
             zorder=4 if is_loop else 2,
         )
 
-    has_room_labels: bool = any(graph.nodes[i].room_label for i in ids)
-    labels: list[str] = [graph.nodes[i].room_label or "Node" for i in ids]
-    unique: list[str] = sorted(set(labels))
-    cmap = plt.get_cmap("tab10" if len(unique) <= 10 else "tab20")
-    color_of = {label: cmap(k % cmap.N) for k, label in enumerate(unique)}
+    labels: list[str | None] = [graph.nodes[i].room_label for i in ids]
     ax.scatter(
-        cols, rows, c=[color_of[label] for label in labels],
+        cols, rows, c=[room_color(label) for label in labels],
         s=85, edgecolors="black", linewidths=0.5, zorder=5,
-    )
-
-    handles = [
-        plt.Line2D([0], [0], marker="o", linestyle="", markerfacecolor=color_of[label],
-                   markeredgecolor="black", markersize=_LEGEND_MARKERSIZE, label=label)
-        for label in unique
-    ]
-    handles.extend(
-        [
-            plt.Line2D([0], [0], color="0.45", lw=2, label="Sequential edge"),
-            plt.Line2D(
-                [0], [0], color="crimson", lw=2, linestyle="--",
-                label="Loop closure",
-            ),
-        ]
     )
     ax.set_xlim(0, width)
     ax.set_ylim(height, 0)
     ax.axis("off")
     ax.legend(
-        handles=handles, loc="lower left", fontsize=_LEGEND_FONTSIZE,
-        title="Room" if has_room_labels else None,
+        handles=_legend_handles(plt, labels), loc="lower left", fontsize=_LEGEND_FONTSIZE,
+        title="Room" if any(labels) else None,
         title_fontsize=_LEGEND_TITLE_FONTSIZE,
     )
     if title:
