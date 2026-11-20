@@ -53,209 +53,621 @@
  },
  "dinov2_s:cosine": {
   "all": {
-   "intercept": -8.65905875940372,
-   "slope": 14.357783737452653,
-   "positives": 23,
-   "negatives": 1316
+   "intercept": -9.31714307788194,
+   "slope": 15.527264970695663,
+   "positives": 30,
+   "negatives": 3166
   },
   "leave_out": {
    "freiburg_a": {
-    "intercept": -9.043453146636267,
-    "slope": 14.982393294740085,
-    "positives": 23,
-    "negatives": 947
+    "intercept": -9.50427648199857,
+    "slope": 15.859454972268177,
+    "positives": 30,
+    "negatives": 2797
    },
    "freiburg_ext": {
-    "intercept": -8.992910818996885,
-    "slope": 14.795108390275184,
-    "positives": 22,
-    "negatives": 1139
+    "intercept": -9.600116264411803,
+    "slope": 15.925830923930988,
+    "positives": 29,
+    "negatives": 2989
    },
    "saarbruecken_a": {
-    "intercept": -8.22892997214511,
-    "slope": 13.588343418781688,
-    "positives": 23,
-    "negatives": 890
+    "intercept": -9.132303123829292,
+    "slope": 15.235128947662215,
+    "positives": 30,
+    "negatives": 2740
    },
    "saarbruecken_ext": {
-    "intercept": -8.688355402586332,
-    "slope": 14.370803294011635,
-    "positives": 23,
-    "negatives": 1228
+    "intercept": -9.328615412198825,
+    "slope": 15.536141271456254,
+    "positives": 30,
+    "negatives": 3078
    },
    "cid_sims_apartment1_1": {
-    "intercept": -6.563241791041239,
-    "slope": 11.37916204909491,
-    "positives": 14,
-    "negatives": 1221
+    "intercept": -8.006876060208858,
+    "slope": 13.694244674236383,
+    "positives": 21,
+    "negatives": 3071
    },
    "cid_sims_apartment2_1": {
-    "intercept": -8.209834709039045,
-    "slope": 13.733749449420586,
-    "positives": 20,
-    "negatives": 1285
+    "intercept": -9.047167352146133,
+    "slope": 15.155250308748789,
+    "positives": 27,
+    "negatives": 3135
    },
    "cid_sims_apartment3_1": {
-    "intercept": -12.226406925293853,
-    "slope": 19.34578762903688,
-    "positives": 13,
-    "negatives": 1186
+    "intercept": -11.85669358503463,
+    "slope": 19.08472786323262,
+    "positives": 20,
+    "negatives": 3036
+   },
+   "heldout_freiburg_a_seq1": {
+    "intercept": -9.610884559252511,
+    "slope": 15.973296269309191,
+    "positives": 30,
+    "negatives": 2982
+   },
+   "heldout_freiburg_a_seq2": {
+    "intercept": -9.176543289826869,
+    "slope": 15.260337406683636,
+    "positives": 30,
+    "negatives": 2740
+   },
+   "heldout_freiburg_b_seq3": {
+    "intercept": -9.27854860719981,
+    "slope": 15.452209497475579,
+    "positives": 30,
+    "negatives": 2967
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "intercept": -9.334466751248552,
+    "slope": 15.562714186788234,
+    "positives": 30,
+    "negatives": 3124
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "intercept": -9.135919908922265,
+    "slope": 15.142317551057927,
+    "positives": 30,
+    "negatives": 2799
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "intercept": -9.339864281185468,
+    "slope": 15.558878480718727,
+    "positives": 30,
+    "negatives": 3126
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "intercept": -9.301106846781394,
+    "slope": 15.494058487566258,
+    "positives": 30,
+    "negatives": 3122
+   },
+   "heldout_ljubljana_a_seq1": {
+    "intercept": -9.688130819444769,
+    "slope": 16.213714309720146,
+    "positives": 30,
+    "negatives": 3033
+   },
+   "heldout_ljubljana_a_seq2": {
+    "intercept": -9.214946422958466,
+    "slope": 15.350149713976569,
+    "positives": 30,
+    "negatives": 3031
+   },
+   "heldout_cid_apartment1_2": {
+    "intercept": -8.97909807411012,
+    "slope": 15.048552841139722,
+    "positives": 29,
+    "negatives": 3142
+   },
+   "heldout_cid_apartment2_2": {
+    "intercept": -8.800574349654957,
+    "slope": 14.75974714062835,
+    "positives": 25,
+    "negatives": 3040
+   },
+   "heldout_cid_apartment3_2": {
+    "intercept": -9.484311137182214,
+    "slope": 15.74518739380273,
+    "positives": 29,
+    "negatives": 3036
    }
   }
  },
  "anyloc_vlad_g:cosine": {
   "all": {
-   "intercept": -9.125476826219455,
-   "slope": 19.820907072789346,
-   "positives": 14,
-   "negatives": 1204
+   "intercept": -7.915502795971212,
+   "slope": 17.677799635452853,
+   "positives": 17,
+   "negatives": 2809
   },
   "leave_out": {
    "freiburg_a": {
-    "intercept": -10.567199785084465,
-    "slope": 22.640586932805597,
-    "positives": 13,
-    "negatives": 866
+    "intercept": -8.387057091613471,
+    "slope": 18.609537382659195,
+    "positives": 16,
+    "negatives": 2471
    },
    "freiburg_ext": {
-    "intercept": -9.090003075954153,
-    "slope": 19.721445261998266,
-    "positives": 14,
-    "negatives": 1041
+    "intercept": -7.865784361782969,
+    "slope": 17.57722256886759,
+    "positives": 17,
+    "negatives": 2646
    },
    "saarbruecken_a": {
-    "intercept": -8.895996432809522,
-    "slope": 18.8563898305592,
-    "positives": 14,
-    "negatives": 810
+    "intercept": -7.804521019694112,
+    "slope": 17.286706744591193,
+    "positives": 17,
+    "negatives": 2415
    },
    "saarbruecken_ext": {
-    "intercept": -9.174584836826359,
-    "slope": 19.89572967251058,
-    "positives": 14,
-    "negatives": 1130
+    "intercept": -7.91351802107719,
+    "slope": 17.668509416181113,
+    "positives": 17,
+    "negatives": 2735
    },
    "cid_sims_apartment1_1": {
-    "intercept": -7.267248143977338,
-    "slope": 16.719838199931502,
-    "positives": 9,
-    "negatives": 1148
+    "intercept": -6.6150675983599445,
+    "slope": 15.394600700488786,
+    "positives": 12,
+    "negatives": 2753
    },
    "cid_sims_apartment2_1": {
-    "intercept": -8.668752437085708,
-    "slope": 19.06668047608929,
-    "positives": 13,
-    "negatives": 1164
+    "intercept": -7.545091597510133,
+    "slope": 17.04864475083532,
+    "positives": 16,
+    "negatives": 2769
    },
    "cid_sims_apartment3_1": {
-    "intercept": -12.055026119203127,
-    "slope": 24.810722653329144,
-    "positives": 7,
-    "negatives": 1065
+    "intercept": -9.065243260810027,
+    "slope": 19.6401451653814,
+    "positives": 10,
+    "negatives": 2670
+   },
+   "heldout_freiburg_a_seq1": {
+    "intercept": -8.108207031586314,
+    "slope": 18.099487940799232,
+    "positives": 17,
+    "negatives": 2645
+   },
+   "heldout_freiburg_a_seq2": {
+    "intercept": -7.760253620671692,
+    "slope": 17.395397981252586,
+    "positives": 17,
+    "negatives": 2519
+   },
+   "heldout_freiburg_b_seq3": {
+    "intercept": -7.954373207238068,
+    "slope": 17.78006762530215,
+    "positives": 17,
+    "negatives": 2695
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "intercept": -7.92105067003185,
+    "slope": 17.701722311630967,
+    "positives": 17,
+    "negatives": 2799
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "intercept": -7.8807086007842155,
+    "slope": 17.420429220557846,
+    "positives": 17,
+    "negatives": 2385
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "intercept": -7.927098038217295,
+    "slope": 17.692642238148924,
+    "positives": 17,
+    "negatives": 2760
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "intercept": -7.9125738436053075,
+    "slope": 17.676828819089902,
+    "positives": 17,
+    "negatives": 2757
+   },
+   "heldout_ljubljana_a_seq1": {
+    "intercept": -7.911597784280208,
+    "slope": 17.66801156737072,
+    "positives": 17,
+    "negatives": 2675
+   },
+   "heldout_ljubljana_a_seq2": {
+    "intercept": -7.905508034232882,
+    "slope": 17.608448391922995,
+    "positives": 17,
+    "negatives": 2639
+   },
+   "heldout_cid_apartment1_2": {
+    "intercept": -7.525254303405383,
+    "slope": 16.988838447889503,
+    "positives": 16,
+    "negatives": 2759
+   },
+   "heldout_cid_apartment2_2": {
+    "intercept": -8.71211071804415,
+    "slope": 19.22743025210557,
+    "positives": 16,
+    "negatives": 2724
+   },
+   "heldout_cid_apartment3_2": {
+    "intercept": -8.249940225126544,
+    "slope": 18.24948289423725,
+    "positives": 16,
+    "negatives": 2746
    }
   }
  },
  "anyloc_gem_g:cosine": {
   "all": {
-   "intercept": -20.191210358256704,
-   "slope": 25.79648742231264,
-   "positives": 20,
-   "negatives": 986
+   "intercept": -20.19255097568502,
+   "slope": 25.984278369056003,
+   "positives": 24,
+   "negatives": 2617
   },
   "leave_out": {
    "freiburg_a": {
-    "intercept": -24.17505070788795,
-    "slope": 30.866040912991313,
-    "positives": 20,
-    "negatives": 738
+    "intercept": -20.881151787631506,
+    "slope": 26.912421005374977,
+    "positives": 24,
+    "negatives": 2369
    },
    "freiburg_ext": {
-    "intercept": -19.790422237759987,
-    "slope": 25.258132485328016,
-    "positives": 20,
-    "negatives": 901
+    "intercept": -20.035170232777922,
+    "slope": 25.779607865031473,
+    "positives": 24,
+    "negatives": 2532
    },
    "saarbruecken_a": {
-    "intercept": -18.484575588181986,
-    "slope": 23.420161774022116,
-    "positives": 20,
-    "negatives": 670
+    "intercept": -19.618994158498918,
+    "slope": 25.206185302649377,
+    "positives": 24,
+    "negatives": 2301
    },
    "saarbruecken_ext": {
-    "intercept": -19.96932024268932,
-    "slope": 25.501926208473694,
-    "positives": 20,
-    "negatives": 950
+    "intercept": -20.10792435319957,
+    "slope": 25.87414765348826,
+    "positives": 24,
+    "negatives": 2581
    },
    "cid_sims_apartment1_1": {
-    "intercept": -14.24381766279986,
-    "slope": 18.625545407943545,
-    "positives": 11,
-    "negatives": 893
+    "intercept": -16.711428292842452,
+    "slope": 21.80927975746824,
+    "positives": 15,
+    "negatives": 2524
    },
    "cid_sims_apartment2_1": {
-    "intercept": -19.05458173058751,
-    "slope": 24.484900752386718,
-    "positives": 18,
-    "negatives": 948
+    "intercept": -19.383719771311224,
+    "slope": 25.04192644421157,
+    "positives": 22,
+    "negatives": 2579
    },
    "cid_sims_apartment3_1": {
-    "intercept": -33.30994218626964,
-    "slope": 41.411195221504855,
-    "positives": 11,
-    "negatives": 816
+    "intercept": -27.90149985340819,
+    "slope": 35.14428799945182,
+    "positives": 15,
+    "negatives": 2447
+   },
+   "heldout_freiburg_a_seq1": {
+    "intercept": -20.456153670879655,
+    "slope": 26.318575704522253,
+    "positives": 24,
+    "negatives": 2502
+   },
+   "heldout_freiburg_a_seq2": {
+    "intercept": -20.239219255104622,
+    "slope": 26.04519726752007,
+    "positives": 24,
+    "negatives": 2394
+   },
+   "heldout_freiburg_b_seq3": {
+    "intercept": -20.81797495421819,
+    "slope": 26.76098932761157,
+    "positives": 24,
+    "negatives": 2456
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "intercept": -20.258068510688226,
+    "slope": 26.073646049445628,
+    "positives": 24,
+    "negatives": 2597
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "intercept": -19.763262971058555,
+    "slope": 25.34900709070408,
+    "positives": 24,
+    "negatives": 2254
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "intercept": -20.143870433796767,
+    "slope": 25.922026145463725,
+    "positives": 24,
+    "negatives": 2574
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "intercept": -20.17224326883949,
+    "slope": 25.958373417390803,
+    "positives": 24,
+    "negatives": 2574
+   },
+   "heldout_ljubljana_a_seq1": {
+    "intercept": -20.30346895258809,
+    "slope": 26.156304080402027,
+    "positives": 24,
+    "negatives": 2498
+   },
+   "heldout_ljubljana_a_seq2": {
+    "intercept": -20.7194320061638,
+    "slope": 26.63228293794064,
+    "positives": 24,
+    "negatives": 2343
+   },
+   "heldout_cid_apartment1_2": {
+    "intercept": -19.21675681844838,
+    "slope": 24.79821008509116,
+    "positives": 23,
+    "negatives": 2566
+   },
+   "heldout_cid_apartment2_2": {
+    "intercept": -19.308634951773513,
+    "slope": 24.89603820405499,
+    "positives": 22,
+    "negatives": 2496
+   },
+   "heldout_cid_apartment3_2": {
+    "intercept": -20.560909206064846,
+    "slope": 26.404102834276383,
+    "positives": 23,
+    "negatives": 2519
    }
   }
  },
  "dinov3_s:vmf": {
   "all": {
-   "intercept": -2.0441396701277883,
-   "slope": 0.017880293568345418,
-   "positives": 18,
-   "negatives": 1197
+   "intercept": -1.8567146890206867,
+   "slope": 0.016019029261111505,
+   "positives": 23,
+   "negatives": 2977
   },
   "leave_out": {
    "freiburg_a": {
-    "intercept": -2.8255029002498544,
-    "slope": 0.022658377255016904,
-    "positives": 18,
-    "negatives": 774
+    "intercept": -1.9514806431160265,
+    "slope": 0.01645630561403985,
+    "positives": 23,
+    "negatives": 2554
    },
    "freiburg_ext": {
-    "intercept": -2.1413458489344706,
-    "slope": 0.018560975390332208,
-    "positives": 18,
-    "negatives": 1084
+    "intercept": -1.8704323896764519,
+    "slope": 0.016096301647922456,
+    "positives": 23,
+    "negatives": 2864
    },
    "saarbruecken_a": {
-    "intercept": -1.873432677049213,
-    "slope": 0.017497844092050713,
-    "positives": 18,
-    "negatives": 852
+    "intercept": -1.7826556367021724,
+    "slope": 0.015675835947227393,
+    "positives": 23,
+    "negatives": 2632
    },
    "saarbruecken_ext": {
-    "intercept": -2.0201960723011583,
-    "slope": 0.017619741440371057,
-    "positives": 18,
-    "negatives": 1110
+    "intercept": -1.8465622721553863,
+    "slope": 0.015906303383098865,
+    "positives": 23,
+    "negatives": 2890
    },
    "cid_sims_apartment1_1": {
-    "intercept": -1.4477915243489865,
-    "slope": 0.014148047628405686,
-    "positives": 9,
-    "negatives": 1127
+    "intercept": -1.6124654091101704,
+    "slope": 0.01454198612459777,
+    "positives": 14,
+    "negatives": 2907
    },
    "cid_sims_apartment2_1": {
-    "intercept": -2.0097478409015364,
-    "slope": 0.01773470602326389,
-    "positives": 17,
-    "negatives": 1172
+    "intercept": -1.8498497747059017,
+    "slope": 0.015992362264773012,
+    "positives": 22,
+    "negatives": 2952
    },
    "cid_sims_apartment3_1": {
-    "intercept": -2.3909859526777586,
-    "slope": 0.019384985683548506,
-    "positives": 10,
-    "negatives": 1063
+    "intercept": -2.1139944421992594,
+    "slope": 0.017257698681710367,
+    "positives": 15,
+    "negatives": 2843
+   },
+   "heldout_freiburg_a_seq1": {
+    "intercept": -2.0476565914485416,
+    "slope": 0.017288343399116692,
+    "positives": 23,
+    "negatives": 2813
+   },
+   "heldout_freiburg_a_seq2": {
+    "intercept": -1.9446581609716411,
+    "slope": 0.01646032610359817,
+    "positives": 23,
+    "negatives": 2524
+   },
+   "heldout_freiburg_b_seq3": {
+    "intercept": -1.8803515699581468,
+    "slope": 0.016075119172349328,
+    "positives": 23,
+    "negatives": 2816
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "intercept": -1.861324227370222,
+    "slope": 0.016100783414993713,
+    "positives": 23,
+    "negatives": 2935
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "intercept": -1.779454483331074,
+    "slope": 0.015467455014222323,
+    "positives": 23,
+    "negatives": 2608
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "intercept": -1.8541175948739634,
+    "slope": 0.015990725820364805,
+    "positives": 23,
+    "negatives": 2944
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "intercept": -1.8490042661075439,
+    "slope": 0.015950145615086866,
+    "positives": 23,
+    "negatives": 2923
+   },
+   "heldout_ljubljana_a_seq1": {
+    "intercept": -1.8921410922250428,
+    "slope": 0.01654403829245647,
+    "positives": 23,
+    "negatives": 2899
+   },
+   "heldout_ljubljana_a_seq2": {
+    "intercept": -1.8273850005034875,
+    "slope": 0.01602852895481656,
+    "positives": 23,
+    "negatives": 2767
+   },
+   "heldout_cid_apartment1_2": {
+    "intercept": -1.7452319076633198,
+    "slope": 0.015355125733273552,
+    "positives": 21,
+    "negatives": 2959
+   },
+   "heldout_cid_apartment2_2": {
+    "intercept": -1.739063997465439,
+    "slope": 0.015276216094053635,
+    "positives": 21,
+    "negatives": 2866
+   },
+   "heldout_cid_apartment3_2": {
+    "intercept": -1.9134387395617063,
+    "slope": 0.016303526554984,
+    "positives": 22,
+    "negatives": 2890
+   }
+  }
+ },
+ "dinov3_s:cosine": {
+  "all": {
+   "intercept": -6.864343776611694,
+   "slope": 11.77853933450957,
+   "positives": 23,
+   "negatives": 2977
+  },
+  "leave_out": {
+   "freiburg_a": {
+    "intercept": -6.965560502274453,
+    "slope": 11.974424043513103,
+    "positives": 23,
+    "negatives": 2554
+   },
+   "freiburg_ext": {
+    "intercept": -6.815921250329391,
+    "slope": 11.696129724037238,
+    "positives": 23,
+    "negatives": 2864
+   },
+   "saarbruecken_a": {
+    "intercept": -6.658402130704373,
+    "slope": 11.465083488252596,
+    "positives": 23,
+    "negatives": 2632
+   },
+   "saarbruecken_ext": {
+    "intercept": -6.874869599873412,
+    "slope": 11.794179112559299,
+    "positives": 23,
+    "negatives": 2890
+   },
+   "cid_sims_apartment1_1": {
+    "intercept": -5.823531056946281,
+    "slope": 10.182838867532002,
+    "positives": 14,
+    "negatives": 2907
+   },
+   "cid_sims_apartment2_1": {
+    "intercept": -6.8579421679436425,
+    "slope": 11.772682274333619,
+    "positives": 22,
+    "negatives": 2952
+   },
+   "cid_sims_apartment3_1": {
+    "intercept": -8.79938997471151,
+    "slope": 14.566066894000553,
+    "positives": 15,
+    "negatives": 2843
+   },
+   "heldout_freiburg_a_seq1": {
+    "intercept": -7.1140683024069835,
+    "slope": 12.183330773789217,
+    "positives": 23,
+    "negatives": 2813
+   },
+   "heldout_freiburg_a_seq2": {
+    "intercept": -6.962058195588439,
+    "slope": 11.936081850039958,
+    "positives": 23,
+    "negatives": 2524
+   },
+   "heldout_freiburg_b_seq3": {
+    "intercept": -6.831681786187722,
+    "slope": 11.70726007700528,
+    "positives": 23,
+    "negatives": 2816
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "intercept": -6.965159045689568,
+    "slope": 11.96321043838757,
+    "positives": 23,
+    "negatives": 2935
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "intercept": -6.652963519237501,
+    "slope": 11.38768743899529,
+    "positives": 23,
+    "negatives": 2608
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "intercept": -6.8636877129507985,
+    "slope": 11.777222861175863,
+    "positives": 23,
+    "negatives": 2944
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "intercept": -6.895971716466123,
+    "slope": 11.825032486962582,
+    "positives": 23,
+    "negatives": 2923
+   },
+   "heldout_ljubljana_a_seq1": {
+    "intercept": -7.087957749840139,
+    "slope": 12.209611196178134,
+    "positives": 23,
+    "negatives": 2899
+   },
+   "heldout_ljubljana_a_seq2": {
+    "intercept": -6.74955313198122,
+    "slope": 11.623632206500341,
+    "positives": 23,
+    "negatives": 2767
+   },
+   "heldout_cid_apartment1_2": {
+    "intercept": -6.441993808958038,
+    "slope": 11.137762703452278,
+    "positives": 21,
+    "negatives": 2959
+   },
+   "heldout_cid_apartment2_2": {
+    "intercept": -6.282923868614729,
+    "slope": 10.869910665154327,
+    "positives": 21,
+    "negatives": 2866
+   },
+   "heldout_cid_apartment3_2": {
+    "intercept": -7.26288645931824,
+    "slope": 12.340830822085579,
+    "positives": 22,
+    "negatives": 2890
    }
   }
  }
