@@ -32,11 +32,12 @@ PAPER_MAP_STYLE = MapStyle(
         "xtick.major.width": 0.4, "ytick.major.width": 0.4, "xtick.major.size": 2, "ytick.major.size": 2},
 )
 NO_ROOM_LABEL = "No room label"
+MAP_VARIANT = "topo_debiased"
 RETRIEVAL_EXAMPLES = [
     ("freiburg_a", "Take me to the kitchen", "KT"),
-    ("freiburg_a", "Go to the large office", "LO"),
     ("freiburg_ext", "Take me to the stairs", "ST"),
-    ("saarbruecken_a", "Take me to the terminal room", "TR"),
+    ("saarbruecken_a", "Go to the room with the computers", "TR"),
+    ("saarbruecken_ext", "Take me to the bathroom", "TL"),
 ]
 
 
@@ -76,7 +77,7 @@ def map_legend(labels: set[str | None]) -> str:
         rf"inner sep=0pt,minimum size=4.5pt] {{}};\,{label or NO_ROOM_LABEL}"
         for label in sorted(labels, key=lambda label: (label is None, label or ""))
     ]
-    lines = [_line_entry(TRAJECTORY_COLOR, False, "Ground-truth trajectory"),
+    lines = [_line_entry(TRAJECTORY_COLOR, False, "Reference trajectory"),
              _line_entry(SEQUENTIAL_EDGE_COLOR, False, "Sequential edge"),
              _line_entry(LOOP_EDGE_COLOR, True, "Loop closure")]
     entries = [rf"\mbox{{{entry}}}" for entry in rooms + lines]
@@ -97,7 +98,7 @@ def main() -> None:
     )
     labels: set[str | None] = set()
     for seq in DEV:
-        run = args.out / "replay" / seq.name / "topo"
+        run = args.out / "replay" / seq.name / MAP_VARIANT
         graph = TopoGraph.load(str(run / "graph.pkl"))
         node_gt = {int(k): np.asarray(v[:2]) for k, v in json.loads((run / "node_gt.json").read_text()).items()}
         render_map(graph, str(figures / f"map_{seq.name}.pdf"), gt_xy=load_ground_truth_xy(str(seq.trajectory_gt)),

@@ -10,17 +10,18 @@ from pathlib import Path
 import numpy as np
 
 from stream import CALIBRATION_FILE, DEV, HELDOUT, RESULTS, Sequence
-from mapper_runs import NODE_SENSITIVITY_FILE, TOLERANCES
+from mapper_runs import DEBIASED_ABLATIONS, NODE_SENSITIVITY_FILE, TOLERANCES
 from summarize import bootstrap, bootstrap_abs, counts, prf
 
 SPLIT_VARIANTS = [
     "topo", "topo_debiased", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
     "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s", "threshold",
-    "visual_only",
+    "visual_only", *(f"{name}_debiased" for name in DEBIASED_ABLATIONS),
 ]
 SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "boundary_cut"]
 PAIRED_TESTS = [
     ("topo_debiased", "topo", 2, "F1"), ("topo_debiased", "topo", 0, "P"), ("topo_debiased", "topo", 1, "R"),
+    *(("topo_debiased", f"{name}_debiased", 2, "F1") for name in DEBIASED_ABLATIONS),
     ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "anyloc_gem_g", 2, "F1"),
     ("topo", "previous_system", 2, "F1"), ("topo", "previous_system", 0, "P"), ("topo", "previous_system", 1, "R"),
     ("topo", "gate_propagated", 2, "F1"), ("topo", "geometry_only", 2, "F1"), ("topo", "vmf", 2, "F1"),

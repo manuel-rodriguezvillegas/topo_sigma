@@ -35,8 +35,12 @@ PLACE_RADIUS_M = 2.0
 DUMMY_IMAGE = np.zeros((1, 1, 3), dtype=np.uint8)
 DESCRIPTOR_ABLATIONS = ("dinov2_s", "anyloc_vlad_g", "anyloc_gem_g")
 VISUAL_SCORES = {"dinov3_s": ("cosine", "vmf"), **{e: ("cosine",) for e in DESCRIPTOR_ABLATIONS}}
+DEBIASED = "propagated_debiased"
+DEBIASED_ABLATIONS = ("anyloc_vlad_g", "anyloc_gem_g", "dinov2_s", "geometry_only", "vmf", "boundary_cut",
+                      "gate_propagated")
 TEST_VARIANTS = ("topo", "topo_debiased", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
-                 "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s")
+                 "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s",
+                 *(f"{name}_debiased" for name in DEBIASED_ABLATIONS))
 
 
 def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="both", visual_model="cosine",
@@ -62,6 +66,8 @@ def variants(split: str) -> dict[str, dict]:
     }
     for encoder in DESCRIPTOR_ABLATIONS:
         v[geometric_source(encoder)] = _spec(encoder=encoder, gate_mode="geometric")
+    v["geometry_only_debiased"] = _spec(gate=DEBIASED, gate_mode="geometric")
+    v["gate_propagated_debiased"] = _spec(gate=DEBIASED, association="gate")
     return v
 
 
@@ -69,12 +75,15 @@ def visual_variants(split: str) -> dict[str, dict]:
     """The method and its ablations; they need ``VISUAL_FILE``."""
     v = {
         "topo": _spec(images=split == "dev"),
-        "topo_debiased": _spec(gate="propagated_debiased"),
+        "topo_debiased": _spec(gate=DEBIASED),
         "vmf": _spec(visual_model="vmf"),
         "isotropic_default": _spec(gate="isotropic_default"),
         "isotropic_calibrated": _spec(gate="isotropic_calibrated"),
         "boundary_cut": _spec(boundary="cut"),
         **{encoder: _spec(encoder=encoder) for encoder in DESCRIPTOR_ABLATIONS},
+        **{f"{encoder}_debiased": _spec(encoder=encoder, gate=DEBIASED) for encoder in DESCRIPTOR_ABLATIONS},
+        "vmf_debiased": _spec(visual_model="vmf", gate=DEBIASED),
+        "boundary_cut_debiased": _spec(boundary="cut", gate=DEBIASED),
     }
     if split == "dev":
         for k in (1.0, 1.5, 2.5, 3.0):
