@@ -94,20 +94,20 @@
     },
     "freiburg_ext": {
       "absent": {
-        "correct_rejection_rate": 0.537,
-        "false_answer_rate": 0.463,
+        "correct_rejection_rate": 0.5185,
+        "false_answer_rate": 0.4815,
         "n": 54
       },
-      "heuristic_decision_accuracy": 0.32,
+      "heuristic_decision_accuracy": 0.3,
       "n_map_query_pairs": 100,
       "present": {
-        "answer_coverage": 0.4348,
-        "mrr": 0.5181,
+        "answer_coverage": 0.4783,
+        "mrr": 0.529,
         "n": 46,
-        "precision_at_1_when_answered": 0.15,
+        "precision_at_1_when_answered": 0.0909,
         "recall_at_1": 0.2826,
-        "recall_at_3": 0.8043,
-        "successful_answer_rate": 0.0652
+        "recall_at_3": 0.8261,
+        "successful_answer_rate": 0.0435
       },
       "present_by_category": {
         "command": {
@@ -129,16 +129,16 @@
           "successful_answer_rate": 0.0
         },
         "function": {
-          "answer_coverage": 0.2,
-          "mrr": 0.1667,
+          "answer_coverage": 0.4,
+          "mrr": 0.2667,
           "n": 5,
           "precision_at_1_when_answered": 0.0,
           "recall_at_1": 0.0,
-          "recall_at_3": 0.4,
+          "recall_at_3": 0.6,
           "successful_answer_rate": 0.0
         },
         "indirect": {
-          "answer_coverage": 0.1429,
+          "answer_coverage": 0.2857,
           "mrr": 0.5714,
           "n": 7,
           "precision_at_1_when_answered": 0.0,
@@ -159,10 +159,10 @@
           "answer_coverage": 0.4444,
           "mrr": 0.5741,
           "n": 9,
-          "precision_at_1_when_answered": 0.5,
+          "precision_at_1_when_answered": 0.25,
           "recall_at_1": 0.3333,
           "recall_at_3": 0.8889,
-          "successful_answer_rate": 0.2222
+          "successful_answer_rate": 0.1111
         },
         "scene": {
           "answer_coverage": 0.6667,
@@ -177,18 +177,18 @@
     },
     "saarbruecken_a": {
       "absent": {
-        "correct_rejection_rate": 0.4815,
-        "false_answer_rate": 0.5185,
+        "correct_rejection_rate": 0.5185,
+        "false_answer_rate": 0.4815,
         "n": 27
       },
-      "heuristic_decision_accuracy": 0.16,
+      "heuristic_decision_accuracy": 0.17,
       "n_map_query_pairs": 100,
       "present": {
         "answer_coverage": 0.2466,
-        "mrr": 0.5457,
+        "mrr": 0.5388,
         "n": 73,
         "precision_at_1_when_answered": 0.1667,
-        "recall_at_1": 0.3973,
+        "recall_at_1": 0.3836,
         "recall_at_3": 0.726,
         "successful_answer_rate": 0.0411
       },
@@ -204,10 +204,10 @@
         },
         "direct": {
           "answer_coverage": 0.125,
-          "mrr": 0.625,
+          "mrr": 0.5625,
           "n": 8,
           "precision_at_1_when_answered": 0.0,
-          "recall_at_1": 0.5,
+          "recall_at_1": 0.375,
           "recall_at_3": 0.75,
           "successful_answer_rate": 0.0
         },
@@ -343,10 +343,10 @@
     }
   },
   "graph_sha256": {
-    "freiburg_a": "c8b4d06a2185343f0dac3e6d00867948bc6d275d782070ffacfe69b90793d442",
-    "freiburg_ext": "5c7f900f28ffdb8d6fbaddc7d62ed0c50365687aa0a7da7fd904a97803ec0cbf",
-    "saarbruecken_a": "c174098426d676899e6b80d7e2e0da3bce1f55c60252551b125515cef4846a7b",
-    "saarbruecken_ext": "3d06c269b83aad5e729f6a37c795798c36a751238a8f6dba4f8f7dee9b963e46"
+    "freiburg_a": "5c90270857b91b5d830eddb36b5b14e3cc5322187535f037bffbac56c2b6c1df",
+    "freiburg_ext": "3195c2ed5b60e2e5bb039a527c30faf28977775f27bd48e8fed398932c501b2a",
+    "saarbruecken_a": "d30a1156170e44fcbebb20bdb7fe99233c2c5ad3094d3507be5055285fac4148",
+    "saarbruecken_ext": "62da591ac6419298e436073ae54eef2f74fdd13e95a2eea4bd307f9eea48adcd"
   },
   "overall": {
     "absent": {
@@ -354,16 +354,16 @@
       "false_answer_rate": 0.4259,
       "n": 162
     },
-    "heuristic_decision_accuracy": 0.31,
+    "heuristic_decision_accuracy": 0.3075,
     "n_map_query_pairs": 400,
     "present": {
-      "answer_coverage": 0.3025,
+      "answer_coverage": 0.3109,
       "mrr": 0.5784,
       "n": 238,
-      "precision_at_1_when_answered": 0.4306,
-      "recall_at_1": 0.4328,
-      "recall_at_3": 0.7605,
-      "successful_answer_rate": 0.1303
+      "precision_at_1_when_answered": 0.4054,
+      "recall_at_1": 0.4286,
+      "recall_at_3": 0.7647,
+      "successful_answer_rate": 0.1261
     },
     "present_by_category": {
       "command": {
@@ -377,27 +377,27 @@
       },
       "direct": {
         "answer_coverage": 0.2308,
-        "mrr": 0.7051,
+        "mrr": 0.6859,
         "n": 26,
         "precision_at_1_when_answered": 0.5,
-        "recall_at_1": 0.5769,
+        "recall_at_1": 0.5385,
         "recall_at_3": 0.8462,
         "successful_answer_rate": 0.1154
       },
       "function": {
-        "answer_coverage": 0.375,
-        "mrr": 0.5,
+        "answer_coverage": 0.4062,
+        "mrr": 0.5156,
         "n": 32,
-        "precision_at_1_when_answered": 0.5833,
+        "precision_at_1_when_answered": 0.5385,
         "recall_at_1": 0.4062,
-        "recall_at_3": 0.625,
+        "recall_at_3": 0.6562,
         "successful_answer_rate": 0.2188
       },
       "indirect": {
-        "answer_coverage": 0.0882,
+        "answer_coverage": 0.1176,
         "mrr": 0.5735,
         "n": 34,
-        "precision_at_1_when_answered": 0.3333,
+        "precision_at_1_when_answered": 0.25,
         "recall_at_1": 0.4412,
         "recall_at_3": 0.7353,
         "successful_answer_rate": 0.0294
@@ -415,10 +415,10 @@
         "answer_coverage": 0.2619,
         "mrr": 0.5595,
         "n": 42,
-        "precision_at_1_when_answered": 0.3636,
+        "precision_at_1_when_answered": 0.2727,
         "recall_at_1": 0.4048,
         "recall_at_3": 0.7619,
-        "successful_answer_rate": 0.0952
+        "successful_answer_rate": 0.0714
       },
       "scene": {
         "answer_coverage": 0.2903,
@@ -2138,7 +2138,7 @@
       "environment": "freiburg_ext",
       "id": "q001",
       "label": "1PO",
-      "posterior_margin": 0.0154,
+      "posterior_margin": 0.017,
       "present": true,
       "query": "the one-person office",
       "ranked_labels": [
@@ -2155,7 +2155,7 @@
       "environment": "freiburg_ext",
       "id": "q002",
       "label": "1PO",
-      "posterior_margin": 0.3591,
+      "posterior_margin": 0.3925,
       "present": true,
       "query": "take me to a private office",
       "ranked_labels": [
@@ -2172,7 +2172,7 @@
       "environment": "freiburg_ext",
       "id": "q003",
       "label": "1PO",
-      "posterior_margin": 0.1383,
+      "posterior_margin": 0.1503,
       "present": true,
       "query": "find the single-person office",
       "ranked_labels": [
@@ -2185,34 +2185,34 @@
     },
     {
       "category": "paraphrase",
-      "confident": false,
+      "confident": true,
       "environment": "freiburg_ext",
       "id": "q004",
       "label": "1PO",
-      "posterior_margin": 0.0857,
+      "posterior_margin": 0.1007,
       "present": true,
       "query": "an office intended for one person",
       "ranked_labels": [
         "CR",
         "2PO",
-        "2PO"
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
     },
     {
       "category": "function",
-      "confident": false,
+      "confident": true,
       "environment": "freiburg_ext",
       "id": "q005",
       "label": "1PO",
-      "posterior_margin": 0.0968,
+      "posterior_margin": 0.1119,
       "present": true,
       "query": "where can one person work alone",
       "ranked_labels": [
         "CR",
         "2PO",
-        "2PO"
+        "TL"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -2223,7 +2223,7 @@
       "environment": "freiburg_ext",
       "id": "q006",
       "label": "1PO",
-      "posterior_margin": 0.2736,
+      "posterior_margin": 0.2902,
       "present": true,
       "query": "a small office with one desk",
       "ranked_labels": [
@@ -2240,7 +2240,7 @@
       "environment": "freiburg_ext",
       "id": "q007",
       "label": "1PO",
-      "posterior_margin": 0.0454,
+      "posterior_margin": 0.0517,
       "present": true,
       "query": "the individual workspace",
       "ranked_labels": [
@@ -2257,7 +2257,7 @@
       "environment": "freiburg_ext",
       "id": "q008",
       "label": "1PO",
-      "posterior_margin": 0.165,
+      "posterior_margin": 0.184,
       "present": true,
       "query": "show me a quiet room for working alone",
       "ranked_labels": [
@@ -2274,7 +2274,7 @@
       "environment": "freiburg_ext",
       "id": "q009",
       "label": "1PO",
-      "posterior_margin": 0.1381,
+      "posterior_margin": 0.1553,
       "present": true,
       "query": "I need an office that is not shared",
       "ranked_labels": [
@@ -2291,7 +2291,7 @@
       "environment": "freiburg_ext",
       "id": "q010",
       "label": "2PO",
-      "posterior_margin": 0.0749,
+      "posterior_margin": 0.0778,
       "present": true,
       "query": "the two-person office",
       "ranked_labels": [
@@ -2308,7 +2308,7 @@
       "environment": "freiburg_ext",
       "id": "q011",
       "label": "2PO",
-      "posterior_margin": 0.1006,
+      "posterior_margin": 0.1101,
       "present": true,
       "query": "go to the shared office",
       "ranked_labels": [
@@ -2325,7 +2325,7 @@
       "environment": "freiburg_ext",
       "id": "q012",
       "label": "2PO",
-      "posterior_margin": 0.2892,
+      "posterior_margin": 0.3006,
       "present": true,
       "query": "take me to an office for two people",
       "ranked_labels": [
@@ -2342,7 +2342,7 @@
       "environment": "freiburg_ext",
       "id": "q013",
       "label": "2PO",
-      "posterior_margin": 0.0271,
+      "posterior_margin": 0.0294,
       "present": true,
       "query": "an office shared by a pair of colleagues",
       "ranked_labels": [
@@ -2359,7 +2359,7 @@
       "environment": "freiburg_ext",
       "id": "q014",
       "label": "2PO",
-      "posterior_margin": 0.0563,
+      "posterior_margin": 0.0604,
       "present": true,
       "query": "where can two people work together",
       "ranked_labels": [
@@ -2376,7 +2376,7 @@
       "environment": "freiburg_ext",
       "id": "q015",
       "label": "2PO",
-      "posterior_margin": 0.0666,
+      "posterior_margin": 0.0688,
       "present": true,
       "query": "the room with two office desks",
       "ranked_labels": [
@@ -2393,7 +2393,7 @@
       "environment": "freiburg_ext",
       "id": "q016",
       "label": "2PO",
-      "posterior_margin": 0.2732,
+      "posterior_margin": 0.301,
       "present": true,
       "query": "find a small shared workspace",
       "ranked_labels": [
@@ -2410,7 +2410,7 @@
       "environment": "freiburg_ext",
       "id": "q017",
       "label": "2PO",
-      "posterior_margin": 0.1423,
+      "posterior_margin": 0.1498,
       "present": true,
       "query": "the office used by two members of staff",
       "ranked_labels": [
@@ -2427,7 +2427,7 @@
       "environment": "freiburg_ext",
       "id": "q018",
       "label": "2PO",
-      "posterior_margin": 0.0822,
+      "posterior_margin": 0.0915,
       "present": true,
       "query": "I want the office that is shared, but not the large office",
       "ranked_labels": [
@@ -2444,7 +2444,7 @@
       "environment": "freiburg_ext",
       "id": "q019",
       "label": "CNR",
-      "posterior_margin": 0.1727,
+      "posterior_margin": 0.2047,
       "present": false,
       "query": "the conference room",
       "ranked_labels": [
@@ -2461,7 +2461,7 @@
       "environment": "freiburg_ext",
       "id": "q020",
       "label": "CNR",
-      "posterior_margin": 0.1272,
+      "posterior_margin": 0.1481,
       "present": false,
       "query": "take me to the meeting room",
       "ranked_labels": [
@@ -2478,7 +2478,7 @@
       "environment": "freiburg_ext",
       "id": "q021",
       "label": "CNR",
-      "posterior_margin": 0.0582,
+      "posterior_margin": 0.0673,
       "present": false,
       "query": "find the room used for meetings",
       "ranked_labels": [
@@ -2495,7 +2495,7 @@
       "environment": "freiburg_ext",
       "id": "q022",
       "label": "CNR",
-      "posterior_margin": 0.1618,
+      "posterior_margin": 0.1844,
       "present": false,
       "query": "where can a team hold a discussion",
       "ranked_labels": [
@@ -2512,7 +2512,7 @@
       "environment": "freiburg_ext",
       "id": "q023",
       "label": "CNR",
-      "posterior_margin": 0.129,
+      "posterior_margin": 0.1469,
       "present": false,
       "query": "a room with a meeting table",
       "ranked_labels": [
@@ -2529,7 +2529,7 @@
       "environment": "freiburg_ext",
       "id": "q024",
       "label": "CNR",
-      "posterior_margin": 0.1018,
+      "posterior_margin": 0.1138,
       "present": false,
       "query": "the group discussion room",
       "ranked_labels": [
@@ -2546,7 +2546,7 @@
       "environment": "freiburg_ext",
       "id": "q025",
       "label": "CNR",
-      "posterior_margin": 0.032,
+      "posterior_margin": 0.0366,
       "present": false,
       "query": "show me a place for a project meeting",
       "ranked_labels": [
@@ -2563,13 +2563,13 @@
       "environment": "freiburg_ext",
       "id": "q026",
       "label": "CNR",
-      "posterior_margin": 0.0006,
+      "posterior_margin": 0.0213,
       "present": false,
       "query": "I need a room where several people can meet",
       "ranked_labels": [
         "CR",
-        "2PO",
-        "TL"
+        "TL",
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -2580,7 +2580,7 @@
       "environment": "freiburg_ext",
       "id": "q027",
       "label": "CNR",
-      "posterior_margin": 0.0672,
+      "posterior_margin": 0.0756,
       "present": false,
       "query": "the room for presentations and meetings",
       "ranked_labels": [
@@ -2597,7 +2597,7 @@
       "environment": "freiburg_ext",
       "id": "q028",
       "label": "CR",
-      "posterior_margin": 0.0345,
+      "posterior_margin": 0.0114,
       "present": true,
       "query": "the corridor",
       "ranked_labels": [
@@ -2614,7 +2614,7 @@
       "environment": "freiburg_ext",
       "id": "q029",
       "label": "CR",
-      "posterior_margin": 0.0264,
+      "posterior_margin": 0.0182,
       "present": true,
       "query": "take me to the hallway",
       "ranked_labels": [
@@ -2631,12 +2631,12 @@
       "environment": "freiburg_ext",
       "id": "q030",
       "label": "CR",
-      "posterior_margin": 0.0197,
+      "posterior_margin": 0.05,
       "present": true,
       "query": "go to the passage between rooms",
       "ranked_labels": [
         "CR",
-        "2PO",
+        "1PO",
         "CR"
       ],
       "top1_correct": true,
@@ -2644,11 +2644,11 @@
     },
     {
       "category": "paraphrase",
-      "confident": true,
+      "confident": false,
       "environment": "freiburg_ext",
       "id": "q031",
       "label": "CR",
-      "posterior_margin": 0.1719,
+      "posterior_margin": 0.0062,
       "present": true,
       "query": "the long indoor passage",
       "ranked_labels": [
@@ -2665,16 +2665,16 @@
       "environment": "freiburg_ext",
       "id": "q032",
       "label": "CR",
-      "posterior_margin": 0.0166,
+      "posterior_margin": 0.0229,
       "present": true,
       "query": "where are the rooms connected",
       "ranked_labels": [
-        "2PO",
-        "2PO",
-        "1PO"
+        "1PO",
+        "CR",
+        "CR"
       ],
       "top1_correct": false,
-      "top3_correct": false
+      "top3_correct": true
     },
     {
       "category": "scene",
@@ -2682,13 +2682,13 @@
       "environment": "freiburg_ext",
       "id": "q033",
       "label": "CR",
-      "posterior_margin": 0.0086,
+      "posterior_margin": 0.0098,
       "present": true,
       "query": "a narrow space lined with doors",
       "ranked_labels": [
         "CR",
         "1PO",
-        "2PO"
+        "TL"
       ],
       "top1_correct": true,
       "top3_correct": true
@@ -2699,7 +2699,7 @@
       "environment": "freiburg_ext",
       "id": "q034",
       "label": "CR",
-      "posterior_margin": 0.2729,
+      "posterior_margin": 0.279,
       "present": true,
       "query": "the area outside the offices",
       "ranked_labels": [
@@ -2716,13 +2716,13 @@
       "environment": "freiburg_ext",
       "id": "q035",
       "label": "CR",
-      "posterior_margin": 0.024,
+      "posterior_margin": 0.0048,
       "present": true,
       "query": "show me the main circulation route",
       "ranked_labels": [
         "CR",
         "CR",
-        "CR"
+        "2PO"
       ],
       "top1_correct": true,
       "top3_correct": true
@@ -2733,7 +2733,7 @@
       "environment": "freiburg_ext",
       "id": "q036",
       "label": "CR",
-      "posterior_margin": 0.0477,
+      "posterior_margin": 0.0539,
       "present": true,
       "query": "I want the hallway, not one of the rooms",
       "ranked_labels": [
@@ -2750,7 +2750,7 @@
       "environment": "freiburg_ext",
       "id": "q037",
       "label": "CR",
-      "posterior_margin": 0.1752,
+      "posterior_margin": 0.1145,
       "present": true,
       "query": "find the walkway through the building",
       "ranked_labels": [
@@ -2767,7 +2767,7 @@
       "environment": "freiburg_ext",
       "id": "q038",
       "label": "KT",
-      "posterior_margin": 0.5104,
+      "posterior_margin": 0.5177,
       "present": false,
       "query": "the kitchen",
       "ranked_labels": [
@@ -2784,7 +2784,7 @@
       "environment": "freiburg_ext",
       "id": "q039",
       "label": "KT",
-      "posterior_margin": 0.5104,
+      "posterior_margin": 0.5177,
       "present": false,
       "query": "take me to the kitchen",
       "ranked_labels": [
@@ -2801,7 +2801,7 @@
       "environment": "freiburg_ext",
       "id": "q040",
       "label": "KT",
-      "posterior_margin": 0.0861,
+      "posterior_margin": 0.091,
       "present": false,
       "query": "find the break room",
       "ranked_labels": [
@@ -2818,7 +2818,7 @@
       "environment": "freiburg_ext",
       "id": "q041",
       "label": "KT",
-      "posterior_margin": 0.2228,
+      "posterior_margin": 0.2305,
       "present": false,
       "query": "where can I prepare some food",
       "ranked_labels": [
@@ -2835,7 +2835,7 @@
       "environment": "freiburg_ext",
       "id": "q042",
       "label": "KT",
-      "posterior_margin": 0.0661,
+      "posterior_margin": 0.0682,
       "present": false,
       "query": "where can I make coffee",
       "ranked_labels": [
@@ -2852,7 +2852,7 @@
       "environment": "freiburg_ext",
       "id": "q043",
       "label": "KT",
-      "posterior_margin": 0.5994,
+      "posterior_margin": 0.6027,
       "present": false,
       "query": "the room with a fridge and cupboards",
       "ranked_labels": [
@@ -2869,7 +2869,7 @@
       "environment": "freiburg_ext",
       "id": "q044",
       "label": "KT",
-      "posterior_margin": 0.2335,
+      "posterior_margin": 0.2354,
       "present": false,
       "query": "show me the staff refreshment area",
       "ranked_labels": [
@@ -2886,13 +2886,13 @@
       "environment": "freiburg_ext",
       "id": "q045",
       "label": "KT",
-      "posterior_margin": 0.0938,
+      "posterior_margin": 0.0099,
       "present": false,
       "query": "I need somewhere to eat a quick snack",
       "ranked_labels": [
-        "2PO",
         "CR",
-        "1PO"
+        "1PO",
+        "ST"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -2903,7 +2903,7 @@
       "environment": "freiburg_ext",
       "id": "q046",
       "label": "KT",
-      "posterior_margin": 0.1551,
+      "posterior_margin": 0.1613,
       "present": false,
       "query": "the place used for drinks and lunch",
       "ranked_labels": [
@@ -2920,7 +2920,7 @@
       "environment": "freiburg_ext",
       "id": "q047",
       "label": "LO",
-      "posterior_margin": 0.0706,
+      "posterior_margin": 0.0762,
       "present": false,
       "query": "the large office",
       "ranked_labels": [
@@ -2937,7 +2937,7 @@
       "environment": "freiburg_ext",
       "id": "q048",
       "label": "LO",
-      "posterior_margin": 0.0569,
+      "posterior_margin": 0.0633,
       "present": false,
       "query": "take me to the big office",
       "ranked_labels": [
@@ -2954,7 +2954,7 @@
       "environment": "freiburg_ext",
       "id": "q049",
       "label": "LO",
-      "posterior_margin": 0.0605,
+      "posterior_margin": 0.0671,
       "present": false,
       "query": "find the open-plan office",
       "ranked_labels": [
@@ -2971,7 +2971,7 @@
       "environment": "freiburg_ext",
       "id": "q050",
       "label": "LO",
-      "posterior_margin": 0.0214,
+      "posterior_margin": 0.0227,
       "present": false,
       "query": "an office with space for many people",
       "ranked_labels": [
@@ -2988,13 +2988,13 @@
       "environment": "freiburg_ext",
       "id": "q051",
       "label": "LO",
-      "posterior_margin": 0.1048,
+      "posterior_margin": 0.1292,
       "present": false,
       "query": "where does the larger team work",
       "ranked_labels": [
         "2PO",
         "2PO",
-        "2PO"
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3005,7 +3005,7 @@
       "environment": "freiburg_ext",
       "id": "q052",
       "label": "LO",
-      "posterior_margin": 0.1396,
+      "posterior_margin": 0.1614,
       "present": false,
       "query": "the room containing many desks",
       "ranked_labels": [
@@ -3022,7 +3022,7 @@
       "environment": "freiburg_ext",
       "id": "q053",
       "label": "LO",
-      "posterior_margin": 0.0448,
+      "posterior_margin": 0.0486,
       "present": false,
       "query": "show me the spacious shared workplace",
       "ranked_labels": [
@@ -3039,7 +3039,7 @@
       "environment": "freiburg_ext",
       "id": "q054",
       "label": "LO",
-      "posterior_margin": 0.0238,
+      "posterior_margin": 0.0261,
       "present": false,
       "query": "I need the biggest office in this area",
       "ranked_labels": [
@@ -3056,7 +3056,7 @@
       "environment": "freiburg_ext",
       "id": "q055",
       "label": "LO",
-      "posterior_margin": 0.011,
+      "posterior_margin": 0.0127,
       "present": false,
       "query": "the busy office rather than a private one",
       "ranked_labels": [
@@ -3073,7 +3073,7 @@
       "environment": "freiburg_ext",
       "id": "q056",
       "label": "PA",
-      "posterior_margin": 0.737,
+      "posterior_margin": 0.7404,
       "present": false,
       "query": "the printer area",
       "ranked_labels": [
@@ -3090,7 +3090,7 @@
       "environment": "freiburg_ext",
       "id": "q057",
       "label": "PA",
-      "posterior_margin": 0.8518,
+      "posterior_margin": 0.855,
       "present": false,
       "query": "take me to the printers",
       "ranked_labels": [
@@ -3107,7 +3107,7 @@
       "environment": "freiburg_ext",
       "id": "q058",
       "label": "PA",
-      "posterior_margin": 0.9003,
+      "posterior_margin": 0.903,
       "present": false,
       "query": "find the photocopier",
       "ranked_labels": [
@@ -3124,13 +3124,13 @@
       "environment": "freiburg_ext",
       "id": "q059",
       "label": "PA",
-      "posterior_margin": 0.5041,
+      "posterior_margin": 0.5351,
       "present": false,
       "query": "where can I print a document",
       "ranked_labels": [
         "1PO",
         "CR",
-        "2PO"
+        "ST"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3141,7 +3141,7 @@
       "environment": "freiburg_ext",
       "id": "q060",
       "label": "PA",
-      "posterior_margin": 0.5937,
+      "posterior_margin": 0.6136,
       "present": false,
       "query": "I need to make a photocopy",
       "ranked_labels": [
@@ -3158,7 +3158,7 @@
       "environment": "freiburg_ext",
       "id": "q061",
       "label": "PA",
-      "posterior_margin": 0.8706,
+      "posterior_margin": 0.8719,
       "present": false,
       "query": "the place with office printers",
       "ranked_labels": [
@@ -3175,7 +3175,7 @@
       "environment": "freiburg_ext",
       "id": "q062",
       "label": "PA",
-      "posterior_margin": 0.7467,
+      "posterior_margin": 0.7503,
       "present": false,
       "query": "show me the copy and printing station",
       "ranked_labels": [
@@ -3192,7 +3192,7 @@
       "environment": "freiburg_ext",
       "id": "q063",
       "label": "PA",
-      "posterior_margin": 0.3695,
+      "posterior_margin": 0.3749,
       "present": false,
       "query": "the small area where printed pages come out",
       "ranked_labels": [
@@ -3209,7 +3209,7 @@
       "environment": "freiburg_ext",
       "id": "q064",
       "label": "PA",
-      "posterior_margin": 0.4359,
+      "posterior_margin": 0.4517,
       "present": false,
       "query": "where are the shared office machines",
       "ranked_labels": [
@@ -3222,11 +3222,11 @@
     },
     {
       "category": "direct",
-      "confident": false,
+      "confident": true,
       "environment": "freiburg_ext",
       "id": "q065",
       "label": "RL",
-      "posterior_margin": 0.0993,
+      "posterior_margin": 0.1077,
       "present": false,
       "query": "the robotics laboratory",
       "ranked_labels": [
@@ -3243,7 +3243,7 @@
       "environment": "freiburg_ext",
       "id": "q066",
       "label": "RL",
-      "posterior_margin": 0.0846,
+      "posterior_margin": 0.0942,
       "present": false,
       "query": "take me to the robotics lab",
       "ranked_labels": [
@@ -3260,13 +3260,13 @@
       "environment": "freiburg_ext",
       "id": "q067",
       "label": "RL",
-      "posterior_margin": 0.0519,
+      "posterior_margin": 0.0615,
       "present": false,
       "query": "find the robot research room",
       "ranked_labels": [
         "ST",
         "CR",
-        "2PO"
+        "TL"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3277,13 +3277,13 @@
       "environment": "freiburg_ext",
       "id": "q068",
       "label": "RL",
-      "posterior_margin": 0.0005,
+      "posterior_margin": 0.0006,
       "present": false,
       "query": "where are robots tested",
       "ranked_labels": [
         "CR",
         "2PO",
-        "2PO"
+        "ST"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3294,7 +3294,7 @@
       "environment": "freiburg_ext",
       "id": "q069",
       "label": "RL",
-      "posterior_margin": 0.3347,
+      "posterior_margin": 0.3406,
       "present": false,
       "query": "the laboratory containing mobile robots",
       "ranked_labels": [
@@ -3311,13 +3311,13 @@
       "environment": "freiburg_ext",
       "id": "q070",
       "label": "RL",
-      "posterior_margin": 0.0066,
+      "posterior_margin": 0.0079,
       "present": false,
       "query": "show me the room used for robotics experiments",
       "ranked_labels": [
         "ST",
         "TL",
-        "2PO"
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3328,7 +3328,7 @@
       "environment": "freiburg_ext",
       "id": "q071",
       "label": "RL",
-      "posterior_margin": 0.0947,
+      "posterior_margin": 0.0972,
       "present": false,
       "query": "the lab with robots and technical equipment",
       "ranked_labels": [
@@ -3341,17 +3341,17 @@
     },
     {
       "category": "indirect",
-      "confident": true,
+      "confident": false,
       "environment": "freiburg_ext",
       "id": "q072",
       "label": "RL",
-      "posterior_margin": 0.1008,
+      "posterior_margin": 0.0818,
       "present": false,
       "query": "I want to visit the robotics researchers' workspace",
       "ranked_labels": [
         "2PO",
-        "2PO",
-        "ST"
+        "ST",
+        "1PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3362,12 +3362,12 @@
       "environment": "freiburg_ext",
       "id": "q073",
       "label": "RL",
-      "posterior_margin": 0.0067,
+      "posterior_margin": 0.071,
       "present": false,
       "query": "the experimental lab, not the computer terminal room",
       "ranked_labels": [
-        "2PO",
         "ST",
+        "CR",
         "CR"
       ],
       "top1_correct": false,
@@ -3379,7 +3379,7 @@
       "environment": "freiburg_ext",
       "id": "q074",
       "label": "ST",
-      "posterior_margin": 0.0656,
+      "posterior_margin": 0.0659,
       "present": true,
       "query": "the stairs",
       "ranked_labels": [
@@ -3396,7 +3396,7 @@
       "environment": "freiburg_ext",
       "id": "q075",
       "label": "ST",
-      "posterior_margin": 0.1353,
+      "posterior_margin": 0.1358,
       "present": true,
       "query": "take me to the staircase",
       "ranked_labels": [
@@ -3413,7 +3413,7 @@
       "environment": "freiburg_ext",
       "id": "q076",
       "label": "ST",
-      "posterior_margin": 0.1349,
+      "posterior_margin": 0.1354,
       "present": true,
       "query": "find the stairwell",
       "ranked_labels": [
@@ -3430,7 +3430,7 @@
       "environment": "freiburg_ext",
       "id": "q077",
       "label": "ST",
-      "posterior_margin": 0.0763,
+      "posterior_margin": 0.0801,
       "present": true,
       "query": "where can I change floors",
       "ranked_labels": [
@@ -3447,7 +3447,7 @@
       "environment": "freiburg_ext",
       "id": "q078",
       "label": "ST",
-      "posterior_margin": 0.1168,
+      "posterior_margin": 0.1172,
       "present": true,
       "query": "the steps leading upstairs",
       "ranked_labels": [
@@ -3460,17 +3460,17 @@
     },
     {
       "category": "indirect",
-      "confident": false,
+      "confident": true,
       "environment": "freiburg_ext",
       "id": "q079",
       "label": "ST",
-      "posterior_margin": 0.0434,
+      "posterior_margin": 0.1809,
       "present": true,
       "query": "show me the route to another floor",
       "ranked_labels": [
         "CR",
         "CR",
-        "2PO"
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3481,7 +3481,7 @@
       "environment": "freiburg_ext",
       "id": "q080",
       "label": "ST",
-      "posterior_margin": 0.058,
+      "posterior_margin": 0.0584,
       "present": true,
       "query": "the indoor flight of steps",
       "ranked_labels": [
@@ -3498,7 +3498,7 @@
       "environment": "freiburg_ext",
       "id": "q081",
       "label": "ST",
-      "posterior_margin": 0.0576,
+      "posterior_margin": 0.0594,
       "present": true,
       "query": "I am looking for the stairs rather than the corridor",
       "ranked_labels": [
@@ -3515,7 +3515,7 @@
       "environment": "freiburg_ext",
       "id": "q082",
       "label": "ST",
-      "posterior_margin": 0.1985,
+      "posterior_margin": 0.1991,
       "present": true,
       "query": "the landing and staircase area",
       "ranked_labels": [
@@ -3532,7 +3532,7 @@
       "environment": "freiburg_ext",
       "id": "q083",
       "label": "TL",
-      "posterior_margin": 0.0327,
+      "posterior_margin": 0.0328,
       "present": true,
       "query": "the toilet",
       "ranked_labels": [
@@ -3549,7 +3549,7 @@
       "environment": "freiburg_ext",
       "id": "q084",
       "label": "TL",
-      "posterior_margin": 0.0773,
+      "posterior_margin": 0.0787,
       "present": true,
       "query": "take me to the bathroom",
       "ranked_labels": [
@@ -3566,7 +3566,7 @@
       "environment": "freiburg_ext",
       "id": "q085",
       "label": "TL",
-      "posterior_margin": 0.1152,
+      "posterior_margin": 0.1153,
       "present": true,
       "query": "find the restroom",
       "ranked_labels": [
@@ -3583,7 +3583,7 @@
       "environment": "freiburg_ext",
       "id": "q086",
       "label": "TL",
-      "posterior_margin": 0.1157,
+      "posterior_margin": 0.116,
       "present": true,
       "query": "where is the washroom",
       "ranked_labels": [
@@ -3600,7 +3600,7 @@
       "environment": "freiburg_ext",
       "id": "q087",
       "label": "TL",
-      "posterior_margin": 0.1039,
+      "posterior_margin": 0.1059,
       "present": true,
       "query": "where can I wash my hands",
       "ranked_labels": [
@@ -3617,7 +3617,7 @@
       "environment": "freiburg_ext",
       "id": "q088",
       "label": "TL",
-      "posterior_margin": 0.1353,
+      "posterior_margin": 0.1358,
       "present": true,
       "query": "the room with a sink and toilet",
       "ranked_labels": [
@@ -3634,7 +3634,7 @@
       "environment": "freiburg_ext",
       "id": "q089",
       "label": "TL",
-      "posterior_margin": 0.0674,
+      "posterior_margin": 0.0676,
       "present": true,
       "query": "show me the nearest lavatory",
       "ranked_labels": [
@@ -3651,7 +3651,7 @@
       "environment": "freiburg_ext",
       "id": "q090",
       "label": "TL",
-      "posterior_margin": 0.0078,
+      "posterior_margin": 0.0082,
       "present": true,
       "query": "I need to use the facilities",
       "ranked_labels": [
@@ -3685,7 +3685,7 @@
       "environment": "freiburg_ext",
       "id": "q092",
       "label": "TR",
-      "posterior_margin": 0.0161,
+      "posterior_margin": 0.0167,
       "present": false,
       "query": "the terminal room",
       "ranked_labels": [
@@ -3702,7 +3702,7 @@
       "environment": "freiburg_ext",
       "id": "q093",
       "label": "TR",
-      "posterior_margin": 0.0286,
+      "posterior_margin": 0.0327,
       "present": false,
       "query": "take me to the computer room",
       "ranked_labels": [
@@ -3719,7 +3719,7 @@
       "environment": "freiburg_ext",
       "id": "q094",
       "label": "TR",
-      "posterior_margin": 0.025,
+      "posterior_margin": 0.0288,
       "present": false,
       "query": "find the room with computer terminals",
       "ranked_labels": [
@@ -3736,13 +3736,13 @@
       "environment": "freiburg_ext",
       "id": "q095",
       "label": "TR",
-      "posterior_margin": 0.0494,
+      "posterior_margin": 0.0487,
       "present": false,
       "query": "where can I use one of the lab computers",
       "ranked_labels": [
         "2PO",
-        "2PO",
-        "1PO"
+        "1PO",
+        "2PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3753,7 +3753,7 @@
       "environment": "freiburg_ext",
       "id": "q096",
       "label": "TR",
-      "posterior_margin": 0.0085,
+      "posterior_margin": 0.0101,
       "present": false,
       "query": "the room containing rows of monitors",
       "ranked_labels": [
@@ -3770,7 +3770,7 @@
       "environment": "freiburg_ext",
       "id": "q097",
       "label": "TR",
-      "posterior_margin": 0.1682,
+      "posterior_margin": 0.1887,
       "present": false,
       "query": "show me the shared computing room",
       "ranked_labels": [
@@ -3783,17 +3783,17 @@
     },
     {
       "category": "scene",
-      "confident": false,
+      "confident": true,
       "environment": "freiburg_ext",
       "id": "q098",
       "label": "TR",
-      "posterior_margin": 0.0905,
+      "posterior_margin": 0.1035,
       "present": false,
       "query": "the workspace filled with desktop computers",
       "ranked_labels": [
         "2PO",
         "CR",
-        "2PO"
+        "1PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3804,13 +3804,13 @@
       "environment": "freiburg_ext",
       "id": "q099",
       "label": "TR",
-      "posterior_margin": 0.0288,
+      "posterior_margin": 0.0144,
       "present": false,
       "query": "I need a computer terminal, not a robot",
       "ranked_labels": [
-        "2PO",
-        "2PO",
-        "TL"
+        "TL",
+        "ST",
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3821,13 +3821,13 @@
       "environment": "freiburg_ext",
       "id": "q100",
       "label": "TR",
-      "posterior_margin": 0.073,
+      "posterior_margin": 0.0955,
       "present": false,
       "query": "the computing laboratory used by many people",
       "ranked_labels": [
         "ST",
         "CR",
-        "2PO"
+        "1PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -3838,15 +3838,15 @@
       "environment": "saarbruecken_a",
       "id": "q001",
       "label": "1PO",
-      "posterior_margin": 0.0589,
+      "posterior_margin": 0.0048,
       "present": true,
       "query": "the one-person office",
       "ranked_labels": [
-        "1PO",
         "CR",
+        "1PO",
         "TR"
       ],
-      "top1_correct": true,
+      "top1_correct": false,
       "top3_correct": true
     },
     {
@@ -3855,7 +3855,7 @@
       "environment": "saarbruecken_a",
       "id": "q002",
       "label": "1PO",
-      "posterior_margin": 0.0055,
+      "posterior_margin": 0.0045,
       "present": true,
       "query": "take me to a private office",
       "ranked_labels": [
@@ -3872,7 +3872,7 @@
       "environment": "saarbruecken_a",
       "id": "q003",
       "label": "1PO",
-      "posterior_margin": 0.0218,
+      "posterior_margin": 0.0109,
       "present": true,
       "query": "find the single-person office",
       "ranked_labels": [
@@ -3889,7 +3889,7 @@
       "environment": "saarbruecken_a",
       "id": "q004",
       "label": "1PO",
-      "posterior_margin": 0.0389,
+      "posterior_margin": 0.0336,
       "present": true,
       "query": "an office intended for one person",
       "ranked_labels": [
@@ -3906,13 +3906,13 @@
       "environment": "saarbruecken_a",
       "id": "q005",
       "label": "1PO",
-      "posterior_margin": 0.0823,
+      "posterior_margin": 0.0747,
       "present": true,
       "query": "where can one person work alone",
       "ranked_labels": [
         "1PO",
         "CR",
-        "1PO"
+        "CR"
       ],
       "top1_correct": true,
       "top3_correct": true
@@ -3923,7 +3923,7 @@
       "environment": "saarbruecken_a",
       "id": "q006",
       "label": "1PO",
-      "posterior_margin": 0.0749,
+      "posterior_margin": 0.0755,
       "present": true,
       "query": "a small office with one desk",
       "ranked_labels": [
@@ -3940,7 +3940,7 @@
       "environment": "saarbruecken_a",
       "id": "q007",
       "label": "1PO",
-      "posterior_margin": 0.0599,
+      "posterior_margin": 0.0591,
       "present": true,
       "query": "the individual workspace",
       "ranked_labels": [
@@ -3957,7 +3957,7 @@
       "environment": "saarbruecken_a",
       "id": "q008",
       "label": "1PO",
-      "posterior_margin": 0.0376,
+      "posterior_margin": 0.0386,
       "present": true,
       "query": "show me a quiet room for working alone",
       "ranked_labels": [
@@ -3974,13 +3974,13 @@
       "environment": "saarbruecken_a",
       "id": "q009",
       "label": "1PO",
-      "posterior_margin": 0.0289,
+      "posterior_margin": 0.0301,
       "present": true,
       "query": "I need an office that is not shared",
       "ranked_labels": [
         "1PO",
         "CR",
-        "CR"
+        "CNR"
       ],
       "top1_correct": true,
       "top3_correct": true
@@ -3991,7 +3991,7 @@
       "environment": "saarbruecken_a",
       "id": "q010",
       "label": "2PO",
-      "posterior_margin": 0.0713,
+      "posterior_margin": 0.0661,
       "present": true,
       "query": "the two-person office",
       "ranked_labels": [
@@ -4008,13 +4008,13 @@
       "environment": "saarbruecken_a",
       "id": "q011",
       "label": "2PO",
-      "posterior_margin": 0.0866,
+      "posterior_margin": 0.0873,
       "present": true,
       "query": "go to the shared office",
       "ranked_labels": [
         "1PO",
         "CR",
-        "CR"
+        "TR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -4025,7 +4025,7 @@
       "environment": "saarbruecken_a",
       "id": "q012",
       "label": "2PO",
-      "posterior_margin": 0.0166,
+      "posterior_margin": 0.0167,
       "present": true,
       "query": "take me to an office for two people",
       "ranked_labels": [
@@ -4042,7 +4042,7 @@
       "environment": "saarbruecken_a",
       "id": "q013",
       "label": "2PO",
-      "posterior_margin": 0.1094,
+      "posterior_margin": 0.1084,
       "present": true,
       "query": "an office shared by a pair of colleagues",
       "ranked_labels": [
@@ -4059,7 +4059,7 @@
       "environment": "saarbruecken_a",
       "id": "q014",
       "label": "2PO",
-      "posterior_margin": 0.0571,
+      "posterior_margin": 0.0551,
       "present": true,
       "query": "where can two people work together",
       "ranked_labels": [
@@ -4076,7 +4076,7 @@
       "environment": "saarbruecken_a",
       "id": "q015",
       "label": "2PO",
-      "posterior_margin": 0.0135,
+      "posterior_margin": 0.013,
       "present": true,
       "query": "the room with two office desks",
       "ranked_labels": [
@@ -4093,7 +4093,7 @@
       "environment": "saarbruecken_a",
       "id": "q016",
       "label": "2PO",
-      "posterior_margin": 0.0129,
+      "posterior_margin": 0.013,
       "present": true,
       "query": "find a small shared workspace",
       "ranked_labels": [
@@ -4110,7 +4110,7 @@
       "environment": "saarbruecken_a",
       "id": "q017",
       "label": "2PO",
-      "posterior_margin": 0.0277,
+      "posterior_margin": 0.0278,
       "present": true,
       "query": "the office used by two members of staff",
       "ranked_labels": [
@@ -4127,7 +4127,7 @@
       "environment": "saarbruecken_a",
       "id": "q018",
       "label": "2PO",
-      "posterior_margin": 0.0613,
+      "posterior_margin": 0.0702,
       "present": true,
       "query": "I want the office that is shared, but not the large office",
       "ranked_labels": [
@@ -4178,7 +4178,7 @@
       "environment": "saarbruecken_a",
       "id": "q021",
       "label": "CNR",
-      "posterior_margin": 0.0356,
+      "posterior_margin": 0.0357,
       "present": true,
       "query": "find the room used for meetings",
       "ranked_labels": [
@@ -4195,7 +4195,7 @@
       "environment": "saarbruecken_a",
       "id": "q022",
       "label": "CNR",
-      "posterior_margin": 0.0207,
+      "posterior_margin": 0.0208,
       "present": true,
       "query": "where can a team hold a discussion",
       "ranked_labels": [
@@ -4212,7 +4212,7 @@
       "environment": "saarbruecken_a",
       "id": "q023",
       "label": "CNR",
-      "posterior_margin": 0.0549,
+      "posterior_margin": 0.055,
       "present": true,
       "query": "a room with a meeting table",
       "ranked_labels": [
@@ -4229,7 +4229,7 @@
       "environment": "saarbruecken_a",
       "id": "q024",
       "label": "CNR",
-      "posterior_margin": 0.0294,
+      "posterior_margin": 0.0295,
       "present": true,
       "query": "the group discussion room",
       "ranked_labels": [
@@ -4280,7 +4280,7 @@
       "environment": "saarbruecken_a",
       "id": "q027",
       "label": "CNR",
-      "posterior_margin": 0.0634,
+      "posterior_margin": 0.0636,
       "present": true,
       "query": "the room for presentations and meetings",
       "ranked_labels": [
@@ -4297,7 +4297,7 @@
       "environment": "saarbruecken_a",
       "id": "q028",
       "label": "CR",
-      "posterior_margin": 0.0364,
+      "posterior_margin": 0.0365,
       "present": true,
       "query": "the corridor",
       "ranked_labels": [
@@ -4314,7 +4314,7 @@
       "environment": "saarbruecken_a",
       "id": "q029",
       "label": "CR",
-      "posterior_margin": 0.0195,
+      "posterior_margin": 0.0196,
       "present": true,
       "query": "take me to the hallway",
       "ranked_labels": [
@@ -4331,7 +4331,7 @@
       "environment": "saarbruecken_a",
       "id": "q030",
       "label": "CR",
-      "posterior_margin": 0.008,
+      "posterior_margin": 0.0081,
       "present": true,
       "query": "go to the passage between rooms",
       "ranked_labels": [
@@ -4365,7 +4365,7 @@
       "environment": "saarbruecken_a",
       "id": "q032",
       "label": "CR",
-      "posterior_margin": 0.0227,
+      "posterior_margin": 0.023,
       "present": true,
       "query": "where are the rooms connected",
       "ranked_labels": [
@@ -4382,7 +4382,7 @@
       "environment": "saarbruecken_a",
       "id": "q033",
       "label": "CR",
-      "posterior_margin": 0.0168,
+      "posterior_margin": 0.017,
       "present": true,
       "query": "a narrow space lined with doors",
       "ranked_labels": [
@@ -4399,7 +4399,7 @@
       "environment": "saarbruecken_a",
       "id": "q034",
       "label": "CR",
-      "posterior_margin": 0.0203,
+      "posterior_margin": 0.0442,
       "present": true,
       "query": "the area outside the offices",
       "ranked_labels": [
@@ -4416,7 +4416,7 @@
       "environment": "saarbruecken_a",
       "id": "q035",
       "label": "CR",
-      "posterior_margin": 0.0218,
+      "posterior_margin": 0.0206,
       "present": true,
       "query": "show me the main circulation route",
       "ranked_labels": [
@@ -4450,7 +4450,7 @@
       "environment": "saarbruecken_a",
       "id": "q037",
       "label": "CR",
-      "posterior_margin": 0.0315,
+      "posterior_margin": 0.0316,
       "present": true,
       "query": "find the walkway through the building",
       "ranked_labels": [
@@ -4467,7 +4467,7 @@
       "environment": "saarbruecken_a",
       "id": "q038",
       "label": "KT",
-      "posterior_margin": 0.1419,
+      "posterior_margin": 0.141,
       "present": false,
       "query": "the kitchen",
       "ranked_labels": [
@@ -4484,7 +4484,7 @@
       "environment": "saarbruecken_a",
       "id": "q039",
       "label": "KT",
-      "posterior_margin": 0.1419,
+      "posterior_margin": 0.141,
       "present": false,
       "query": "take me to the kitchen",
       "ranked_labels": [
@@ -4501,7 +4501,7 @@
       "environment": "saarbruecken_a",
       "id": "q040",
       "label": "KT",
-      "posterior_margin": 0.0655,
+      "posterior_margin": 0.0664,
       "present": false,
       "query": "find the break room",
       "ranked_labels": [
@@ -4518,7 +4518,7 @@
       "environment": "saarbruecken_a",
       "id": "q041",
       "label": "KT",
-      "posterior_margin": 0.0382,
+      "posterior_margin": 0.0383,
       "present": false,
       "query": "where can I prepare some food",
       "ranked_labels": [
@@ -4535,7 +4535,7 @@
       "environment": "saarbruecken_a",
       "id": "q042",
       "label": "KT",
-      "posterior_margin": 0.0813,
+      "posterior_margin": 0.0817,
       "present": false,
       "query": "where can I make coffee",
       "ranked_labels": [
@@ -4586,7 +4586,7 @@
       "environment": "saarbruecken_a",
       "id": "q045",
       "label": "KT",
-      "posterior_margin": 0.0057,
+      "posterior_margin": 0.0058,
       "present": false,
       "query": "I need somewhere to eat a quick snack",
       "ranked_labels": [
@@ -4603,7 +4603,7 @@
       "environment": "saarbruecken_a",
       "id": "q046",
       "label": "KT",
-      "posterior_margin": 0.0173,
+      "posterior_margin": 0.0178,
       "present": false,
       "query": "the place used for drinks and lunch",
       "ranked_labels": [
@@ -4616,33 +4616,16 @@
     },
     {
       "category": "direct",
-      "confident": true,
+      "confident": false,
       "environment": "saarbruecken_a",
       "id": "q047",
       "label": "LO",
-      "posterior_margin": 0.1736,
+      "posterior_margin": 0.0314,
       "present": false,
       "query": "the large office",
       "ranked_labels": [
-        "TR",
-        "1PO",
-        "TR"
-      ],
-      "top1_correct": false,
-      "top3_correct": false
-    },
-    {
-      "category": "command",
-      "confident": true,
-      "environment": "saarbruecken_a",
-      "id": "q048",
-      "label": "LO",
-      "posterior_margin": 0.1329,
-      "present": false,
-      "query": "take me to the big office",
-      "ranked_labels": [
-        "TR",
         "CR",
+        "TR",
         "1PO"
       ],
       "top1_correct": false,
@@ -4652,9 +4635,26 @@
       "category": "command",
       "confident": false,
       "environment": "saarbruecken_a",
+      "id": "q048",
+      "label": "LO",
+      "posterior_margin": 0.0799,
+      "present": false,
+      "query": "take me to the big office",
+      "ranked_labels": [
+        "CR",
+        "TR",
+        "1PO"
+      ],
+      "top1_correct": false,
+      "top3_correct": false
+    },
+    {
+      "category": "command",
+      "confident": true,
+      "environment": "saarbruecken_a",
       "id": "q049",
       "label": "LO",
-      "posterior_margin": 0.0031,
+      "posterior_margin": 0.1112,
       "present": false,
       "query": "find the open-plan office",
       "ranked_labels": [
@@ -4671,13 +4671,13 @@
       "environment": "saarbruecken_a",
       "id": "q050",
       "label": "LO",
-      "posterior_margin": 0.054,
+      "posterior_margin": 0.0842,
       "present": false,
       "query": "an office with space for many people",
       "ranked_labels": [
         "CR",
-        "1PO",
-        "TR"
+        "TR",
+        "1PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -4688,7 +4688,7 @@
       "environment": "saarbruecken_a",
       "id": "q051",
       "label": "LO",
-      "posterior_margin": 0.1333,
+      "posterior_margin": 0.1301,
       "present": false,
       "query": "where does the larger team work",
       "ranked_labels": [
@@ -4705,7 +4705,7 @@
       "environment": "saarbruecken_a",
       "id": "q052",
       "label": "LO",
-      "posterior_margin": 0.0024,
+      "posterior_margin": 0.0181,
       "present": false,
       "query": "the room containing many desks",
       "ranked_labels": [
@@ -4722,12 +4722,12 @@
       "environment": "saarbruecken_a",
       "id": "q053",
       "label": "LO",
-      "posterior_margin": 0.0182,
+      "posterior_margin": 0.0069,
       "present": false,
       "query": "show me the spacious shared workplace",
       "ranked_labels": [
-        "1PO",
         "TR",
+        "1PO",
         "CR"
       ],
       "top1_correct": false,
@@ -4739,13 +4739,13 @@
       "environment": "saarbruecken_a",
       "id": "q054",
       "label": "LO",
-      "posterior_margin": 0.0201,
+      "posterior_margin": 0.0653,
       "present": false,
       "query": "I need the biggest office in this area",
       "ranked_labels": [
         "CR",
-        "CR",
-        "TR"
+        "TR",
+        "CR"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -4756,13 +4756,13 @@
       "environment": "saarbruecken_a",
       "id": "q055",
       "label": "LO",
-      "posterior_margin": 0.0533,
+      "posterior_margin": 0.0053,
       "present": false,
       "query": "the busy office rather than a private one",
       "ranked_labels": [
         "TR",
-        "1PO",
-        "TR"
+        "CR",
+        "1PO"
       ],
       "top1_correct": false,
       "top3_correct": false
@@ -4773,7 +4773,7 @@
       "environment": "saarbruecken_a",
       "id": "q056",
       "label": "PA",
-      "posterior_margin": 0.2068,
+      "posterior_margin": 0.2069,
       "present": true,
       "query": "the printer area",
       "ranked_labels": [
@@ -4824,7 +4824,7 @@
       "environment": "saarbruecken_a",
       "id": "q059",
       "label": "PA",
-      "posterior_margin": 0.296,
+      "posterior_margin": 0.2961,
       "present": true,
       "query": "where can I print a document",
       "ranked_labels": [
@@ -4841,7 +4841,7 @@
       "environment": "saarbruecken_a",
       "id": "q060",
       "label": "PA",
-      "posterior_margin": 0.3642,
+      "posterior_margin": 0.3646,
       "present": true,
       "query": "I need to make a photocopy",
       "ranked_labels": [
@@ -4858,7 +4858,7 @@
       "environment": "saarbruecken_a",
       "id": "q061",
       "label": "PA",
-      "posterior_margin": 0.729,
+      "posterior_margin": 0.7275,
       "present": true,
       "query": "the place with office printers",
       "ranked_labels": [
@@ -4892,7 +4892,7 @@
       "environment": "saarbruecken_a",
       "id": "q063",
       "label": "PA",
-      "posterior_margin": 0.1867,
+      "posterior_margin": 0.189,
       "present": true,
       "query": "the small area where printed pages come out",
       "ranked_labels": [
@@ -4909,7 +4909,7 @@
       "environment": "saarbruecken_a",
       "id": "q064",
       "label": "PA",
-      "posterior_margin": 0.6121,
+      "posterior_margin": 0.6079,
       "present": true,
       "query": "where are the shared office machines",
       "ranked_labels": [
@@ -4926,7 +4926,7 @@
       "environment": "saarbruecken_a",
       "id": "q065",
       "label": "RL",
-      "posterior_margin": 0.0569,
+      "posterior_margin": 0.0566,
       "present": true,
       "query": "the robotics laboratory",
       "ranked_labels": [
@@ -4943,7 +4943,7 @@
       "environment": "saarbruecken_a",
       "id": "q066",
       "label": "RL",
-      "posterior_margin": 0.0483,
+      "posterior_margin": 0.0481,
       "present": true,
       "query": "take me to the robotics lab",
       "ranked_labels": [
@@ -4960,7 +4960,7 @@
       "environment": "saarbruecken_a",
       "id": "q067",
       "label": "RL",
-      "posterior_margin": 0.0494,
+      "posterior_margin": 0.0493,
       "present": true,
       "query": "find the robot research room",
       "ranked_labels": [
@@ -4977,7 +4977,7 @@
       "environment": "saarbruecken_a",
       "id": "q068",
       "label": "RL",
-      "posterior_margin": 0.0611,
+      "posterior_margin": 0.0606,
       "present": true,
       "query": "where are robots tested",
       "ranked_labels": [
@@ -4994,7 +4994,7 @@
       "environment": "saarbruecken_a",
       "id": "q069",
       "label": "RL",
-      "posterior_margin": 0.0431,
+      "posterior_margin": 0.0429,
       "present": true,
       "query": "the laboratory containing mobile robots",
       "ranked_labels": [
@@ -5011,7 +5011,7 @@
       "environment": "saarbruecken_a",
       "id": "q070",
       "label": "RL",
-      "posterior_margin": 0.0801,
+      "posterior_margin": 0.0799,
       "present": true,
       "query": "show me the room used for robotics experiments",
       "ranked_labels": [
@@ -5028,7 +5028,7 @@
       "environment": "saarbruecken_a",
       "id": "q071",
       "label": "RL",
-      "posterior_margin": 0.2853,
+      "posterior_margin": 0.2848,
       "present": true,
       "query": "the lab with robots and technical equipment",
       "ranked_labels": [
@@ -5045,7 +5045,7 @@
       "environment": "saarbruecken_a",
       "id": "q072",
       "label": "RL",
-      "posterior_margin": 0.0103,
+      "posterior_margin": 0.0101,
       "present": true,
       "query": "I want to visit the robotics researchers' workspace",
       "ranked_labels": [
@@ -5062,7 +5062,7 @@
       "environment": "saarbruecken_a",
       "id": "q073",
       "label": "RL",
-      "posterior_margin": 0.0874,
+      "posterior_margin": 0.0873,
       "present": true,
       "query": "the experimental lab, not the computer terminal room",
       "ranked_labels": [
@@ -5079,7 +5079,7 @@
       "environment": "saarbruecken_a",
       "id": "q074",
       "label": "ST",
-      "posterior_margin": 0.3533,
+      "posterior_margin": 0.3526,
       "present": false,
       "query": "the stairs",
       "ranked_labels": [
@@ -5096,7 +5096,7 @@
       "environment": "saarbruecken_a",
       "id": "q075",
       "label": "ST",
-      "posterior_margin": 0.3311,
+      "posterior_margin": 0.3299,
       "present": false,
       "query": "take me to the staircase",
       "ranked_labels": [
@@ -5113,7 +5113,7 @@
       "environment": "saarbruecken_a",
       "id": "q076",
       "label": "ST",
-      "posterior_margin": 0.3161,
+      "posterior_margin": 0.3144,
       "present": false,
       "query": "find the stairwell",
       "ranked_labels": [
@@ -5130,7 +5130,7 @@
       "environment": "saarbruecken_a",
       "id": "q077",
       "label": "ST",
-      "posterior_margin": 0.0058,
+      "posterior_margin": 0.0016,
       "present": false,
       "query": "where can I change floors",
       "ranked_labels": [
@@ -5147,7 +5147,7 @@
       "environment": "saarbruecken_a",
       "id": "q078",
       "label": "ST",
-      "posterior_margin": 0.3233,
+      "posterior_margin": 0.3221,
       "present": false,
       "query": "the steps leading upstairs",
       "ranked_labels": [
@@ -5181,7 +5181,7 @@
       "environment": "saarbruecken_a",
       "id": "q080",
       "label": "ST",
-      "posterior_margin": 0.2703,
+      "posterior_margin": 0.2702,
       "present": false,
       "query": "the indoor flight of steps",
       "ranked_labels": [
@@ -5198,7 +5198,7 @@
       "environment": "saarbruecken_a",
       "id": "q081",
       "label": "ST",
-      "posterior_margin": 0.2827,
+      "posterior_margin": 0.2836,
       "present": false,
       "query": "I am looking for the stairs rather than the corridor",
       "ranked_labels": [
@@ -5215,7 +5215,7 @@
       "environment": "saarbruecken_a",
       "id": "q082",
       "label": "ST",
-      "posterior_margin": 0.3898,
+      "posterior_margin": 0.3908,
       "present": false,
       "query": "the landing and staircase area",
       "ranked_labels": [
@@ -5232,7 +5232,7 @@
       "environment": "saarbruecken_a",
       "id": "q083",
       "label": "TL",
-      "posterior_margin": 0.0706,
+      "posterior_margin": 0.0707,
       "present": true,
       "query": "the toilet",
       "ranked_labels": [
@@ -5249,7 +5249,7 @@
       "environment": "saarbruecken_a",
       "id": "q084",
       "label": "TL",
-      "posterior_margin": 0.3035,
+      "posterior_margin": 0.304,
       "present": true,
       "query": "take me to the bathroom",
       "ranked_labels": [
@@ -5266,7 +5266,7 @@
       "environment": "saarbruecken_a",
       "id": "q085",
       "label": "TL",
-      "posterior_margin": 0.0288,
+      "posterior_margin": 0.0289,
       "present": true,
       "query": "find the restroom",
       "ranked_labels": [
@@ -5283,7 +5283,7 @@
       "environment": "saarbruecken_a",
       "id": "q086",
       "label": "TL",
-      "posterior_margin": 0.237,
+      "posterior_margin": 0.2377,
       "present": true,
       "query": "where is the washroom",
       "ranked_labels": [
@@ -5300,7 +5300,7 @@
       "environment": "saarbruecken_a",
       "id": "q087",
       "label": "TL",
-      "posterior_margin": 0.4723,
+      "posterior_margin": 0.4745,
       "present": true,
       "query": "where can I wash my hands",
       "ranked_labels": [
@@ -5317,7 +5317,7 @@
       "environment": "saarbruecken_a",
       "id": "q088",
       "label": "TL",
-      "posterior_margin": 0.7213,
+      "posterior_margin": 0.7216,
       "present": true,
       "query": "the room with a sink and toilet",
       "ranked_labels": [
@@ -5334,7 +5334,7 @@
       "environment": "saarbruecken_a",
       "id": "q089",
       "label": "TL",
-      "posterior_margin": 0.0117,
+      "posterior_margin": 0.0118,
       "present": true,
       "query": "show me the nearest lavatory",
       "ranked_labels": [
@@ -5351,7 +5351,7 @@
       "environment": "saarbruecken_a",
       "id": "q090",
       "label": "TL",
-      "posterior_margin": 0.068,
+      "posterior_margin": 0.0682,
       "present": true,
       "query": "I need to use the facilities",
       "ranked_labels": [
@@ -5385,7 +5385,7 @@
       "environment": "saarbruecken_a",
       "id": "q092",
       "label": "TR",
-      "posterior_margin": 0.0358,
+      "posterior_margin": 0.0359,
       "present": true,
       "query": "the terminal room",
       "ranked_labels": [
@@ -5402,7 +5402,7 @@
       "environment": "saarbruecken_a",
       "id": "q093",
       "label": "TR",
-      "posterior_margin": 0.0373,
+      "posterior_margin": 0.0366,
       "present": true,
       "query": "take me to the computer room",
       "ranked_labels": [
@@ -5419,7 +5419,7 @@
       "environment": "saarbruecken_a",
       "id": "q094",
       "label": "TR",
-      "posterior_margin": 0.1496,
+      "posterior_margin": 0.1484,
       "present": true,
       "query": "find the room with computer terminals",
       "ranked_labels": [
@@ -5436,7 +5436,7 @@
       "environment": "saarbruecken_a",
       "id": "q095",
       "label": "TR",
-      "posterior_margin": 0.0279,
+      "posterior_margin": 0.0277,
       "present": true,
       "query": "where can I use one of the lab computers",
       "ranked_labels": [
@@ -5453,7 +5453,7 @@
       "environment": "saarbruecken_a",
       "id": "q096",
       "label": "TR",
-      "posterior_margin": 0.0313,
+      "posterior_margin": 0.0195,
       "present": true,
       "query": "the room containing rows of monitors",
       "ranked_labels": [
@@ -5470,7 +5470,7 @@
       "environment": "saarbruecken_a",
       "id": "q097",
       "label": "TR",
-      "posterior_margin": 0.0589,
+      "posterior_margin": 0.0475,
       "present": true,
       "query": "show me the shared computing room",
       "ranked_labels": [
@@ -5487,7 +5487,7 @@
       "environment": "saarbruecken_a",
       "id": "q098",
       "label": "TR",
-      "posterior_margin": 0.1147,
+      "posterior_margin": 0.1116,
       "present": true,
       "query": "the workspace filled with desktop computers",
       "ranked_labels": [
@@ -5521,7 +5521,7 @@
       "environment": "saarbruecken_a",
       "id": "q100",
       "label": "TR",
-      "posterior_margin": 0.1236,
+      "posterior_margin": 0.1196,
       "present": true,
       "query": "the computing laboratory used by many people",
       "ranked_labels": [

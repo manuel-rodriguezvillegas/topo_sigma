@@ -11,15 +11,15 @@
  ],
  "pairs_per_traversal": {
   "freiburg_a": 594,
-  "freiburg_ext": 309,
-  "saarbruecken_a": 961,
+  "freiburg_ext": 291,
+  "saarbruecken_a": 955,
   "saarbruecken_ext": 267,
   "cid_sims_apartment1_1": 293,
   "cid_sims_apartment2_1": 291,
   "cid_sims_apartment3_1": 342,
-  "heldout_freiburg_a_seq1": 363,
+  "heldout_freiburg_a_seq1": 315,
   "heldout_freiburg_a_seq2": 594,
-  "heldout_freiburg_b_seq3": 285,
+  "heldout_freiburg_b_seq3": 273,
   "heldout_saarbruecken_a_seq1": 249,
   "heldout_saarbruecken_a_seq2": 945,
   "heldout_saarbruecken_b_seq3": 145,
@@ -36,44 +36,44 @@
   0.01,
   0.0025
  ],
- "default_alpha_floor_m": 1.33613349475947,
+ "default_alpha_floor_m": 0.9496581587018855,
  "models": {
   "additive": {
    "alpha": [
     0.025,
     0.005,
-    0.08882863989171894,
-    5.998274025523047e-07
+    0.002345343424249515,
+    0.12015578069372675
    ],
    "free_coefficients": [
     3,
     4
    ],
    "floor_m": 0.00012340980408667956,
-   "mean_nll": 2.0711683609730973,
+   "mean_nll": 1.6233062998861358,
    "ci95_alpha_then_floor": {
     "lower": [
      0.025,
      0.005,
-     0.049838417596342936,
-     5.998258436097327e-07,
+     0.0009929857311477158,
+     9.739102727680496e-07,
      0.00012340980408667956
     ],
     "upper": [
      0.025,
      0.005,
-     0.1479717149073489,
-     5.998280117560668e-07,
-     0.00012340980408667956
+     0.05990493595448441,
+     0.17693217691095214,
+     0.00012340984782393055
     ]
    }
   },
   "propagated": {
    "alpha": [
-    0.011565141320408496,
-    0.00048370759956551225,
-    0.07524572099693387,
-    2.924673158505396e-08
+    0.009480138034205367,
+    0.0009416034731462838,
+    1.522997974471263e-08,
+    0.024189663780130988
    ],
    "free_coefficients": [
     1,
@@ -81,153 +81,153 @@
     3,
     4
    ],
-   "floor_m": 0.06909117178105159,
-   "mean_nll": 1.5733604865122743,
+   "floor_m": 0.11142280268590063,
+   "mean_nll": 0.9020059063495364,
    "ci95_alpha_then_floor": {
     "lower": [
-     0.00043353062557425744,
+     2.6461719998489767e-07,
      1.522997974471263e-08,
-     0.009079042714830338,
-     2.9240730557018802e-08,
-     0.01899749517877368
+     1.522997974471263e-08,
+     0.01746931981313726,
+     0.08032617928186829
     ],
     "upper": [
-     0.01745873683862165,
-     0.005857973789442774,
-     0.18151423110277187,
-     2.926356517337597e-08,
-     0.1757721059263212
+     0.014063681427580195,
+     0.00631451586204094,
+     1.523069766088999e-08,
+     0.030893590623929757,
+     0.15266384426971918
     ]
    }
   }
  },
  "leave_one_traversal_out_nll": {
   "freiburg_a": {
-   "isotropic_default": 4.354981452678317,
-   "isotropic_calibrated": 2.4059568859211793,
-   "propagated_calibrated": 1.5075262729082073
+   "isotropic_default": 5.008500902757449,
+   "isotropic_calibrated": 2.372100666939061,
+   "propagated_calibrated": 1.3601440323328686
   },
   "freiburg_ext": {
-   "isotropic_default": 3.396036978881527,
-   "isotropic_calibrated": 2.0794452239407937,
-   "propagated_calibrated": 1.2489131157406879
+   "isotropic_default": 3.3954130894125947,
+   "isotropic_calibrated": 1.6570445022094271,
+   "propagated_calibrated": 0.5766591294162132
   },
   "saarbruecken_a": {
-   "isotropic_default": 4.800699983115992,
-   "isotropic_calibrated": 2.550939613751273,
-   "propagated_calibrated": 1.7223224673063224
+   "isotropic_default": 5.388573782178447,
+   "isotropic_calibrated": 2.42357613812461,
+   "propagated_calibrated": 1.4129309073803125
   },
   "saarbruecken_ext": {
-   "isotropic_default": 2.8716184115596635,
-   "isotropic_calibrated": 1.387054920608357,
-   "propagated_calibrated": 0.8790605103472555
+   "isotropic_default": 2.492670218030059,
+   "isotropic_calibrated": 1.0859615900297035,
+   "propagated_calibrated": 0.5462451929595843
   },
   "cid_sims_apartment1_1": {
-   "isotropic_default": 2.6299401390294466,
-   "isotropic_calibrated": 1.322800411066728,
-   "propagated_calibrated": 1.4114464898412324
+   "isotropic_default": 2.0879012795561436,
+   "isotropic_calibrated": 1.287225732316549,
+   "propagated_calibrated": 1.269071024982219
   },
   "cid_sims_apartment2_1": {
-   "isotropic_default": 2.614901775625294,
-   "isotropic_calibrated": 1.2957191375647918,
-   "propagated_calibrated": 1.3506821501003774
+   "isotropic_default": 2.0619638500799318,
+   "isotropic_calibrated": 1.4480850913442187,
+   "propagated_calibrated": 1.1844327024891899
   },
   "cid_sims_apartment3_1": {
-   "isotropic_default": 2.6242761000306856,
-   "isotropic_calibrated": 1.2529977929692993,
-   "propagated_calibrated": 1.0512331824175856
+   "isotropic_default": 2.0760570260058198,
+   "isotropic_calibrated": 1.1361043078472721,
+   "propagated_calibrated": 0.7356690902532645
   },
   "heldout_freiburg_a_seq1": {
-   "isotropic_default": 13.05622687193591,
-   "isotropic_calibrated": 9.421025995627666,
-   "propagated_calibrated": 20.057562922646035
+   "isotropic_default": 3.0614031086549462,
+   "isotropic_calibrated": 1.5190387009863566,
+   "propagated_calibrated": 0.669289296369872
   },
   "heldout_freiburg_a_seq2": {
-   "isotropic_default": 4.777476767395852,
-   "isotropic_calibrated": 2.6497417617103367,
-   "propagated_calibrated": 1.6388964929217302
+   "isotropic_default": 5.7987418061301375,
+   "isotropic_calibrated": 2.729293906700158,
+   "propagated_calibrated": 1.4872947513527863
   },
   "heldout_freiburg_b_seq3": {
-   "isotropic_default": 3.3192916850298113,
-   "isotropic_calibrated": 1.9698336274363009,
-   "propagated_calibrated": 1.2396199857907721
+   "isotropic_default": 3.2948923831088,
+   "isotropic_calibrated": 1.6497052530096672,
+   "propagated_calibrated": 0.6385403415347904
   },
   "heldout_saarbruecken_a_seq1": {
-   "isotropic_default": 2.7469860326269893,
-   "isotropic_calibrated": 1.2598048203275998,
-   "propagated_calibrated": 0.8323439807621223
+   "isotropic_default": 2.282820573474557,
+   "isotropic_calibrated": 1.0044252417240191,
+   "propagated_calibrated": 0.3640244273046697
   },
   "heldout_saarbruecken_a_seq2": {
-   "isotropic_default": 4.981524069312356,
-   "isotropic_calibrated": 2.593981774614303,
-   "propagated_calibrated": 1.6980769395516313
+   "isotropic_default": 5.777993999680078,
+   "isotropic_calibrated": 2.4995034892646095,
+   "propagated_calibrated": 1.439664913070797
   },
   "heldout_saarbruecken_b_seq3": {
-   "isotropic_default": 2.6074154610792353,
-   "isotropic_calibrated": 0.9765553094790707,
-   "propagated_calibrated": 0.5061233347758196
+   "isotropic_default": 2.0492232943140576,
+   "isotropic_calibrated": 0.6187357226143467,
+   "propagated_calibrated": 0.2144453859756942
   },
   "heldout_saarbruecken_b_seq4": {
-   "isotropic_default": 2.8678046204528522,
-   "isotropic_calibrated": 1.3659468817188603,
-   "propagated_calibrated": 0.8791757641355371
+   "isotropic_default": 2.4850897006187944,
+   "isotropic_calibrated": 1.12381949533059,
+   "propagated_calibrated": 0.5203163743675713
   },
   "heldout_ljubljana_a_seq1": {
-   "isotropic_default": 2.950349568842526,
-   "isotropic_calibrated": 1.6888957540272413,
-   "propagated_calibrated": 1.45120264382829
+   "isotropic_default": 2.5491418381057307,
+   "isotropic_calibrated": 1.386344146290989,
+   "propagated_calibrated": 0.5612368000057122
   },
   "heldout_ljubljana_a_seq2": {
-   "isotropic_default": 6.9999835452278685,
-   "isotropic_calibrated": 3.389246586082698,
-   "propagated_calibrated": 2.0740625523364797
+   "isotropic_default": 9.092701802247353,
+   "isotropic_calibrated": 4.684651545093236,
+   "propagated_calibrated": 1.576759863338222
   },
   "heldout_cid_apartment1_2": {
-   "isotropic_default": 2.694816001417299,
-   "isotropic_calibrated": 1.36806114715722,
-   "propagated_calibrated": 1.1560487836124005
+   "isotropic_default": 2.187848787049667,
+   "isotropic_calibrated": 1.4285752940485674,
+   "propagated_calibrated": 0.8417442525840607
   },
   "heldout_cid_apartment2_2": {
-   "isotropic_default": 2.6726870660898703,
-   "isotropic_calibrated": 1.3715395972504187,
-   "propagated_calibrated": 1.1279706886987593
+   "isotropic_default": 2.149909224666529,
+   "isotropic_calibrated": 1.6012539087904891,
+   "propagated_calibrated": 0.8269087372958166
   },
   "heldout_cid_apartment3_2": {
-   "isotropic_default": 2.7781830222402775,
-   "isotropic_calibrated": 1.5729531726707624,
-   "propagated_calibrated": 1.7132109822530965
+   "isotropic_default": 2.3301000475260234,
+   "isotropic_calibrated": 1.6045269420742823,
+   "propagated_calibrated": 1.644396669148021
   }
  },
  "gate_coverage_with_place_sigma": {
   "isotropic_default": {
    "1.0": 1.0,
-   "2.0": 0.9938837920489296,
-   "4.0": 0.9918495297805643,
-   "8.0": 0.9736842105263158,
-   "16.0": 0.7690058479532164,
-   "32.0": 0.4652908067542214,
-   "64.0": 0.16666666666666666,
-   "128.0": 0.0125
+   "2.0": 1.0,
+   "4.0": 0.9987365761212887,
+   "8.0": 0.9820836098208361,
+   "16.0": 0.7712177121771218,
+   "32.0": 0.4691358024691358,
+   "64.0": 0.16888045540796964,
+   "128.0": 0.012578616352201259
   },
   "isotropic_calibrated": {
    "1.0": 1.0,
-   "2.0": 0.9944954128440368,
-   "4.0": 0.9937304075235109,
-   "8.0": 0.9914473684210526,
-   "16.0": 0.9736842105263158,
-   "32.0": 0.8123827392120075,
-   "64.0": 0.49063670411985016,
-   "128.0": 0.35
+   "2.0": 1.0,
+   "4.0": 1.0,
+   "8.0": 0.9980092899800929,
+   "16.0": 0.9623616236162361,
+   "32.0": 0.7635327635327636,
+   "64.0": 0.3870967741935484,
+   "128.0": 0.12578616352201258
   },
   "propagated_calibrated": {
    "1.0": 1.0,
-   "2.0": 0.9944954128440368,
-   "4.0": 0.993103448275862,
-   "8.0": 0.9921052631578947,
-   "16.0": 0.9941520467836257,
-   "32.0": 0.9812382739212008,
-   "64.0": 0.8801498127340824,
-   "128.0": 0.9375
+   "2.0": 1.0,
+   "4.0": 1.0,
+   "8.0": 1.0,
+   "16.0": 0.996309963099631,
+   "32.0": 0.9677113010446344,
+   "64.0": 0.8159392789373814,
+   "128.0": 0.9056603773584906
   }
  }
 }
