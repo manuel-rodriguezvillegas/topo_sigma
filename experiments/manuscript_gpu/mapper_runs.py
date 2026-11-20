@@ -35,7 +35,7 @@ PLACE_RADIUS_M = 2.0
 DUMMY_IMAGE = np.zeros((1, 1, 3), dtype=np.uint8)
 DESCRIPTOR_ABLATIONS = ("dinov2_s", "anyloc_vlad_g", "anyloc_gem_g")
 VISUAL_SCORES = {"dinov3_s": ("cosine", "vmf"), **{e: ("cosine",) for e in DESCRIPTOR_ABLATIONS}}
-TEST_VARIANTS = ("topo", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
+TEST_VARIANTS = ("topo", "topo_debiased", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
                  "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s")
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# The single evaluation of the frozen method on the readable test traversals, on the university GPU.
-# Run it only after fetch_test_set.sh has finished and once the test protocol has been approved.
+# Evaluation of the frozen methods on the readable test traversals, on the university GPU: the first
+# protocol (topo) and the second (topo_debiased), each approved before its run.
 #
 #   nohup bash experiments/manuscript_gpu/run_test.sh > manuscript_test.log 2>&1 &
 #
@@ -16,15 +16,17 @@ export DATA_ROOT=${DATA_ROOT:-$REPO/encoder}
 ANYLOC_OUT=${ANYLOC_OUT:-$REPO/vts_devcontainer/vts_ws/output/anyloc_published}
 OUT=${OUT:-$REPO/vts_devcontainer/vts_ws/output/manuscript_gpu}
 JOBS=${JOBS:-6}
-FROZEN_CODE=7680037e90b1d5ee104dc22e4370060b28afa73a
+FROZEN_CODE=2c7b6f932b6204481df4e97486249b610e91a2eb
 FROZEN_FILES=(
-  "results/calibration.json b1b16570b96b799c199351eee0c5a940b1e4be88640ff6730c009513544e9240"
+  "results/calibration.json c5bf4295b52435c148a108244e8236ad142fec9029925cc2f0ab3776e383e375"
   "results/visual_likelihood.json 619a68a0ecf70be08506a3f92a1a93eadbc6b3973bdefa545529199d99c35f6e"
+  "results/odometry_bias.json 899eaf6dfa024d5106d09a8c25b3fd8fe43c14ae01613d15a31f82341b05af05"
 )
 METHOD_CODE=(
   experiments/anyloc_published/historical_src/vts_core
   experiments/anyloc_published/historical_src/vts_players
   experiments/anyloc_published/common.py
+  experiments/manuscript_gpu/stream.py
 )
 export PATH=$HOME/.local/bin:$PATH
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 HF_HUB_DISABLE_TELEMETRY=1

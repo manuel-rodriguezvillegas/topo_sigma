@@ -1,4 +1,4 @@
-"""Results of the single test evaluation and the decisions of the approved protocol.
+"""Results of the test evaluations and the decisions of the approved protocols.
 
 Writes results/test_summary.{md,json}. Intervals resample the routes of the readable test traversals.
 """
@@ -7,18 +7,43 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from mapper_runs import TEST_VARIANTS
 from report import by_route, load, loop_rows, split_section, table, unit_counts
 from stream import RESULTS, Sequence, readable_test
-from summarize import bootstrap
+from summarize import bootstrap, counts
 
-METHOD = "topo"
-PREVIOUS = "previous_system"
-ANYLOC = ("anyloc_vlad_g", "anyloc_gem_g")
-NON_INFERIORITY_MARGIN = 0.10
 F1 = 2
+
+
+@dataclass(frozen=True)
+class Hypothesis:
+    """Tested once every hypothesis in ``requires`` is confirmed; confirmed if the interval of F1(a) − F1(b) clears ``bound``."""
+
+    name: str
+    a: str
+    b: str
+    bound: float
+    requires: tuple[str, ...] = ()
+
+
+PROTOCOLS = {
+    "First evaluation (docs/TEST_SET_PROTOCOL_DRAFT_2026-11-19.md)": [
+        Hypothesis("primary", "topo", "previous_system", 0.0),
+        Hypothesis("non-inferiority VLAD", "topo", "anyloc_vlad_g", -0.10, ("primary",)),
+        Hypothesis("non-inferiority GeM", "topo", "anyloc_gem_g", -0.10, ("primary",)),
+    ],
+    "Second evaluation (docs/TEST_PROTOCOL_DEBIASED_2026-11-20.md)": [
+        Hypothesis("H1", "topo_debiased", "topo", 0.0),
+        Hypothesis("H2", "topo_debiased", "previous_system", 0.0, ("H1",)),
+        Hypothesis("H3", "topo_debiased", "anyloc_vlad_g", 0.0, ("H1", "H2")),
+        Hypothesis("H4", "topo_debiased", "anyloc_gem_g", 0.0, ("H1", "H2", "H3")),
+    ],
+}
+RECORDED_FIRST_EVALUATION_2M = {"topo": (144, 28, 88), "previous_system": (74, 30, 147),
+                                "anyloc_vlad_g": (146, 35, 81), "anyloc_gem_g": (112, 32, 92)}
 DOMAIN_SUBSETS = {
     "COLD": lambda s: s.dataset == "cold",
     "CID-SIMS": lambda s: s.dataset == "cid",
@@ -26,28 +51,33 @@ DOMAIN_SUBSETS = {
 }
 
 
+def check_reproduction(results: dict, seqs: list[Sequence]) -> None:
+    for variant, recorded in RECORDED_FIRST_EVALUATION_2M.items():
+        total = sum(counts(results[(s.name, variant)], 2.0) for s in seqs)
+        if tuple(int(x) for x in total[:3]) != recorded:
+            raise SystemExit(f"{variant} does not reproduce the first evaluation: TP/FP/FN "
+                             f"{tuple(int(x) for x in total[:3])} instead of {recorded}")
+
+
 def decisions(results: dict, seqs: list[Sequence]) -> tuple[list[str], dict]:
-    per_route = unit_counts(results, seqs, [METHOD, PREVIOUS, *ANYLOC], by_route)
-    primary = bootstrap(per_route, METHOD, PREVIOUS, F1)
-    primary["confirmed"] = primary["ci95"][0] > 0.0
-    data = {"routes": len(per_route), "primary": primary, "non_inferiority": {}}
-    lines = ["## Decisions of the protocol", "",
-             f"Routes resampled: {len(per_route)}. Traversals: {len(seqs)}.", "",
-             f"- Primary, F1 {METHOD} − {PREVIOUS}: {primary['point']:+.3f} "
-             f"[{primary['ci95'][0]:+.3f}; {primary['ci95'][1]:+.3f}] → "
-             f"{'CONFIRMED' if primary['confirmed'] else 'NOT CONFIRMED'}"]
-    for comparator in ANYLOC:
-        result = bootstrap(per_route, METHOD, comparator, F1)
-        if primary["confirmed"]:
-            result["confirmed"] = result["ci95"][0] > -NON_INFERIORITY_MARGIN
-            verdict = "CONFIRMED" if result["confirmed"] else "NOT CONFIRMED"
-        else:
-            result["confirmed"] = None
-            verdict = "not tested (primary not confirmed)"
-        data["non_inferiority"][comparator] = result
-        lines.append(f"- Non-inferiority (margin {NON_INFERIORITY_MARGIN}), F1 {METHOD} − {comparator}: "
-                     f"{result['point']:+.3f} [{result['ci95'][0]:+.3f}; {result['ci95'][1]:+.3f}] → {verdict}")
-    return lines + [""], data
+    variants = sorted({v for hypotheses in PROTOCOLS.values() for h in hypotheses for v in (h.a, h.b)})
+    per_route = unit_counts(results, seqs, variants, by_route)
+    lines = ["## Decisions of the protocols", "", f"Routes resampled: {len(per_route)}. Traversals: {len(seqs)}.", ""]
+    data: dict = {"routes": len(per_route)}
+    for protocol, hypotheses in PROTOCOLS.items():
+        lines += [f"### {protocol}", ""]
+        outcome: dict[str, dict] = {}
+        for h in hypotheses:
+            result = bootstrap(per_route, h.a, h.b, F1)
+            tested = all(outcome[r]["confirmed"] for r in h.requires)
+            result["confirmed"] = tested and result["ci95"][0] > h.bound
+            verdict = ("CONFIRMED" if result["confirmed"] else "NOT CONFIRMED") if tested else "not tested"
+            outcome[h.name] = result
+            lines.append(f"- {h.name}, F1 {h.a} − {h.b} (bound {h.bound:+.2f}): {result['point']:+.3f} "
+                         f"[{result['ci95'][0]:+.3f}; {result['ci95'][1]:+.3f}] → {verdict}")
+        data[protocol] = outcome
+        lines.append("")
+    return lines, data
 
 
 def domain_sections(results: dict, seqs: list[Sequence]) -> tuple[list[str], dict]:
@@ -69,6 +99,7 @@ def main() -> None:
     missing = [(s.name, v) for s in seqs for v in TEST_VARIANTS if (s.name, v) not in results]
     if missing:
         raise SystemExit(f"{len(missing)} test runs are missing, for example {missing[:3]}")
+    check_reproduction(results, seqs)
     lines, data = ["# Test results", ""], {}
     for name, (section, payload) in {
         "decisions": decisions(results, seqs),
