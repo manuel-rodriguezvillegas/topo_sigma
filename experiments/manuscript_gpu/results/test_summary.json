@@ -190,6 +190,76 @@
     "precision": 0.24375,
     "recall": 0.75,
     "f1": 0.36792452830188677
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 52,
+    "fp": 167,
+    "fn": 14,
+    "opportunities": 66,
+    "nodes": 1045,
+    "precision": 0.2374429223744292,
+    "recall": 0.7878787878787878,
+    "f1": 0.3649122807017544
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 40,
+    "fp": 137,
+    "fn": 10,
+    "opportunities": 50,
+    "nodes": 1004,
+    "precision": 0.22598870056497175,
+    "recall": 0.8,
+    "f1": 0.3524229074889868
+   },
+   "dinov2_s_debiased": {
+    "tp": 42,
+    "fp": 147,
+    "fn": 10,
+    "opportunities": 52,
+    "nodes": 1016,
+    "precision": 0.2222222222222222,
+    "recall": 0.8076923076923077,
+    "f1": 0.34854771784232363
+   },
+   "geometry_only_debiased": {
+    "tp": 44,
+    "fp": 141,
+    "fn": 15,
+    "opportunities": 59,
+    "nodes": 1026,
+    "precision": 0.23783783783783785,
+    "recall": 0.7457627118644068,
+    "f1": 0.36065573770491804
+   },
+   "vmf_debiased": {
+    "tp": 49,
+    "fp": 151,
+    "fn": 10,
+    "opportunities": 59,
+    "nodes": 1026,
+    "precision": 0.245,
+    "recall": 0.8305084745762712,
+    "f1": 0.3783783783783784
+   },
+   "boundary_cut_debiased": {
+    "tp": 52,
+    "fp": 145,
+    "fn": 8,
+    "opportunities": 60,
+    "nodes": 1026,
+    "precision": 0.2639593908629442,
+    "recall": 0.8666666666666667,
+    "f1": 0.4046692607003891
+   },
+   "gate_propagated_debiased": {
+    "tp": 31,
+    "fp": 121,
+    "fn": 28,
+    "opportunities": 59,
+    "nodes": 1026,
+    "precision": 0.20394736842105263,
+    "recall": 0.5254237288135594,
+    "f1": 0.2938388625592417
    }
   },
   "1.0": {
@@ -312,6 +382,76 @@
     "precision": 0.45625,
     "recall": 0.7227722772277227,
     "f1": 0.5593869731800766
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 99,
+    "fp": 120,
+    "fn": 24,
+    "opportunities": 123,
+    "nodes": 1045,
+    "precision": 0.4520547945205479,
+    "recall": 0.8048780487804879,
+    "f1": 0.5789473684210527
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 84,
+    "fp": 93,
+    "fn": 19,
+    "opportunities": 103,
+    "nodes": 1004,
+    "precision": 0.4745762711864407,
+    "recall": 0.8155339805825242,
+    "f1": 0.6
+   },
+   "dinov2_s_debiased": {
+    "tp": 85,
+    "fp": 104,
+    "fn": 16,
+    "opportunities": 101,
+    "nodes": 1016,
+    "precision": 0.4497354497354497,
+    "recall": 0.8415841584158416,
+    "f1": 0.5862068965517241
+   },
+   "geometry_only_debiased": {
+    "tp": 94,
+    "fp": 91,
+    "fn": 17,
+    "opportunities": 111,
+    "nodes": 1026,
+    "precision": 0.5081081081081081,
+    "recall": 0.8468468468468469,
+    "f1": 0.6351351351351351
+   },
+   "vmf_debiased": {
+    "tp": 99,
+    "fp": 101,
+    "fn": 12,
+    "opportunities": 111,
+    "nodes": 1026,
+    "precision": 0.495,
+    "recall": 0.8918918918918919,
+    "f1": 0.6366559485530546
+   },
+   "boundary_cut_debiased": {
+    "tp": 90,
+    "fp": 107,
+    "fn": 17,
+    "opportunities": 107,
+    "nodes": 1026,
+    "precision": 0.45685279187817257,
+    "recall": 0.8411214953271028,
+    "f1": 0.5921052631578947
+   },
+   "gate_propagated_debiased": {
+    "tp": 58,
+    "fp": 94,
+    "fn": 53,
+    "opportunities": 111,
+    "nodes": 1026,
+    "precision": 0.3815789473684211,
+    "recall": 0.5225225225225225,
+    "f1": 0.44106463878326996
    }
   },
   "2.0": {
@@ -434,6 +574,76 @@
     "precision": 0.81875,
     "recall": 0.5927601809954751,
     "f1": 0.6876640419947506
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 182,
+    "fp": 37,
+    "fn": 45,
+    "opportunities": 227,
+    "nodes": 1045,
+    "precision": 0.8310502283105022,
+    "recall": 0.801762114537445,
+    "f1": 0.8161434977578476
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 148,
+    "fp": 29,
+    "fn": 56,
+    "opportunities": 204,
+    "nodes": 1004,
+    "precision": 0.8361581920903954,
+    "recall": 0.7254901960784313,
+    "f1": 0.7769028871391076
+   },
+   "dinov2_s_debiased": {
+    "tp": 161,
+    "fp": 28,
+    "fn": 60,
+    "opportunities": 221,
+    "nodes": 1016,
+    "precision": 0.8518518518518519,
+    "recall": 0.7285067873303167,
+    "f1": 0.7853658536585366
+   },
+   "geometry_only_debiased": {
+    "tp": 174,
+    "fp": 11,
+    "fn": 58,
+    "opportunities": 232,
+    "nodes": 1026,
+    "precision": 0.9405405405405406,
+    "recall": 0.75,
+    "f1": 0.8345323741007195
+   },
+   "vmf_debiased": {
+    "tp": 182,
+    "fp": 18,
+    "fn": 50,
+    "opportunities": 232,
+    "nodes": 1026,
+    "precision": 0.91,
+    "recall": 0.7844827586206896,
+    "f1": 0.8425925925925926
+   },
+   "boundary_cut_debiased": {
+    "tp": 179,
+    "fp": 18,
+    "fn": 54,
+    "opportunities": 233,
+    "nodes": 1026,
+    "precision": 0.9086294416243654,
+    "recall": 0.7682403433476395,
+    "f1": 0.8325581395348837
+   },
+   "gate_propagated_debiased": {
+    "tp": 109,
+    "fp": 43,
+    "fn": 123,
+    "opportunities": 232,
+    "nodes": 1026,
+    "precision": 0.7171052631578947,
+    "recall": 0.4698275862068966,
+    "f1": 0.5677083333333334
    }
   },
   "3.0": {
@@ -556,6 +766,76 @@
     "precision": 0.91875,
     "recall": 0.42485549132947975,
     "f1": 0.5810276679841897
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 209,
+    "fp": 10,
+    "fn": 148,
+    "opportunities": 357,
+    "nodes": 1045,
+    "precision": 0.954337899543379,
+    "recall": 0.5854341736694678,
+    "f1": 0.7256944444444444
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 170,
+    "fp": 7,
+    "fn": 148,
+    "opportunities": 318,
+    "nodes": 1004,
+    "precision": 0.96045197740113,
+    "recall": 0.5345911949685535,
+    "f1": 0.6868686868686869
+   },
+   "dinov2_s_debiased": {
+    "tp": 184,
+    "fp": 5,
+    "fn": 162,
+    "opportunities": 346,
+    "nodes": 1016,
+    "precision": 0.9735449735449735,
+    "recall": 0.5317919075144508,
+    "f1": 0.6878504672897197
+   },
+   "geometry_only_debiased": {
+    "tp": 183,
+    "fp": 2,
+    "fn": 172,
+    "opportunities": 355,
+    "nodes": 1026,
+    "precision": 0.9891891891891892,
+    "recall": 0.5154929577464789,
+    "f1": 0.6777777777777778
+   },
+   "vmf_debiased": {
+    "tp": 197,
+    "fp": 3,
+    "fn": 158,
+    "opportunities": 355,
+    "nodes": 1026,
+    "precision": 0.985,
+    "recall": 0.5549295774647888,
+    "f1": 0.7099099099099099
+   },
+   "boundary_cut_debiased": {
+    "tp": 194,
+    "fp": 3,
+    "fn": 165,
+    "opportunities": 359,
+    "nodes": 1026,
+    "precision": 0.9847715736040609,
+    "recall": 0.5403899721448467,
+    "f1": 0.697841726618705
+   },
+   "gate_propagated_debiased": {
+    "tp": 135,
+    "fp": 17,
+    "fn": 220,
+    "opportunities": 355,
+    "nodes": 1026,
+    "precision": 0.8881578947368421,
+    "recall": 0.38028169014084506,
+    "f1": 0.5325443786982249
    }
   },
   "ci_2m": {
@@ -846,6 +1126,174 @@
      ]
     },
     "sequences": 16
+   },
+   "anyloc_vlad_g_debiased": {
+    "precision": {
+     "point": 0.8310502283105022,
+     "ci95": [
+      0.7515151515151515,
+      0.8883720930232558
+     ]
+    },
+    "recall": {
+     "point": 0.801762114537445,
+     "ci95": [
+      0.6875,
+      0.8900013089005235
+     ]
+    },
+    "f1": {
+     "point": 0.8161434977578476,
+     "ci95": [
+      0.7289290419079507,
+      0.8820980487869232
+     ]
+    },
+    "sequences": 16
+   },
+   "anyloc_gem_g_debiased": {
+    "precision": {
+     "point": 0.8361581920903954,
+     "ci95": [
+      0.791136878896656,
+      0.8865283687943262
+     ]
+    },
+    "recall": {
+     "point": 0.7254901960784313,
+     "ci95": [
+      0.5925925925925926,
+      0.8216216216216217
+     ]
+    },
+    "f1": {
+     "point": 0.7769028871391076,
+     "ci95": [
+      0.6887408096619415,
+      0.8403371207637985
+     ]
+    },
+    "sequences": 16
+   },
+   "dinov2_s_debiased": {
+    "precision": {
+     "point": 0.8518518518518519,
+     "ci95": [
+      0.7978708871061504,
+      0.9124087591240876
+     ]
+    },
+    "recall": {
+     "point": 0.7285067873303167,
+     "ci95": [
+      0.6130952380952381,
+      0.8221365832235398
+     ]
+    },
+    "f1": {
+     "point": 0.7853658536585366,
+     "ci95": [
+      0.7036990508096036,
+      0.8522751012914662
+     ]
+    },
+    "sequences": 16
+   },
+   "geometry_only_debiased": {
+    "precision": {
+     "point": 0.9405405405405406,
+     "ci95": [
+      0.8628875313888352,
+      0.9801980198019802
+     ]
+    },
+    "recall": {
+     "point": 0.75,
+     "ci95": [
+      0.5806379608294931,
+      0.8576161746548434
+     ]
+    },
+    "f1": {
+     "point": 0.8345323741007195,
+     "ci95": [
+      0.7065789213651904,
+      0.9085894711544542
+     ]
+    },
+    "sequences": 16
+   },
+   "vmf_debiased": {
+    "precision": {
+     "point": 0.91,
+     "ci95": [
+      0.8322135917773502,
+      0.9571442468037799
+     ]
+    },
+    "recall": {
+     "point": 0.7844827586206896,
+     "ci95": [
+      0.6138578117739572,
+      0.8899533492822966
+     ]
+    },
+    "f1": {
+     "point": 0.8425925925925926,
+     "ci95": [
+      0.7142857142857143,
+      0.915573222187918
+     ]
+    },
+    "sequences": 16
+   },
+   "boundary_cut_debiased": {
+    "precision": {
+     "point": 0.9086294416243654,
+     "ci95": [
+      0.8315168281822944,
+      0.9515158189827794
+     ]
+    },
+    "recall": {
+     "point": 0.7682403433476395,
+     "ci95": [
+      0.6149668958492488,
+      0.8694195428059166
+     ]
+    },
+    "f1": {
+     "point": 0.8325581395348837,
+     "ci95": [
+      0.7142857142857143,
+      0.903353264382676
+     ]
+    },
+    "sequences": 16
+   },
+   "gate_propagated_debiased": {
+    "precision": {
+     "point": 0.7171052631578947,
+     "ci95": [
+      0.5352112676056338,
+      0.8641975308641975
+     ]
+    },
+    "recall": {
+     "point": 0.4698275862068966,
+     "ci95": [
+      0.3701875,
+      0.5530973451327433
+     ]
+    },
+    "f1": {
+     "point": 0.5677083333333334,
+     "ci95": [
+      0.4430752688172043,
+      0.6620724253257986
+     ]
+    },
+    "sequences": 16
    }
   },
   "ap_2m": {
@@ -918,6 +1366,48 @@
      0.5989211042995166,
      0.8702467264529962
     ]
+   },
+   "anyloc_vlad_g_debiased": {
+    "point": 0.8698012282099686,
+    "ci95": [
+     0.7971155862232583,
+     0.9206583411096706
+    ]
+   },
+   "anyloc_gem_g_debiased": {
+    "point": 0.8457137225755257,
+    "ci95": [
+     0.7595702581276832,
+     0.9077976105733419
+    ]
+   },
+   "dinov2_s_debiased": {
+    "point": 0.8640221883444048,
+    "ci95": [
+     0.7857441375848347,
+     0.9227112047154232
+    ]
+   },
+   "geometry_only_debiased": {
+    "point": 0.9224512440032472,
+    "ci95": [
+     0.8445303763790385,
+     0.9701146479680551
+    ]
+   },
+   "vmf_debiased": {
+    "point": 0.9176561830504099,
+    "ci95": [
+     0.8312360493905853,
+     0.9681118697871982
+    ]
+   },
+   "boundary_cut_debiased": {
+    "point": 0.8952700325261919,
+    "ci95": [
+     0.8097446253341006,
+     0.950760951326687
+    ]
    }
   },
   "paired_2m": {
@@ -942,6 +1432,62 @@
     "ci95": [
      0.10909090909090913,
      0.23849468350543165
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-anyloc_vlad_g_debiased": {
+    "point": 0.019884215868018473,
+    "ci95": [
+     -0.044801363197204666,
+     0.07866939827837346
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-anyloc_gem_g_debiased": {
+    "point": 0.05912482648675843,
+    "ci95": [
+     -0.004939545346197578,
+     0.11177715323420256
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-dinov2_s_debiased": {
+    "point": 0.050661859967329415,
+    "ci95": [
+     -0.024237741099026405,
+     0.10675944524886528
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-geometry_only_debiased": {
+    "point": 0.0014953395251465773,
+    "ci95": [
+     -0.019218261175006527,
+     0.03688311586869855
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-vmf_debiased": {
+    "point": -0.006564878966726528,
+    "ci95": [
+     -0.012017525224213507,
+     0.0
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-boundary_cut_debiased": {
+    "point": 0.0034695740909823636,
+    "ci95": [
+     -0.047680695108884785,
+     0.06421348967923952
+    ],
+    "sequences": 16
+   },
+   "F1:topo_debiased-gate_propagated_debiased": {
+    "point": 0.26831938029253266,
+    "ci95": [
+     0.19979722595330096,
+     0.34556633625833566
     ],
     "sequences": 16
    },
@@ -1164,6 +1710,76 @@
     "precision": 0.7983193277310925,
     "recall": 0.5588235294117647,
     "f1": 0.657439446366782
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 132,
+    "fp": 23,
+    "fn": 36,
+    "opportunities": 168,
+    "nodes": 851,
+    "precision": 0.8516129032258064,
+    "recall": 0.7857142857142857,
+    "f1": 0.8173374613003096
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 108,
+    "fp": 18,
+    "fn": 40,
+    "opportunities": 148,
+    "nodes": 826,
+    "precision": 0.8571428571428571,
+    "recall": 0.7297297297297297,
+    "f1": 0.7883211678832117
+   },
+   "dinov2_s_debiased": {
+    "tp": 120,
+    "fp": 22,
+    "fn": 50,
+    "opportunities": 170,
+    "nodes": 840,
+    "precision": 0.8450704225352113,
+    "recall": 0.7058823529411765,
+    "f1": 0.7692307692307693
+   },
+   "geometry_only_debiased": {
+    "tp": 132,
+    "fp": 5,
+    "fn": 39,
+    "opportunities": 171,
+    "nodes": 846,
+    "precision": 0.9635036496350365,
+    "recall": 0.7719298245614035,
+    "f1": 0.8571428571428571
+   },
+   "vmf_debiased": {
+    "tp": 132,
+    "fp": 11,
+    "fn": 39,
+    "opportunities": 171,
+    "nodes": 846,
+    "precision": 0.9230769230769231,
+    "recall": 0.7719298245614035,
+    "f1": 0.8407643312101911
+   },
+   "boundary_cut_debiased": {
+    "tp": 135,
+    "fp": 10,
+    "fn": 35,
+    "opportunities": 170,
+    "nodes": 846,
+    "precision": 0.9310344827586207,
+    "recall": 0.7941176470588235,
+    "f1": 0.8571428571428571
+   },
+   "gate_propagated_debiased": {
+    "tp": 78,
+    "fp": 34,
+    "fn": 93,
+    "opportunities": 171,
+    "nodes": 846,
+    "precision": 0.6964285714285714,
+    "recall": 0.45614035087719296,
+    "f1": 0.5512367491166078
    }
   },
   "CID-SIMS": {
@@ -1286,6 +1902,76 @@
     "precision": 0.8780487804878049,
     "recall": 0.7058823529411765,
     "f1": 0.782608695652174
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 50,
+    "fp": 14,
+    "fn": 9,
+    "opportunities": 59,
+    "nodes": 194,
+    "precision": 0.78125,
+    "recall": 0.847457627118644,
+    "f1": 0.8130081300813008
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 40,
+    "fp": 11,
+    "fn": 16,
+    "opportunities": 56,
+    "nodes": 178,
+    "precision": 0.7843137254901961,
+    "recall": 0.7142857142857143,
+    "f1": 0.7476635514018691
+   },
+   "dinov2_s_debiased": {
+    "tp": 41,
+    "fp": 6,
+    "fn": 10,
+    "opportunities": 51,
+    "nodes": 176,
+    "precision": 0.8723404255319149,
+    "recall": 0.803921568627451,
+    "f1": 0.8367346938775511
+   },
+   "geometry_only_debiased": {
+    "tp": 42,
+    "fp": 6,
+    "fn": 19,
+    "opportunities": 61,
+    "nodes": 180,
+    "precision": 0.875,
+    "recall": 0.6885245901639344,
+    "f1": 0.7706422018348624
+   },
+   "vmf_debiased": {
+    "tp": 50,
+    "fp": 7,
+    "fn": 11,
+    "opportunities": 61,
+    "nodes": 180,
+    "precision": 0.8771929824561403,
+    "recall": 0.819672131147541,
+    "f1": 0.847457627118644
+   },
+   "boundary_cut_debiased": {
+    "tp": 44,
+    "fp": 8,
+    "fn": 19,
+    "opportunities": 63,
+    "nodes": 180,
+    "precision": 0.8461538461538461,
+    "recall": 0.6984126984126984,
+    "f1": 0.7652173913043478
+   },
+   "gate_propagated_debiased": {
+    "tp": 31,
+    "fp": 9,
+    "fn": 30,
+    "opportunities": 61,
+    "nodes": 180,
+    "precision": 0.775,
+    "recall": 0.5081967213114754,
+    "f1": 0.6138613861386139
    }
   },
   "COLD Ljubljana": {
@@ -1408,6 +2094,76 @@
     "precision": 1.0,
     "recall": 0.6666666666666666,
     "f1": 0.8
+   },
+   "anyloc_vlad_g_debiased": {
+    "tp": 6,
+    "fp": 0,
+    "fn": 4,
+    "opportunities": 10,
+    "nodes": 136,
+    "precision": 1.0,
+    "recall": 0.6,
+    "f1": 0.75
+   },
+   "anyloc_gem_g_debiased": {
+    "tp": 8,
+    "fp": 0,
+    "fn": 5,
+    "opportunities": 13,
+    "nodes": 149,
+    "precision": 1.0,
+    "recall": 0.6153846153846154,
+    "f1": 0.7619047619047619
+   },
+   "dinov2_s_debiased": {
+    "tp": 6,
+    "fp": 0,
+    "fn": 3,
+    "opportunities": 9,
+    "nodes": 132,
+    "precision": 1.0,
+    "recall": 0.6666666666666666,
+    "f1": 0.8
+   },
+   "geometry_only_debiased": {
+    "tp": 9,
+    "fp": 1,
+    "fn": 1,
+    "opportunities": 10,
+    "nodes": 133,
+    "precision": 0.9,
+    "recall": 0.9,
+    "f1": 0.9
+   },
+   "vmf_debiased": {
+    "tp": 9,
+    "fp": 1,
+    "fn": 1,
+    "opportunities": 10,
+    "nodes": 133,
+    "precision": 0.9,
+    "recall": 0.9,
+    "f1": 0.9
+   },
+   "boundary_cut_debiased": {
+    "tp": 6,
+    "fp": 1,
+    "fn": 4,
+    "opportunities": 10,
+    "nodes": 133,
+    "precision": 0.8571428571428571,
+    "recall": 0.6,
+    "f1": 0.7058823529411765
+   },
+   "gate_propagated_debiased": {
+    "tp": 2,
+    "fp": 11,
+    "fn": 8,
+    "opportunities": 10,
+    "nodes": 133,
+    "precision": 0.15384615384615385,
+    "recall": 0.2,
+    "f1": 0.17391304347826086
    }
   }
  }

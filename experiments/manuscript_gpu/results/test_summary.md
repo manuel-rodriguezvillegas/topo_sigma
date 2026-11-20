@@ -35,6 +35,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 1026 | 59 | 30 | 174 | 29 | 0.147 | 0.508 | 0.228 |
 | boundary_cut | 1026 | 60 | 47 | 119 | 13 | 0.283 | 0.783 | 0.416 |
 | dinov2_s | 1016 | 52 | 39 | 121 | 13 | 0.244 | 0.750 | 0.368 |
+| anyloc_vlad_g_debiased | 1045 | 66 | 52 | 167 | 14 | 0.237 | 0.788 | 0.365 |
+| anyloc_gem_g_debiased | 1004 | 50 | 40 | 137 | 10 | 0.226 | 0.800 | 0.352 |
+| dinov2_s_debiased | 1016 | 52 | 42 | 147 | 10 | 0.222 | 0.808 | 0.349 |
+| geometry_only_debiased | 1026 | 59 | 44 | 141 | 15 | 0.238 | 0.746 | 0.361 |
+| vmf_debiased | 1026 | 59 | 49 | 151 | 10 | 0.245 | 0.831 | 0.378 |
+| boundary_cut_debiased | 1026 | 60 | 52 | 145 | 8 | 0.264 | 0.867 | 0.405 |
+| gate_propagated_debiased | 1026 | 59 | 31 | 121 | 28 | 0.204 | 0.525 | 0.294 |
 
 ### 1.0 m
 
@@ -52,6 +59,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 1026 | 111 | 53 | 151 | 58 | 0.260 | 0.477 | 0.337 |
 | boundary_cut | 1026 | 107 | 75 | 91 | 32 | 0.452 | 0.701 | 0.549 |
 | dinov2_s | 1016 | 101 | 73 | 87 | 28 | 0.456 | 0.723 | 0.559 |
+| anyloc_vlad_g_debiased | 1045 | 123 | 99 | 120 | 24 | 0.452 | 0.805 | 0.579 |
+| anyloc_gem_g_debiased | 1004 | 103 | 84 | 93 | 19 | 0.475 | 0.816 | 0.600 |
+| dinov2_s_debiased | 1016 | 101 | 85 | 104 | 16 | 0.450 | 0.842 | 0.586 |
+| geometry_only_debiased | 1026 | 111 | 94 | 91 | 17 | 0.508 | 0.847 | 0.635 |
+| vmf_debiased | 1026 | 111 | 99 | 101 | 12 | 0.495 | 0.892 | 0.637 |
+| boundary_cut_debiased | 1026 | 107 | 90 | 107 | 17 | 0.457 | 0.841 | 0.592 |
+| gate_propagated_debiased | 1026 | 111 | 58 | 94 | 53 | 0.382 | 0.523 | 0.441 |
 
 ### 2.0 m
 
@@ -69,6 +83,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 1026 | 232 | 102 | 102 | 130 | 0.500 | 0.440 | 0.468 |
 | boundary_cut | 1026 | 233 | 141 | 25 | 92 | 0.849 | 0.605 | 0.707 |
 | dinov2_s | 1016 | 221 | 131 | 29 | 90 | 0.819 | 0.593 | 0.688 |
+| anyloc_vlad_g_debiased | 1045 | 227 | 182 | 37 | 45 | 0.831 | 0.802 | 0.816 |
+| anyloc_gem_g_debiased | 1004 | 204 | 148 | 29 | 56 | 0.836 | 0.725 | 0.777 |
+| dinov2_s_debiased | 1016 | 221 | 161 | 28 | 60 | 0.852 | 0.729 | 0.785 |
+| geometry_only_debiased | 1026 | 232 | 174 | 11 | 58 | 0.941 | 0.750 | 0.835 |
+| vmf_debiased | 1026 | 232 | 182 | 18 | 50 | 0.910 | 0.784 | 0.843 |
+| boundary_cut_debiased | 1026 | 233 | 179 | 18 | 54 | 0.909 | 0.768 | 0.833 |
+| gate_propagated_debiased | 1026 | 232 | 109 | 43 | 123 | 0.717 | 0.470 | 0.568 |
 
 ### 3.0 m
 
@@ -86,6 +107,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 1026 | 355 | 130 | 74 | 225 | 0.637 | 0.366 | 0.465 |
 | boundary_cut | 1026 | 359 | 155 | 11 | 204 | 0.934 | 0.432 | 0.590 |
 | dinov2_s | 1016 | 346 | 147 | 13 | 199 | 0.919 | 0.425 | 0.581 |
+| anyloc_vlad_g_debiased | 1045 | 357 | 209 | 10 | 148 | 0.954 | 0.585 | 0.726 |
+| anyloc_gem_g_debiased | 1004 | 318 | 170 | 7 | 148 | 0.960 | 0.535 | 0.687 |
+| dinov2_s_debiased | 1016 | 346 | 184 | 5 | 162 | 0.974 | 0.532 | 0.688 |
+| geometry_only_debiased | 1026 | 355 | 183 | 2 | 172 | 0.989 | 0.515 | 0.678 |
+| vmf_debiased | 1026 | 355 | 197 | 3 | 158 | 0.985 | 0.555 | 0.710 |
+| boundary_cut_debiased | 1026 | 359 | 194 | 3 | 165 | 0.985 | 0.540 | 0.698 |
+| gate_propagated_debiased | 1026 | 355 | 135 | 17 | 220 | 0.888 | 0.380 | 0.533 |
 
 ### 2 m with 95 % CI (bootstrap over routes)
 
@@ -101,6 +129,13 @@ Routes resampled: 16. Traversals: 62.
 - gate_propagated: P 0.500 [0.382; 0.651], R 0.440 [0.332; 0.531], F 0.468 [0.361; 0.572]
 - boundary_cut: P 0.849 [0.782; 0.936], R 0.605 [0.452; 0.702], F 0.707 [0.586; 0.787]
 - dinov2_s: P 0.819 [0.759; 0.907], R 0.593 [0.451; 0.712], F 0.688 [0.582; 0.771]
+- anyloc_vlad_g_debiased: P 0.831 [0.752; 0.888], R 0.802 [0.688; 0.890], F 0.816 [0.729; 0.882]
+- anyloc_gem_g_debiased: P 0.836 [0.791; 0.887], R 0.725 [0.593; 0.822], F 0.777 [0.689; 0.840]
+- dinov2_s_debiased: P 0.852 [0.798; 0.912], R 0.729 [0.613; 0.822], F 0.785 [0.704; 0.852]
+- geometry_only_debiased: P 0.941 [0.863; 0.980], R 0.750 [0.581; 0.858], F 0.835 [0.707; 0.909]
+- vmf_debiased: P 0.910 [0.832; 0.957], R 0.784 [0.614; 0.890], F 0.843 [0.714; 0.916]
+- boundary_cut_debiased: P 0.909 [0.832; 0.952], R 0.768 [0.615; 0.869], F 0.833 [0.714; 0.903]
+- gate_propagated_debiased: P 0.717 [0.535; 0.864], R 0.470 [0.370; 0.553], F 0.568 [0.443; 0.662]
 
 ### Average precision at 2 m (decisions ranked by probability)
 
@@ -114,12 +149,25 @@ Routes resampled: 16. Traversals: 62.
 - isotropic_calibrated: AP 0.686 [0.547; 0.826]
 - boundary_cut: AP 0.745 [0.599; 0.867]
 - dinov2_s: AP 0.729 [0.599; 0.870]
+- anyloc_vlad_g_debiased: AP 0.870 [0.797; 0.921]
+- anyloc_gem_g_debiased: AP 0.846 [0.760; 0.908]
+- dinov2_s_debiased: AP 0.864 [0.786; 0.923]
+- geometry_only_debiased: AP 0.922 [0.845; 0.970]
+- vmf_debiased: AP 0.918 [0.831; 0.968]
+- boundary_cut_debiased: AP 0.895 [0.810; 0.951]
 
 ### Paired differences at 2 m (bootstrap over routes)
 
 - F1 topo_debiased − topo: +0.123 [+0.071; +0.189]
 - P topo_debiased − topo: +0.063 [-0.018; +0.112]
 - R topo_debiased − topo: +0.159 [+0.109; +0.238]
+- F1 topo_debiased − anyloc_vlad_g_debiased: +0.020 [-0.045; +0.079]
+- F1 topo_debiased − anyloc_gem_g_debiased: +0.059 [-0.005; +0.112]
+- F1 topo_debiased − dinov2_s_debiased: +0.051 [-0.024; +0.107]
+- F1 topo_debiased − geometry_only_debiased: +0.001 [-0.019; +0.037]
+- F1 topo_debiased − vmf_debiased: -0.007 [-0.012; +0.000]
+- F1 topo_debiased − boundary_cut_debiased: +0.003 [-0.048; +0.064]
+- F1 topo_debiased − gate_propagated_debiased: +0.268 [+0.200; +0.346]
 - F1 topo − anyloc_vlad_g: -0.003 [-0.079; +0.052]
 - F1 topo − anyloc_gem_g: +0.069 [-0.003; +0.124]
 - F1 topo − previous_system: +0.257 [+0.148; +0.351]
@@ -149,6 +197,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 47 | 21 | 185 | 81 | 102 |
 | boundary_cut | 46 | 34 | 187 | 107 | 25 |
 | dinov2_s | 42 | 30 | 179 | 101 | 29 |
+| anyloc_vlad_g_debiased | 40 | 34 | 187 | 148 | 37 |
+| anyloc_gem_g_debiased | 35 | 29 | 169 | 119 | 29 |
+| dinov2_s_debiased | 42 | 34 | 179 | 127 | 28 |
+| geometry_only_debiased | 47 | 32 | 185 | 142 | 11 |
+| vmf_debiased | 47 | 40 | 185 | 142 | 18 |
+| boundary_cut_debiased | 46 | 33 | 187 | 146 | 18 |
+| gate_propagated_debiased | 47 | 22 | 185 | 87 | 43 |
 
 ### Per traversal (topo): nodes, loops, F1 per tolerance, coverage per tolerance, RMSE
 
@@ -235,6 +290,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 846 | 171 | 71 | 76 | 100 | 0.483 | 0.415 | 0.447 |
 | boundary_cut | 846 | 170 | 101 | 22 | 69 | 0.821 | 0.594 | 0.689 |
 | dinov2_s | 840 | 170 | 95 | 24 | 75 | 0.798 | 0.559 | 0.657 |
+| anyloc_vlad_g_debiased | 851 | 168 | 132 | 23 | 36 | 0.852 | 0.786 | 0.817 |
+| anyloc_gem_g_debiased | 826 | 148 | 108 | 18 | 40 | 0.857 | 0.730 | 0.788 |
+| dinov2_s_debiased | 840 | 170 | 120 | 22 | 50 | 0.845 | 0.706 | 0.769 |
+| geometry_only_debiased | 846 | 171 | 132 | 5 | 39 | 0.964 | 0.772 | 0.857 |
+| vmf_debiased | 846 | 171 | 132 | 11 | 39 | 0.923 | 0.772 | 0.841 |
+| boundary_cut_debiased | 846 | 170 | 135 | 10 | 35 | 0.931 | 0.794 | 0.857 |
+| gate_propagated_debiased | 846 | 171 | 78 | 34 | 93 | 0.696 | 0.456 | 0.551 |
 
 ### CID-SIMS (14 traversals)
 
@@ -252,6 +314,13 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 180 | 61 | 31 | 26 | 30 | 0.544 | 0.508 | 0.525 |
 | boundary_cut | 180 | 63 | 40 | 3 | 23 | 0.930 | 0.635 | 0.755 |
 | dinov2_s | 176 | 51 | 36 | 5 | 15 | 0.878 | 0.706 | 0.783 |
+| anyloc_vlad_g_debiased | 194 | 59 | 50 | 14 | 9 | 0.781 | 0.847 | 0.813 |
+| anyloc_gem_g_debiased | 178 | 56 | 40 | 11 | 16 | 0.784 | 0.714 | 0.748 |
+| dinov2_s_debiased | 176 | 51 | 41 | 6 | 10 | 0.872 | 0.804 | 0.837 |
+| geometry_only_debiased | 180 | 61 | 42 | 6 | 19 | 0.875 | 0.689 | 0.771 |
+| vmf_debiased | 180 | 61 | 50 | 7 | 11 | 0.877 | 0.820 | 0.847 |
+| boundary_cut_debiased | 180 | 63 | 44 | 8 | 19 | 0.846 | 0.698 | 0.765 |
+| gate_propagated_debiased | 180 | 61 | 31 | 9 | 30 | 0.775 | 0.508 | 0.614 |
 
 ### COLD Ljubljana (7 traversals)
 
@@ -269,3 +338,10 @@ Routes resampled: 16. Traversals: 62.
 | gate_propagated | 133 | 10 | 2 | 12 | 8 | 0.143 | 0.200 | 0.167 |
 | boundary_cut | 133 | 10 | 5 | 1 | 5 | 0.833 | 0.500 | 0.625 |
 | dinov2_s | 132 | 9 | 6 | 0 | 3 | 1.000 | 0.667 | 0.800 |
+| anyloc_vlad_g_debiased | 136 | 10 | 6 | 0 | 4 | 1.000 | 0.600 | 0.750 |
+| anyloc_gem_g_debiased | 149 | 13 | 8 | 0 | 5 | 1.000 | 0.615 | 0.762 |
+| dinov2_s_debiased | 132 | 9 | 6 | 0 | 3 | 1.000 | 0.667 | 0.800 |
+| geometry_only_debiased | 133 | 10 | 9 | 1 | 1 | 0.900 | 0.900 | 0.900 |
+| vmf_debiased | 133 | 10 | 9 | 1 | 1 | 0.900 | 0.900 | 0.900 |
+| boundary_cut_debiased | 133 | 10 | 6 | 1 | 4 | 0.857 | 0.600 | 0.706 |
+| gate_propagated_debiased | 133 | 10 | 2 | 11 | 8 | 0.154 | 0.200 | 0.174 |
