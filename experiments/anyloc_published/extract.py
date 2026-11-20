@@ -34,7 +34,7 @@ import torch.nn.functional as F
 from PIL import Image
 from torchvision import transforms
 
-from common import ALL, frames
+from common import ALL, DEV, HELDOUT, frames
 from vts_core.features import DINO_REVISION, AnyLocGeMExtractor, FrozenDinoV2Extractor, generalized_mean
 
 CURRENT_DESCRIPTORS = (Path(__file__).resolve().parents[2]
@@ -111,7 +111,8 @@ def current_descriptors():
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--sequences", nargs="+", default=list(ALL))
+    parser.add_argument("--sequences", nargs="+", default=[s.name for s in DEV + HELDOUT],
+                        help="defaults to the design traversals; test traversals are named explicitly")
     parser.add_argument("--encoders", nargs="+",
                         default=["dinov2_s", "anyloc_gem_s224", "anyloc_gem_g224", "anyloc_gem_g", "anyloc_vlad_g"])
     parser.add_argument("--batch", type=int, default=4)
