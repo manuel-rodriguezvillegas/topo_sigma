@@ -1,0 +1,398 @@
+{
+ "cold": {
+  "camera": {
+   "focal": 635.6778566155773,
+   "sign": 1.0,
+   "step_variance": 0.00023095912066273863
+  },
+  "usage": {
+   "freiburg_a": {
+    "steps": 2874,
+    "visual_available": 0.9986082115518441,
+    "visual_fused": 0.9812108559498957
+   },
+   "freiburg_ext": {
+    "steps": 1687,
+    "visual_available": 0.995257854179016,
+    "visual_fused": 0.915826911677534
+   },
+   "saarbruecken_a": {
+    "steps": 2833,
+    "visual_available": 0.984115778326862,
+    "visual_fused": 0.9579950582421461
+   },
+   "saarbruecken_ext": {
+    "steps": 1103,
+    "visual_available": 0.9936536718041704,
+    "visual_fused": 0.957388939256573
+   },
+   "heldout_freiburg_a_seq1": {
+    "steps": 1661,
+    "visual_available": 0.9975918121613486,
+    "visual_fused": 0.9108970499698976
+   },
+   "heldout_freiburg_a_seq2": {
+    "steps": 2594,
+    "visual_available": 0.9980724749421742,
+    "visual_fused": 0.9680030840400925
+   },
+   "heldout_freiburg_b_seq3": {
+    "steps": 1902,
+    "visual_available": 0.998422712933754,
+    "visual_fused": 0.9700315457413249
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "steps": 996,
+    "visual_available": 0.9708835341365462,
+    "visual_fused": 0.9387550200803213
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "steps": 2747,
+    "visual_available": 0.98762286130324,
+    "visual_fused": 0.965416818347288
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "steps": 857,
+    "visual_available": 0.9976662777129521,
+    "visual_fused": 0.9568261376896149
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "steps": 1020,
+    "visual_available": 0.9980392156862745,
+    "visual_fused": 0.961764705882353
+   },
+   "heldout_ljubljana_a_seq1": {
+    "steps": 1978,
+    "visual_available": 0.9742163801820021,
+    "visual_fused": 0.9600606673407482
+   },
+   "heldout_ljubljana_a_seq2": {
+    "steps": 2136,
+    "visual_available": 0.9517790262172284,
+    "visual_fused": 0.9143258426966292
+   }
+  },
+  "pooled": {
+   "wheels": {
+    "1.0": {
+     "heading_rms_deg": 2.7358756922272596,
+     "position_rms_m": 0.15910945660018017
+    },
+    "2.0": {
+     "heading_rms_deg": 3.941894268300694,
+     "position_rms_m": 0.24145102471484836
+    },
+    "4.0": {
+     "heading_rms_deg": 5.965063153294324,
+     "position_rms_m": 0.3680817201867172
+    },
+    "8.0": {
+     "heading_rms_deg": 10.00226822875764,
+     "position_rms_m": 0.6585748121088804
+    },
+    "16.0": {
+     "heading_rms_deg": 17.945127717132664,
+     "position_rms_m": 1.5094620479702554
+    },
+    "32.0": {
+     "heading_rms_deg": 33.35895212045318,
+     "position_rms_m": 3.571671562397862
+    },
+    "64.0": {
+     "heading_rms_deg": 54.83752519047487,
+     "position_rms_m": 7.988329779216776
+    }
+   },
+   "vision": {
+    "1.0": {
+     "heading_rms_deg": 31.454987490966243,
+     "position_rms_m": 0.3422162040007488
+    },
+    "2.0": {
+     "heading_rms_deg": 42.04662783012155,
+     "position_rms_m": 0.7874969855348496
+    },
+    "4.0": {
+     "heading_rms_deg": 55.040737088443336,
+     "position_rms_m": 1.8497178301494903
+    },
+    "8.0": {
+     "heading_rms_deg": 70.24717852876286,
+     "position_rms_m": 4.195742647305279
+    },
+    "16.0": {
+     "heading_rms_deg": 85.41072407026357,
+     "position_rms_m": 8.468717454076605
+    },
+    "32.0": {
+     "heading_rms_deg": 98.48375278564403,
+     "position_rms_m": 16.181045806407155
+    },
+    "64.0": {
+     "heading_rms_deg": 116.3793058420191,
+     "position_rms_m": 44.261530194090646
+    }
+   },
+   "fused": {
+    "1.0": {
+     "heading_rms_deg": 11.928747838091022,
+     "position_rms_m": 0.23075398175866146
+    },
+    "2.0": {
+     "heading_rms_deg": 17.36264814812785,
+     "position_rms_m": 0.4631545713898322
+    },
+    "4.0": {
+     "heading_rms_deg": 24.882839489655353,
+     "position_rms_m": 1.0183663702809345
+    },
+    "8.0": {
+     "heading_rms_deg": 36.188599470339256,
+     "position_rms_m": 2.341112215454453
+    },
+    "16.0": {
+     "heading_rms_deg": 52.57403513346202,
+     "position_rms_m": 5.082671739576934
+    },
+    "32.0": {
+     "heading_rms_deg": 70.30288480490638,
+     "position_rms_m": 9.166126608770332
+    },
+    "64.0": {
+     "heading_rms_deg": 99.21404018596469,
+     "position_rms_m": 19.082564275759662
+    }
+   }
+  },
+  "position_rms_at_32m": {
+   "freiburg_a": {
+    "wheels": 4.417134096331469,
+    "vision": 14.414816880072413,
+    "fused": 10.047520218523854
+   },
+   "freiburg_ext": {
+    "wheels": 5.489862379084591,
+    "vision": 12.664445626962468,
+    "fused": 13.88638246525019
+   },
+   "saarbruecken_a": {
+    "wheels": 3.1623902573924685,
+    "vision": 14.107292942423053,
+    "fused": 11.572354022933318
+   },
+   "saarbruecken_ext": {
+    "wheels": 3.6780094768659186,
+    "vision": 17.29309625973444,
+    "fused": 10.256726693508947
+   },
+   "heldout_freiburg_a_seq1": {
+    "wheels": 4.838297876711489,
+    "vision": 18.497691762879892,
+    "fused": 4.441763627690585
+   },
+   "heldout_freiburg_a_seq2": {
+    "wheels": 4.868471998049368,
+    "vision": 19.65128211951342,
+    "fused": 9.519545189839075
+   },
+   "heldout_freiburg_b_seq3": {
+    "wheels": 5.418586646662871,
+    "vision": 7.452877062473846,
+    "fused": 5.3019976677184415
+   },
+   "heldout_saarbruecken_a_seq1": {
+    "wheels": 2.6710062294282153,
+    "vision": 16.801122482235755,
+    "fused": 6.286023396637432
+   },
+   "heldout_saarbruecken_a_seq2": {
+    "wheels": 3.2890939135333115,
+    "vision": 10.58262247090043,
+    "fused": 11.617543891154286
+   },
+   "heldout_saarbruecken_b_seq3": {
+    "wheels": 0.6449208556047953,
+    "vision": 11.631651141199614,
+    "fused": 12.727705231329256
+   },
+   "heldout_saarbruecken_b_seq4": {
+    "wheels": 3.7662774910086587,
+    "vision": 4.485831785153337,
+    "fused": 10.289038946287683
+   },
+   "heldout_ljubljana_a_seq1": {
+    "wheels": 1.0321053846233172,
+    "vision": 21.391609776683516,
+    "fused": 5.907432511351957
+   },
+   "heldout_ljubljana_a_seq2": {
+    "wheels": 3.453121864634487,
+    "vision": 16.550263311050326,
+    "fused": 6.652186102267816
+   }
+  }
+ },
+ "cid": {
+  "camera": {
+   "focal": 400.4519562510102,
+   "sign": 1.0,
+   "step_variance": 4.178623514066169e-05
+  },
+  "usage": {
+   "cid_sims_apartment1_1": {
+    "steps": 1526,
+    "visual_available": 1.0,
+    "visual_fused": 0.9921363040629095
+   },
+   "cid_sims_apartment2_1": {
+    "steps": 1193,
+    "visual_available": 0.9932942162615256,
+    "visual_fused": 0.9765297569153395
+   },
+   "cid_sims_apartment3_1": {
+    "steps": 1906,
+    "visual_available": 1.0,
+    "visual_fused": 0.9947534102833159
+   },
+   "heldout_cid_apartment1_2": {
+    "steps": 1029,
+    "visual_available": 0.9990281827016521,
+    "visual_fused": 0.9844509232264335
+   },
+   "heldout_cid_apartment2_2": {
+    "steps": 1672,
+    "visual_available": 0.9952153110047847,
+    "visual_fused": 0.986244019138756
+   },
+   "heldout_cid_apartment3_2": {
+    "steps": 1292,
+    "visual_available": 0.9876160990712074,
+    "visual_fused": 0.9674922600619195
+   }
+  },
+  "pooled": {
+   "wheels": {
+    "1.0": {
+     "heading_rms_deg": 3.1353705963150653,
+     "position_rms_m": 0.2786026776755318
+    },
+    "2.0": {
+     "heading_rms_deg": 4.152935818431882,
+     "position_rms_m": 0.38392719260548874
+    },
+    "4.0": {
+     "heading_rms_deg": 5.853045147280289,
+     "position_rms_m": 0.4814004816945715
+    },
+    "8.0": {
+     "heading_rms_deg": 8.429914766136129,
+     "position_rms_m": 0.6148279246004458
+    },
+    "16.0": {
+     "heading_rms_deg": 12.012162101620001,
+     "position_rms_m": 0.8466013611064742
+    },
+    "32.0": {
+     "heading_rms_deg": 17.818613122199764,
+     "position_rms_m": 1.3258115660756862
+    },
+    "64.0": {
+     "heading_rms_deg": 31.361240771851673,
+     "position_rms_m": 2.691972042410913
+    }
+   },
+   "vision": {
+    "1.0": {
+     "heading_rms_deg": 16.627666959579003,
+     "position_rms_m": 0.3187981103509324
+    },
+    "2.0": {
+     "heading_rms_deg": 22.21455004515369,
+     "position_rms_m": 0.4951863470549196
+    },
+    "4.0": {
+     "heading_rms_deg": 30.563034317924107,
+     "position_rms_m": 0.9076435631019852
+    },
+    "8.0": {
+     "heading_rms_deg": 41.57405425379336,
+     "position_rms_m": 1.479453873459815
+    },
+    "16.0": {
+     "heading_rms_deg": 55.93802281041514,
+     "position_rms_m": 2.343460571349729
+    },
+    "32.0": {
+     "heading_rms_deg": 71.04785781640074,
+     "position_rms_m": 3.991772074716894
+    },
+    "64.0": {
+     "heading_rms_deg": 72.02759451779234,
+     "position_rms_m": 5.0808270229804275
+    }
+   },
+   "fused": {
+    "1.0": {
+     "heading_rms_deg": 3.4068042179106097,
+     "position_rms_m": 0.27988937079175724
+    },
+    "2.0": {
+     "heading_rms_deg": 4.678106050682271,
+     "position_rms_m": 0.38562060813476606
+    },
+    "4.0": {
+     "heading_rms_deg": 6.5564250958040615,
+     "position_rms_m": 0.486280244546493
+    },
+    "8.0": {
+     "heading_rms_deg": 9.343738103494092,
+     "position_rms_m": 0.6224751034390065
+    },
+    "16.0": {
+     "heading_rms_deg": 13.012362950998796,
+     "position_rms_m": 0.8778118890201129
+    },
+    "32.0": {
+     "heading_rms_deg": 15.020519403925,
+     "position_rms_m": 1.2019638378245106
+    },
+    "64.0": {
+     "heading_rms_deg": 24.157217537325586,
+     "position_rms_m": 1.829455710681408
+    }
+   }
+  },
+  "position_rms_at_32m": {
+   "cid_sims_apartment1_1": {
+    "wheels": 0.9392563071016488,
+    "vision": 6.899514731968635,
+    "fused": 0.9770652793491413
+   },
+   "cid_sims_apartment2_1": {
+    "wheels": 0.7302828385320307,
+    "vision": 1.1962136566207555,
+    "fused": 1.1274275969802265
+   },
+   "cid_sims_apartment3_1": {
+    "wheels": 0.7460656234341332,
+    "vision": 4.60237617507942,
+    "fused": 0.7633701488458223
+   },
+   "heldout_cid_apartment1_2": {
+    "wheels": 1.495755833313835,
+    "vision": 3.0059286812932458,
+    "fused": 1.5438697651439444
+   },
+   "heldout_cid_apartment2_2": {
+    "wheels": 1.1044962769573263,
+    "vision": 1.9973916164877366,
+    "fused": 1.2210066531527946
+   },
+   "heldout_cid_apartment3_2": {
+    "wheels": 2.049983985637131,
+    "vision": 4.347997871009084,
+    "fused": 1.2940977240856362
+   }
+  }
+ }
+}
