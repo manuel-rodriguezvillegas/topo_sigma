@@ -1,12 +1,21 @@
 # Test results
 
-## Decisions of the protocol
+## Decisions of the protocols
 
 Routes resampled: 16. Traversals: 62.
 
-- Primary, F1 topo − previous_system: +0.257 [+0.148; +0.351] → CONFIRMED
-- Non-inferiority (margin 0.1), F1 topo − anyloc_vlad_g: -0.003 [-0.079; +0.052] → CONFIRMED
-- Non-inferiority (margin 0.1), F1 topo − anyloc_gem_g: +0.069 [-0.003; +0.124] → CONFIRMED
+### First evaluation (docs/TEST_SET_PROTOCOL_DRAFT_2026-11-19.md)
+
+- primary, F1 topo − previous_system (bound +0.00): +0.257 [+0.148; +0.351] → CONFIRMED
+- non-inferiority VLAD, F1 topo − anyloc_vlad_g (bound -0.10): -0.003 [-0.079; +0.052] → CONFIRMED
+- non-inferiority GeM, F1 topo − anyloc_gem_g (bound -0.10): +0.069 [-0.003; +0.124] → CONFIRMED
+
+### Second evaluation (docs/TEST_PROTOCOL_DEBIASED_2026-11-20.md)
+
+- H1, F1 topo_debiased − topo (bound +0.00): +0.123 [+0.071; +0.189] → CONFIRMED
+- H2, F1 topo_debiased − previous_system (bound +0.00): +0.381 [+0.320; +0.445] → CONFIRMED
+- H3, F1 topo_debiased − anyloc_vlad_g (bound +0.00): +0.120 [+0.046; +0.175] → CONFIRMED
+- H4, F1 topo_debiased − anyloc_gem_g (bound +0.00): +0.192 [+0.112; +0.250] → CONFIRMED
 
 ## Test traversals (62)
 
@@ -15,6 +24,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 1026 | 59 | 45 | 127 | 14 | 0.262 | 0.763 | 0.390 |
+| topo_debiased | 1026 | 59 | 49 | 152 | 10 | 0.244 | 0.831 | 0.377 |
 | anyloc_vlad_g | 1045 | 66 | 45 | 136 | 21 | 0.249 | 0.682 | 0.364 |
 | anyloc_gem_g | 1004 | 50 | 36 | 108 | 14 | 0.250 | 0.720 | 0.371 |
 | previous_system | 1016 | 52 | 21 | 83 | 31 | 0.202 | 0.404 | 0.269 |
@@ -31,6 +41,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 1026 | 111 | 81 | 91 | 30 | 0.471 | 0.730 | 0.572 |
+| topo_debiased | 1026 | 111 | 99 | 102 | 12 | 0.493 | 0.892 | 0.635 |
 | anyloc_vlad_g | 1045 | 123 | 80 | 101 | 43 | 0.442 | 0.650 | 0.526 |
 | anyloc_gem_g | 1004 | 103 | 66 | 78 | 37 | 0.458 | 0.641 | 0.534 |
 | previous_system | 1016 | 101 | 39 | 65 | 62 | 0.375 | 0.386 | 0.380 |
@@ -47,6 +58,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 1026 | 232 | 144 | 28 | 88 | 0.837 | 0.621 | 0.713 |
+| topo_debiased | 1026 | 232 | 181 | 20 | 51 | 0.900 | 0.780 | 0.836 |
 | anyloc_vlad_g | 1045 | 227 | 146 | 35 | 81 | 0.807 | 0.643 | 0.716 |
 | anyloc_gem_g | 1004 | 204 | 112 | 32 | 92 | 0.778 | 0.549 | 0.644 |
 | previous_system | 1016 | 221 | 74 | 30 | 147 | 0.712 | 0.335 | 0.455 |
@@ -63,6 +75,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 1026 | 355 | 163 | 9 | 192 | 0.948 | 0.459 | 0.619 |
+| topo_debiased | 1026 | 355 | 196 | 5 | 159 | 0.975 | 0.552 | 0.705 |
 | anyloc_vlad_g | 1045 | 357 | 168 | 13 | 189 | 0.928 | 0.471 | 0.625 |
 | anyloc_gem_g | 1004 | 318 | 130 | 14 | 188 | 0.903 | 0.409 | 0.563 |
 | previous_system | 1016 | 346 | 89 | 15 | 257 | 0.856 | 0.257 | 0.396 |
@@ -77,6 +90,7 @@ Routes resampled: 16. Traversals: 62.
 ### 2 m with 95 % CI (bootstrap over routes)
 
 - topo: P 0.837 [0.792; 0.902], R 0.621 [0.449; 0.748], F 0.713 [0.582; 0.799]
+- topo_debiased: P 0.900 [0.830; 0.948], R 0.780 [0.610; 0.886], F 0.836 [0.711; 0.907]
 - anyloc_vlad_g: P 0.807 [0.745; 0.882], R 0.643 [0.517; 0.737], F 0.716 [0.631; 0.784]
 - anyloc_gem_g: P 0.778 [0.698; 0.884], R 0.549 [0.406; 0.657], F 0.644 [0.532; 0.725]
 - previous_system: P 0.712 [0.576; 0.842], R 0.335 [0.250; 0.403], F 0.455 [0.352; 0.534]
@@ -91,6 +105,7 @@ Routes resampled: 16. Traversals: 62.
 ### Average precision at 2 m (decisions ranked by probability)
 
 - topo: AP 0.765 [0.626; 0.880]
+- topo_debiased: AP 0.906 [0.802; 0.966]
 - anyloc_vlad_g: AP 0.729 [0.597; 0.840]
 - anyloc_gem_g: AP 0.685 [0.558; 0.823]
 - geometry_only: AP 0.760 [0.608; 0.885]
@@ -102,6 +117,9 @@ Routes resampled: 16. Traversals: 62.
 
 ### Paired differences at 2 m (bootstrap over routes)
 
+- F1 topo_debiased − topo: +0.123 [+0.071; +0.189]
+- P topo_debiased − topo: +0.063 [-0.018; +0.112]
+- R topo_debiased − topo: +0.159 [+0.109; +0.238]
 - F1 topo − anyloc_vlad_g: -0.003 [-0.079; +0.052]
 - F1 topo − anyloc_gem_g: +0.069 [-0.003; +0.124]
 - F1 topo − previous_system: +0.257 [+0.148; +0.351]
@@ -120,6 +138,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
 | topo | 47 | 33 | 185 | 111 | 28 |
+| topo_debiased | 47 | 39 | 185 | 142 | 20 |
 | anyloc_vlad_g | 40 | 32 | 187 | 114 | 35 |
 | anyloc_gem_g | 35 | 27 | 169 | 85 | 32 |
 | previous_system | 42 | 14 | 179 | 60 | 30 |
@@ -205,6 +224,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 846 | 171 | 105 | 24 | 66 | 0.814 | 0.614 | 0.700 |
+| topo_debiased | 846 | 171 | 132 | 14 | 39 | 0.904 | 0.772 | 0.833 |
 | anyloc_vlad_g | 851 | 168 | 101 | 23 | 67 | 0.815 | 0.601 | 0.692 |
 | anyloc_gem_g | 826 | 148 | 78 | 25 | 70 | 0.757 | 0.527 | 0.622 |
 | previous_system | 840 | 170 | 57 | 21 | 113 | 0.731 | 0.335 | 0.460 |
@@ -221,6 +241,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 180 | 61 | 39 | 4 | 22 | 0.907 | 0.639 | 0.750 |
+| topo_debiased | 180 | 61 | 49 | 6 | 12 | 0.891 | 0.803 | 0.845 |
 | anyloc_vlad_g | 194 | 59 | 45 | 12 | 14 | 0.789 | 0.763 | 0.776 |
 | anyloc_gem_g | 178 | 56 | 34 | 7 | 22 | 0.829 | 0.607 | 0.701 |
 | previous_system | 176 | 51 | 17 | 9 | 34 | 0.654 | 0.333 | 0.442 |
@@ -237,6 +258,7 @@ Routes resampled: 16. Traversals: 62.
 | Variant | Nodes | Opp. | TP | FP | FN | P | R | F1 |
 |---|---|---|---|---|---|---|---|---|
 | topo | 133 | 10 | 9 | 1 | 1 | 0.900 | 0.900 | 0.900 |
+| topo_debiased | 133 | 10 | 9 | 1 | 1 | 0.900 | 0.900 | 0.900 |
 | anyloc_vlad_g | 136 | 10 | 5 | 0 | 5 | 1.000 | 0.500 | 0.667 |
 | anyloc_gem_g | 149 | 13 | 7 | 0 | 6 | 1.000 | 0.538 | 0.700 |
 | previous_system | 132 | 9 | 5 | 0 | 4 | 1.000 | 0.556 | 0.714 |
