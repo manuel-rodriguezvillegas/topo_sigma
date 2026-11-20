@@ -53,7 +53,7 @@ def _load_node_ground_truth(path: str) -> dict[int, np.ndarray]:
     }
 
 
-def _result_row(
+def result_row(
     case_name: str,
     tolerance: float,
     metrics: GraphMetrics,
@@ -106,7 +106,7 @@ def evaluate_case(
             spatial_tolerance=tolerance,
             loop_tolerance=tolerance,
         )
-        rows.append(_result_row(case.name, tolerance, metrics))
+        rows.append(result_row(case.name, tolerance, metrics))
     return rows
 
 

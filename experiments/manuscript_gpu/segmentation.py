@@ -36,13 +36,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--descriptors", type=Path, required=True, help="AnyLoc runner output directory")
     args = parser.parse_args()
-    labels = {seq.name: load_stream(seq).labels if seq.dataset == "cold" else None for seq in DEV}
+    streams = {seq.name: load_stream(seq) for seq in DEV}
+    labels = {seq.name: streams[seq.name].labels if seq.dataset == "cold" else None for seq in DEV}
     for name, frame_labels in labels.items():
         if frame_labels is not None and any(label is None for label in frame_labels):
             raise ValueError(f"{name}: frames without a room label")
     detectors, fixed_delta = {}, None
     for encoder in ENCODERS:
-        signals = {seq.name: connectivity(load_descriptors(args.descriptors, seq.name, encoder)[0]) for seq in DEV}
+        signals = {seq.name: connectivity(load_descriptors(args.descriptors, seq.name, encoder)[0][streams[seq.name].first:])
+                   for seq in DEV}
         for boundary in ("minimum", "cut"):
             loaded = {name: (signal, labels[name], cuts if boundary == "cut" else None)
                       for name, (signal, cuts) in signals.items()}

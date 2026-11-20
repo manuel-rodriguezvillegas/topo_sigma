@@ -16,13 +16,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from stream import ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, gates, load_stream
+from stream import ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, evaluated_trajectory, gates, load_stream
 from vts_core.matching import VisualLikelihood
 from common import breakdown, load_descriptors
 from vts_core.mapper import TopologicalMapper
 from vts_core.metrics import graph_metrics
-from vts_evaluation.ground_truth import load_ground_truth_xy
-from vts_evaluation.tolerance_sweep import EvaluationCase, evaluate_case
+from vts_evaluation.tolerance_sweep import result_row
 
 TOLERANCES = [0.5, 1.0, 2.0, 3.0]
 MAIN_GATE = "propagated_calibrated"
@@ -115,16 +114,17 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
     target = Path(out) / "replay" / seq_name / variant
     result_path = target / "result.json"
     try:
-        inputs = resolved_inputs(spec, seq_name, seq.split)
+        stream = load_stream(seq)
+        inputs = {**resolved_inputs(spec, seq_name, seq.split), "first_frame": stream.first}
         if result_path.exists():
             previous = json.loads(result_path.read_text())
             if previous.get("inputs") == inputs:
                 return previous
         mapper_options = {**spec["mapper"], "valley_delta": inputs["valley_delta"]}
         gate = gates()[spec["gate"]]
-        stream = load_stream(seq)
         covariances = cumulative_covariances(gate.model, gate.params, stream.odometry)
         descriptors, descriptor_frames = load_descriptors(Path(descriptor_root), seq_name, spec["encoder"])
+        descriptors, descriptor_frames = descriptors[stream.first:], descriptor_frames[stream.first:]
         names = [os.path.basename(p) for p in stream.image_paths]
         if names != list(descriptor_frames):
             raise AssertionError("descriptor frames do not match the frame stream")
@@ -148,10 +148,12 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
         gt_path.write_text(json.dumps({str(k): v for k, v in node_gt.items()}))
         np.save(target / "lambda2.npy", np.asarray(mapper._monitor.eigenvalues))
         np.save(target / "frames_after_cut.npy", np.asarray(mapper._monitor.frames_after_cut))
-        rows = evaluate_case(EvaluationCase(seq_name, str(graph_path), str(gt_path), str(seq.trajectory_gt)), TOLERANCES)
-        trajectory = load_ground_truth_xy(str(seq.trajectory_gt))
-        rmse = graph_metrics(mapper.graph, trajectory,
-                             node_gt_xy={k: np.asarray(v[:2]) for k, v in node_gt.items()}).node_placement_rmse
+        trajectory = evaluated_trajectory(seq)
+        node_gt_xy = {k: np.asarray(v[:2]) for k, v in node_gt.items()}
+        metrics = {t: graph_metrics(mapper.graph, trajectory, node_gt_xy=node_gt_xy, spatial_tolerance=t,
+                                    loop_tolerance=t) for t in TOLERANCES}
+        rows = [result_row(seq_name, t, m) for t, m in metrics.items()]
+        rmse = metrics[TOLERANCES[0]].node_placement_rmse
         result = {
             "sequence": seq_name, "variant": variant, "split": seq.split, "domain": seq.domain, "route": seq.route,
             "inputs": inputs, "frames": len(names), "nodes": len(mapper.graph.nodes),

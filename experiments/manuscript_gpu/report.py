@@ -13,16 +13,16 @@ from mapper_runs import NODE_SENSITIVITY_FILE, TOLERANCES
 from summarize import bootstrap, bootstrap_abs, counts, prf
 
 SPLIT_VARIANTS = [
-    "topo", "geometry_only", "vmf", "isotropic_default", "isotropic_calibrated", "gate_propagated",
-    "boundary_cut", "dinov2_s", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "threshold", "visual_only",
+    "topo", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf", "isotropic_default",
+    "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s", "threshold", "visual_only",
 ]
 SENSITIVITY = ["valley_k1.0", "valley_k1.5", "topo", "valley_k2.5", "valley_k3.0", "valley_fixed", "boundary_cut"]
 PAIRED_TESTS = [
+    ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "anyloc_gem_g", 2, "F1"),
     ("topo", "previous_system", 2, "F1"), ("topo", "previous_system", 0, "P"), ("topo", "previous_system", 1, "R"),
-    ("topo", "geometry_only", 2, "F1"), ("topo", "vmf", 2, "F1"),
+    ("topo", "gate_propagated", 2, "F1"), ("topo", "geometry_only", 2, "F1"), ("topo", "vmf", 2, "F1"),
     ("topo", "isotropic_calibrated", 2, "F1"), ("topo", "isotropic_default", 2, "F1"),
-    ("topo", "gate_propagated", 2, "F1"), ("topo", "boundary_cut", 2, "F1"),
-    ("topo", "dinov2_s", 2, "F1"), ("topo", "anyloc_vlad_g", 2, "F1"), ("topo", "anyloc_gem_g", 2, "F1"),
+    ("topo", "boundary_cut", 2, "F1"), ("topo", "dinov2_s", 2, "F1"),
 ]
 
 
