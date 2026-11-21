@@ -9,6 +9,12 @@ one (multi-session topological map merging).
 
 ![TopoSIGMA pipeline](assets/readme/toposigma_pipeline.webp)
 
+![The mapper building a topological map online](assets/readme/s2pro2_mapping.webp)
+
+The mapper on a design traversal of COLD, sped up: the robot camera, the spectral connectivity
+that places node boundaries, and the map with its loop closures drawn at reference positions
+([MP4](assets/readme/s2pro2_mapping.mp4)). `experiments/manuscript_gpu/run_video.sh` renders it.
+
 - A frozen DINOv3 ViT-S/16 encoder; no learned dataset-specific state.
 - Places are segments between valleys of the algebraic connectivity of a
   sliding visual graph; each keeps its mean descriptor direction, three views

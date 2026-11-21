@@ -10,14 +10,16 @@ import argparse
 import json
 import os
 import traceback
+from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-from stream import (ALL, DEV, HELDOUT, RESULTS, cumulative_covariances, debiased_stream, evaluated_trajectory, gates,
-                    heading_rate, load_stream, readable_test)
+from stream import (ALL, DEV, HELDOUT, RESULTS, Sequence, Stream, cumulative_covariances, debiased_stream,
+                    evaluated_trajectory, gates, heading_rate, load_stream, readable_test)
 from vts_core.matching import VisualLikelihood
 from common import breakdown, load_descriptors
 from vts_core.mapper import TopologicalMapper
@@ -123,6 +125,49 @@ def scored_decisions(graph, node_gt: dict[int, tuple], tolerance: float) -> list
     ]
 
 
+@dataclass
+class Replay:
+    """A mapper ready to consume ``stream``, with the odometry covariances and descriptors of each frame."""
+
+    stream: Stream
+    covariances: np.ndarray
+    descriptors: np.ndarray
+    mapper: TopologicalMapper
+
+
+def run_inputs(seq: Sequence, spec: dict, stream: Stream) -> dict:
+    return {**resolved_inputs(spec, seq.name, seq.split), "first_frame": stream.first}
+
+
+def prepare_replay(seq: Sequence, spec: dict, inputs: dict, stream: Stream, descriptor_root: Path) -> Replay:
+    gate = gates()[spec["gate"]]
+    if gate.debiased:
+        stream = debiased_stream(seq, stream)
+    descriptors, descriptor_frames = load_descriptors(descriptor_root, seq.name, spec["encoder"])
+    descriptors, descriptor_frames = descriptors[stream.first:], descriptor_frames[stream.first:]
+    if [os.path.basename(p) for p in stream.image_paths] != list(descriptor_frames):
+        raise AssertionError("descriptor frames do not match the frame stream")
+    mapper = TopologicalMapper(
+        frame_id=seq.name, gate_mode=spec["gate_mode"], visual_model=spec["visual_model"],
+        uncertainty_model=gate.model, association=spec["association"], place_radius=PLACE_RADIUS_M,
+        visual_likelihood=None if inputs["visual_likelihood"] is None
+        else VisualLikelihood(**inputs["visual_likelihood"]),
+        **{**spec["mapper"], "valley_delta": inputs["valley_delta"]},
+    )
+    return Replay(stream, cumulative_covariances(gate.model, gate.params, stream.odometry), descriptors, mapper)
+
+
+def replay_frames(replay: Replay, images: bool) -> Iterator[int]:
+    """Feed every frame to the mapper, yielding its index after each one, then flush the last node."""
+    stream = replay.stream
+    for k, image_path in enumerate(stream.image_paths):
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR) if images else DUMMY_IMAGE
+        replay.mapper.process_frame(image, replay.descriptors[k].astype(np.float32), tuple(stream.odometry[k]),
+                                    replay.covariances[k], tuple(stream.ground_truth[k]), stream.labels[k])
+        yield k
+    replay.mapper.finalize_nodes()
+
+
 def run_one(job: tuple[str, str, dict, str, str]) -> dict:
     seq_name, variant, spec, out, descriptor_root = job
     seq = ALL[seq_name]
@@ -130,33 +175,15 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
     result_path = target / "result.json"
     try:
         stream = load_stream(seq)
-        inputs = {**resolved_inputs(spec, seq_name, seq.split), "first_frame": stream.first}
+        inputs = run_inputs(seq, spec, stream)
         if result_path.exists():
             previous = json.loads(result_path.read_text())
             if previous.get("inputs") == inputs:
                 return previous
-        mapper_options = {**spec["mapper"], "valley_delta": inputs["valley_delta"]}
-        gate = gates()[spec["gate"]]
-        if gate.debiased:
-            stream = debiased_stream(seq, stream)
-        covariances = cumulative_covariances(gate.model, gate.params, stream.odometry)
-        descriptors, descriptor_frames = load_descriptors(Path(descriptor_root), seq_name, spec["encoder"])
-        descriptors, descriptor_frames = descriptors[stream.first:], descriptor_frames[stream.first:]
-        names = [os.path.basename(p) for p in stream.image_paths]
-        if names != list(descriptor_frames):
-            raise AssertionError("descriptor frames do not match the frame stream")
-
-        mapper = TopologicalMapper(
-            frame_id=seq_name, gate_mode=spec["gate_mode"], visual_model=spec["visual_model"],
-            uncertainty_model=gate.model, association=spec["association"], place_radius=PLACE_RADIUS_M,
-            visual_likelihood=None if inputs["visual_likelihood"] is None
-            else VisualLikelihood(**inputs["visual_likelihood"]), **mapper_options,
-        )
-        for k, image_path in enumerate(stream.image_paths):
-            image = cv2.imread(image_path, cv2.IMREAD_COLOR) if spec["images"] else DUMMY_IMAGE
-            mapper.process_frame(image, descriptors[k].astype(np.float32), tuple(stream.odometry[k]), covariances[k],
-                                 tuple(stream.ground_truth[k]), stream.labels[k])
-        mapper.finalize_nodes()
+        replay = prepare_replay(seq, spec, inputs, stream, Path(descriptor_root))
+        for _ in replay_frames(replay, spec["images"]):
+            pass
+        mapper = replay.mapper
 
         target.mkdir(parents=True, exist_ok=True)
         graph_path, gt_path = target / "graph.pkl", target / "node_gt.json"
@@ -173,7 +200,7 @@ def run_one(job: tuple[str, str, dict, str, str]) -> dict:
         rmse = metrics[TOLERANCES[0]].node_placement_rmse
         result = {
             "sequence": seq_name, "variant": variant, "split": seq.split, "domain": seq.domain, "route": seq.route,
-            "inputs": inputs, "frames": len(names), "nodes": len(mapper.graph.nodes),
+            "inputs": inputs, "frames": len(stream.image_paths), "nodes": len(mapper.graph.nodes),
             "node_placement_rmse_m": float(rmse),
             "metrics": [{k: r[k] for k in ("tolerance_m", "n_nodes", "n_loop_edges", "loop_opportunities", "loop_tp",
                                             "loop_fp", "loop_fn", "loop_precision", "loop_recall", "loop_f1",
