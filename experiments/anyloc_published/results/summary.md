@@ -72,17 +72,17 @@ Reproduction of the manuscript on the 7 development traversals: **PASS**
 
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---:|---:|---:|---:|---:|
-| topo | 15 | 11 | 33 | 15 | 2 |
-| topo_gpu | 15 | 11 | 33 | 15 | 2 |
-| topo_cosine | 15 | 8 | 33 | 15 | 3 |
-| geometry_only | 15 | 13 | 33 | 19 | 5 |
-| anyloc_gem_s224 | 14 | 10 | 27 | 12 | 11 |
-| anyloc_gem_g224 | 14 | 10 | 29 | 13 | 2 |
-| anyloc_gem_g | 13 | 9 | 25 | 12 | 7 |
-| anyloc_vlad_g | 10 | 9 | 30 | 15 | 12 |
-| paired_anyloc_gem_g224 | 15 | 11 | 33 | 17 | 3 |
-| paired_anyloc_gem_g | 16 | 9 | 30 | 16 | 4 |
-| paired_anyloc_vlad_g | 14 | 9 | 33 | 18 | 5 |
+| topo | 18 | 12 | 44 | 20 | 2 |
+| topo_gpu | 18 | 12 | 44 | 20 | 2 |
+| topo_cosine | 18 | 9 | 44 | 21 | 3 |
+| geometry_only | 18 | 14 | 44 | 25 | 5 |
+| anyloc_gem_s224 | 20 | 13 | 38 | 14 | 11 |
+| anyloc_gem_g224 | 18 | 12 | 40 | 16 | 2 |
+| anyloc_gem_g | 15 | 10 | 38 | 17 | 7 |
+| anyloc_vlad_g | 13 | 11 | 44 | 16 | 12 |
+| paired_anyloc_gem_g224 | 19 | 13 | 43 | 22 | 3 |
+| paired_anyloc_gem_g | 19 | 10 | 42 | 21 | 4 |
+| paired_anyloc_vlad_g | 17 | 10 | 45 | 20 | 5 |
 
 ### Metrics at 2 m with 95 % CI (bootstrap over traversals, 10,000 resamples)
 
@@ -185,16 +185,16 @@ Reproduction of the manuscript on the 7 development traversals: **PASS**
 
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---:|---:|---:|---:|---:|
-| topo | 7 | 2 | 45 | 21 | 7 |
-| topo_cosine | 7 | 2 | 45 | 21 | 7 |
-| geometry_only | 7 | 2 | 45 | 24 | 9 |
-| anyloc_gem_s224 | 6 | 5 | 40 | 18 | 4 |
-| anyloc_gem_g224 | 6 | 3 | 38 | 20 | 5 |
-| anyloc_gem_g | 4 | 2 | 45 | 19 | 4 |
-| anyloc_vlad_g | 3 | 2 | 40 | 18 | 3 |
-| paired_anyloc_gem_g224 | 6 | 2 | 54 | 25 | 3 |
-| paired_anyloc_gem_g | 7 | 4 | 52 | 26 | 4 |
-| paired_anyloc_vlad_g | 11 | 6 | 46 | 26 | 3 |
+| topo | 11 | 3 | 69 | 25 | 7 |
+| topo_cosine | 11 | 3 | 69 | 25 | 7 |
+| geometry_only | 11 | 3 | 69 | 28 | 9 |
+| anyloc_gem_s224 | 8 | 5 | 57 | 23 | 4 |
+| anyloc_gem_g224 | 10 | 3 | 53 | 26 | 5 |
+| anyloc_gem_g | 11 | 2 | 56 | 23 | 4 |
+| anyloc_vlad_g | 10 | 3 | 53 | 21 | 3 |
+| paired_anyloc_gem_g224 | 9 | 2 | 70 | 29 | 3 |
+| paired_anyloc_gem_g | 10 | 5 | 69 | 29 | 4 |
+| paired_anyloc_vlad_g | 16 | 7 | 63 | 30 | 3 |
 
 ### Metrics at 2 m with 95 % CI (bootstrap over traversals, 10,000 resamples)
 

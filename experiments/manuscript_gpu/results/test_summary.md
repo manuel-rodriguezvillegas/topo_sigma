@@ -187,25 +187,25 @@ Routes resampled: 16. Traversals: 62.
 
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
-| topo | 47 | 36 | 185 | 125 | 30 |
-| topo_debiased | 47 | 40 | 185 | 149 | 22 |
-| anyloc_vlad_g | 40 | 36 | 187 | 124 | 38 |
-| anyloc_gem_g | 35 | 31 | 169 | 98 | 37 |
-| previous_system | 42 | 15 | 179 | 73 | 29 |
-| geometry_only | 47 | 31 | 185 | 125 | 23 |
-| vmf | 47 | 33 | 185 | 122 | 31 |
-| isotropic_default | 47 | 39 | 185 | 134 | 50 |
-| isotropic_calibrated | 47 | 32 | 185 | 116 | 33 |
-| gate_propagated | 47 | 22 | 185 | 99 | 99 |
-| boundary_cut | 46 | 33 | 187 | 129 | 27 |
-| dinov2_s | 42 | 34 | 179 | 112 | 32 |
-| anyloc_vlad_g_debiased | 40 | 36 | 187 | 155 | 40 |
-| anyloc_gem_g_debiased | 35 | 32 | 169 | 128 | 33 |
-| dinov2_s_debiased | 42 | 35 | 179 | 133 | 29 |
-| geometry_only_debiased | 47 | 34 | 185 | 149 | 17 |
-| vmf_debiased | 47 | 40 | 185 | 149 | 22 |
-| boundary_cut_debiased | 46 | 34 | 187 | 157 | 23 |
-| gate_propagated_debiased | 47 | 23 | 185 | 109 | 37 |
+| topo | 62 | 50 | 265 | 187 | 30 |
+| topo_debiased | 62 | 54 | 265 | 214 | 22 |
+| anyloc_vlad_g | 56 | 52 | 261 | 188 | 38 |
+| anyloc_gem_g | 50 | 45 | 245 | 159 | 37 |
+| previous_system | 56 | 20 | 260 | 100 | 29 |
+| geometry_only | 62 | 46 | 265 | 188 | 23 |
+| vmf | 62 | 48 | 265 | 184 | 31 |
+| isotropic_default | 62 | 53 | 265 | 196 | 50 |
+| isotropic_calibrated | 62 | 44 | 265 | 172 | 33 |
+| gate_propagated | 62 | 25 | 265 | 128 | 99 |
+| boundary_cut | 57 | 44 | 259 | 188 | 27 |
+| dinov2_s | 56 | 48 | 260 | 179 | 32 |
+| anyloc_vlad_g_debiased | 56 | 52 | 261 | 222 | 40 |
+| anyloc_gem_g_debiased | 50 | 46 | 245 | 191 | 33 |
+| dinov2_s_debiased | 56 | 48 | 260 | 203 | 29 |
+| geometry_only_debiased | 62 | 49 | 265 | 214 | 17 |
+| vmf_debiased | 62 | 55 | 265 | 214 | 22 |
+| boundary_cut_debiased | 57 | 45 | 259 | 216 | 23 |
+| gate_propagated_debiased | 62 | 26 | 265 | 137 | 37 |
 
 ### Per traversal (topo): nodes, loops, F1 per tolerance, coverage per tolerance, RMSE
 

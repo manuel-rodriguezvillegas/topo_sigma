@@ -266,27 +266,27 @@ Loop closure F1 of the mapper run with each detector:
 
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
-| topo | 12 | 10 | 28 | 19 | 3 |
-| topo_debiased | 12 | 12 | 28 | 25 | 4 |
-| anyloc_vlad_g | 10 | 9 | 29 | 16 | 12 |
-| anyloc_gem_g | 13 | 11 | 24 | 14 | 5 |
-| previous_system | 15 | 11 | 33 | 14 | 2 |
-| geometry_only | 12 | 9 | 28 | 19 | 4 |
-| vmf | 12 | 11 | 28 | 19 | 2 |
-| isotropic_default | 12 | 10 | 28 | 20 | 10 |
-| isotropic_calibrated | 12 | 6 | 28 | 18 | 4 |
-| gate_propagated | 12 | 7 | 28 | 19 | 16 |
-| boundary_cut | 12 | 10 | 27 | 18 | 7 |
-| dinov2_s | 15 | 14 | 33 | 21 | 4 |
-| threshold | 12 | 5 | 28 | 3 | 20 |
-| visual_only | 12 | 3 | 28 | 6 | 73 |
-| anyloc_vlad_g_debiased | 10 | 9 | 29 | 21 | 10 |
-| anyloc_gem_g_debiased | 13 | 12 | 24 | 18 | 7 |
-| dinov2_s_debiased | 15 | 14 | 33 | 25 | 6 |
-| geometry_only_debiased | 12 | 10 | 28 | 25 | 6 |
-| vmf_debiased | 12 | 12 | 28 | 25 | 4 |
-| boundary_cut_debiased | 12 | 11 | 27 | 22 | 4 |
-| gate_propagated_debiased | 12 | 10 | 28 | 21 | 8 |
+| topo | 17 | 14 | 34 | 23 | 3 |
+| topo_debiased | 17 | 16 | 34 | 29 | 4 |
+| anyloc_vlad_g | 13 | 12 | 42 | 25 | 12 |
+| anyloc_gem_g | 15 | 13 | 38 | 24 | 5 |
+| previous_system | 18 | 12 | 44 | 19 | 2 |
+| geometry_only | 17 | 14 | 34 | 23 | 4 |
+| vmf | 17 | 15 | 34 | 23 | 2 |
+| isotropic_default | 17 | 14 | 34 | 24 | 10 |
+| isotropic_calibrated | 17 | 10 | 34 | 22 | 4 |
+| gate_propagated | 17 | 7 | 34 | 23 | 16 |
+| boundary_cut | 15 | 12 | 36 | 24 | 7 |
+| dinov2_s | 18 | 16 | 44 | 32 | 4 |
+| threshold | 17 | 6 | 34 | 3 | 20 |
+| visual_only | 17 | 5 | 34 | 8 | 73 |
+| anyloc_vlad_g_debiased | 13 | 12 | 42 | 31 | 10 |
+| anyloc_gem_g_debiased | 15 | 14 | 38 | 29 | 7 |
+| dinov2_s_debiased | 18 | 16 | 44 | 36 | 6 |
+| geometry_only_debiased | 17 | 15 | 34 | 29 | 6 |
+| vmf_debiased | 17 | 16 | 34 | 29 | 4 |
+| boundary_cut_debiased | 15 | 13 | 36 | 29 | 4 |
+| gate_propagated_debiased | 17 | 10 | 34 | 24 | 8 |
 
 ### Per traversal (topo): nodes, loops, F1 per tolerance, coverage per tolerance, RMSE
 
@@ -478,27 +478,27 @@ Loop closure F1 of the mapper run with each detector:
 
 | Variant | Opp. aligned | TP aligned | Opp. opposed | TP opposed | FP |
 |---|---|---|---|---|---|
-| topo | 5 | 2 | 41 | 27 | 6 |
-| topo_debiased | 5 | 4 | 41 | 35 | 6 |
-| anyloc_vlad_g | 3 | 3 | 39 | 22 | 6 |
-| anyloc_gem_g | 5 | 5 | 44 | 25 | 9 |
-| previous_system | 8 | 2 | 45 | 20 | 7 |
-| geometry_only | 5 | 1 | 41 | 27 | 7 |
-| vmf | 5 | 2 | 41 | 27 | 7 |
-| isotropic_default | 5 | 2 | 41 | 29 | 12 |
-| isotropic_calibrated | 5 | 1 | 41 | 27 | 7 |
-| gate_propagated | 5 | 4 | 41 | 22 | 19 |
-| boundary_cut | 5 | 3 | 43 | 30 | 5 |
-| dinov2_s | 8 | 5 | 45 | 30 | 6 |
-| threshold | 5 | 2 | 41 | 1 | 40 |
-| visual_only | 5 | 2 | 41 | 7 | 103 |
-| anyloc_vlad_g_debiased | 3 | 3 | 39 | 31 | 4 |
-| anyloc_gem_g_debiased | 5 | 5 | 44 | 34 | 8 |
-| dinov2_s_debiased | 8 | 6 | 45 | 35 | 5 |
-| geometry_only_debiased | 5 | 1 | 41 | 35 | 5 |
-| vmf_debiased | 5 | 3 | 41 | 35 | 6 |
-| boundary_cut_debiased | 5 | 4 | 43 | 39 | 4 |
-| gate_propagated_debiased | 5 | 4 | 41 | 23 | 11 |
+| topo | 8 | 4 | 64 | 46 | 6 |
+| topo_debiased | 8 | 7 | 64 | 53 | 6 |
+| anyloc_vlad_g | 9 | 9 | 51 | 30 | 6 |
+| anyloc_gem_g | 11 | 10 | 53 | 32 | 9 |
+| previous_system | 12 | 3 | 68 | 23 | 7 |
+| geometry_only | 8 | 4 | 64 | 46 | 7 |
+| vmf | 8 | 5 | 64 | 46 | 7 |
+| isotropic_default | 8 | 5 | 64 | 48 | 12 |
+| isotropic_calibrated | 8 | 3 | 64 | 43 | 7 |
+| gate_propagated | 8 | 4 | 64 | 31 | 19 |
+| boundary_cut | 9 | 7 | 62 | 43 | 5 |
+| dinov2_s | 12 | 8 | 68 | 42 | 6 |
+| threshold | 8 | 2 | 64 | 2 | 40 |
+| visual_only | 8 | 3 | 64 | 21 | 103 |
+| anyloc_vlad_g_debiased | 9 | 9 | 51 | 39 | 4 |
+| anyloc_gem_g_debiased | 11 | 10 | 53 | 42 | 8 |
+| dinov2_s_debiased | 12 | 9 | 68 | 48 | 5 |
+| geometry_only_debiased | 8 | 4 | 64 | 53 | 5 |
+| vmf_debiased | 8 | 6 | 64 | 53 | 6 |
+| boundary_cut_debiased | 9 | 8 | 62 | 52 | 4 |
+| gate_propagated_debiased | 8 | 4 | 64 | 31 | 11 |
 
 ### Per traversal (topo): nodes, loops, F1 per tolerance, coverage per tolerance, RMSE
 
