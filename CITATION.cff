@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use TopoSIGMA, please cite this software and its accompanying paper."
-title: "TopoSIGMA: Topological Spectral Information-Geometric Mapping Architecture"
+message: "If you use S2PRO2, please cite this software and its accompanying paper."
+title: "S2PRO2: Online Visual Topological Mapping with Spectral Segmentation and Probability of Proximity"
 type: software
 authors:
   - family-names: "Rodriguez-Villegas"
@@ -16,6 +16,6 @@ date-released: 2026-08-25
 keywords:
   - visual topological mapping
   - loop closure
-  - information geometry
+  - odometry calibration
+  - spectral graph
   - robotics
-  - ROS 2

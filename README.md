@@ -1,188 +1,145 @@
-# TopoSIGMA
+# S2PRO2
 
-**Topo**logical **S**pectral **I**nformation-**G**eometric **M**apping **A**rchitecture
+**Online visual topological mapping with spectral segmentation and probability of proximity**
 
-TopoSIGMA is an online, training-free visual topological mapping system. It
-turns synchronized camera and wheel-odometry streams into a compact place graph
-and, as current work, associates a new session with a map built in an earlier
-one (multi-session topological map merging).
+[![S2PRO2 building a topological map of COLD Freiburg A](assets/readme/freiburg_a.webp)](assets/readme/freiburg_a.mp4)
 
-![TopoSIGMA pipeline](assets/readme/toposigma_pipeline.webp)
+*S2PRO2 mapping a traversal of COLD Freiburg A at 12× speed: the robot camera, the spectral
+connectivity that places the node boundaries, and the map with its loop closures, drawn at reference
+positions. Click the animation for the [full-quality MP4](assets/readme/freiburg_a.mp4).*
 
-![The mapper building a topological map online](assets/readme/s2pro2_mapping.webp)
+## The problem
 
-The mapper on a design traversal of COLD, sped up: the robot camera, the spectral connectivity
-that places node boundaries, and the map with its loop closures drawn at reference positions
-([MP4](assets/readme/s2pro2_mapping.mp4)). `experiments/manuscript_gpu/run_video.sh` renders it.
+A topological map describes an environment as places and the connections between them. Building
+one online from a robot requires two decisions at every step: when the camera has entered a new
+place, and whether that place has been visited before. A wrong revisit corrupts the map, and a
+missed one leaves it disconnected.
 
-- A frozen DINOv3 ViT-S/16 encoder; no learned dataset-specific state.
-- Places are segments between valleys of the algebraic connectivity of a
-  sliding visual graph; each keeps its mean descriptor direction, three views
-  and the odometry pose of its medoid frame.
-- In-session association (baseline): a chi-square gate on an additive odometry
-  uncertainty budget proposes revisits; appearance (multi-view cosine on
-  three-place sequences) only disambiguates several candidates. A posterior
-  with an explicit new-place hypothesis is available for comparison.
-- Cross-session building blocks: batched appearance scores, sequence evidence
-  aligned by travelled distance, and a bounded set of SE(2) anchor hypotheses.
+S2PRO2 makes both decisions from a monocular camera and wheel odometry, with frozen image
+descriptors.
 
-The mapper evaluated in the paper and the scripts that produce every reported
-number and figure are in `experiments/`; `experiments/manuscript_gpu/run_all.sh`
-runs them end to end on a GPU.
+## How it works
 
-DINOv3 weights are gated: request access to the
-[official weights](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m)
-and run `hf auth login` in the runtime before extracting descriptors.
+![S2PRO2 pipeline](assets/readme/s2pro2_pipeline.webp)
+
+- **Nodes.** Each frame is encoded with a frozen DINOv3 ViT-S/16. The recent frames form a
+  similarity graph whose algebraic connectivity $\lambda_2$ drops while two appearances share
+  the window. A node boundary is placed at the bottom of each valley, accepted once the signal has
+  risen by a margin that adapts to its recent variation.
+- **Odometry.** A constant heading drift is estimated once per robot and removed, and the
+  remaining error is propagated as a covariance whose noise coefficients are fitted by maximum
+  likelihood against reference trajectories.
+- **Loop closure.** For each new node, the mapper computes the probability that an earlier node
+  lies within 2 m. Visual similarity updates that probability only when both nodes were seen from
+  a similar heading, and a loop edge is added when the result exceeds 0.5.
+
+## Results
+
+Loop closure at 2 m on 62 test traversals of COLD and CID-SIMS, none of them used for design:
+
+| Configuration | Precision | Recall | $F_1$ |
+|---|---:|---:|---:|
+| **S2PRO2** | **0.900** | 0.780 | **0.836** |
+| AnyLoc VLAD descriptor, DINOv2 ViT-G/14 | 0.831 | 0.802 | 0.816 |
+| AnyLoc GeM descriptor, DINOv2 ViT-G/14 | 0.836 | 0.725 | 0.777 |
+| S2PRO2 without the drift correction | 0.837 | 0.621 | 0.713 |
+| χ² gate on the same covariance | 0.717 | 0.470 | 0.568 |
+
+A small frozen descriptor performs as well as AnyLoc backbones about fifty times larger, while the
+odometry model matters most: four of every five revisits in these data are made in the opposite
+direction, where a forward camera cannot confirm the place. Every number comes from
+[`experiments/manuscript_gpu/results/`](experiments/manuscript_gpu/results).
 
 ## Repository structure
 
 ```text
 .
-├── assets/readme/                  README figures
-├── experiments/                    Paper mapper, GPU runners and their results
-├── encoder/                        Local datasets (ignored by Git)
-└── vts_devcontainer/
-    ├── .devcontainer/              Ubuntu 24.04 / ROS 2 Jazzy environment
-    ├── pyproject.toml, uv.lock     Locked Python dependencies
-    └── vts_ws/src/
-        ├── vts_core/               Pure-Python engine and the `toposigma` CLI (no ROS)
-        ├── vts_players/            ROS dataset player over the vts_core adapters
-        ├── vts_mapping/            ROS graph builder: thin wrapper of the engine
-        ├── vts_language/           Optional SigLIP 2 text-to-place suggestions
-        └── vts_bringup/            Launch file
+├── experiments/
+│   ├── manuscript_gpu/          Runners, calibration, replays and results of the paper
+│   ├── anyloc_published/
+│   │   ├── historical_src/      The mapper evaluated in the paper
+│   │   └── ...                  Dataset downloads, descriptor extraction, AnyLoc baselines
+│   └── ...                      Earlier studies, kept for traceability
+├── assets/readme/               Figures and video of this README
+├── vts_devcontainer/            Ongoing multi-session work and ROS 2 packages (see below)
+└── encoder/                     Datasets, downloaded by the runners (ignored by Git)
 ```
 
-See [`vts_devcontainer/vts_ws/src/README.md`](vts_devcontainer/vts_ws/src/README.md)
-for the module map and the ROS interface.
+## Running it
 
-## Requirements
+### Requirements
 
-The supported environment is the included development container:
+- Linux with an NVIDIA GPU. The paper used an RTX 4070 Ti with 12 GB, which the AnyLoc
+  ViT-G/14 baselines need.
+- [uv](https://docs.astral.sh/uv/), `git`, `curl`, `tar`, `unzip` and `md5sum`. The runners create
+  their own Python environment with PyTorch.
+- Access to the gated [DINOv3 weights](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m):
+  request it on Hugging Face and run `hf auth login`.
+- Disk space for the datasets: the test set alone takes about 100 GB of downloads and 70 GB once
+  extracted.
 
-- Docker Desktop or Docker Engine;
-- a development-container client such as Visual Studio Code with the
-  Dev Containers extension;
-- enough disk space for the selected datasets and model cache.
+### Steps
 
-The image uses Ubuntu 24.04, ROS 2 Jazzy, CPython 3.12, and dependencies locked
-with uv. ROS 2 Jazzy's binary Python extensions require the Ubuntu 24.04 Python
-ABI, so the container intentionally does not install a separate Python 3.13
-interpreter.
-
-## Dataset setup
-
-The datasets are not redistributed. Download them under `encoder/`, which is
-mounted at `/workspace/encoder` inside the container.
-
-### COLD
-
-Download the sequences from the
-[COsy Localization Database](https://www.cas.kth.se/COLD/) into
-`encoder/seq_data/<recording>/` (e.g. `cold-freiburg_part_a_seq2_night1/`).
-Every recording found there enters the catalogue.
-
-Each extracted traversal must retain the original `std_cam/`, `odom_scans/`,
-and `localization/` directories.
-
-### CID-SIMS
-
-Download CID-SIMS from
-[Science Data Bank](https://doi.org/10.57760/sciencedb.ai.00003) and extract
-each traversal as follows:
-
-```text
-encoder/
-├── apartment1_1/
-│   ├── color/
-│   ├── groundtruth.txt
-│   └── odom.txt
-├── apartment2_1/
-└── apartment3_1/
-```
-
-## Build
-
-Open `vts_devcontainer/` in the development container, then run:
+Clone the full repository: the test runner checks the method against a commit in its history.
 
 ```bash
-cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
-colcon build --symlink-install --base-paths src   # output/ holds historical package copies
-source install/setup.bash
+git clone https://github.com/manuel-rodriguezvillegas/s2pro2.git && cd s2pro2
 ```
 
-The offline tools need only NumPy, SciPy and PyYAML (plus PyTorch and
-Transformers for descriptor extraction); they also run outside ROS with
-`PYTHONPATH=src/vts_core python3 -m vts_core.cli ...`.
+Every runner is resumable: it downloads only what is missing, checks MD5 sums and skips finished
+work, so it can be relaunched after an interruption. Run them from the repository root.
 
-## Offline workflow (`toposigma`)
+1. **Design set** (19 traversals): downloads the data, extracts the descriptors, calibrates the
+   odometry and the visual likelihood, runs the mapper and its ablations, and draws the figures.
 
-Every recording is a *session* with a canonical store under
-`output/sessions/<session>/` (frames, raw odometry, ground truth, descriptors
-and a manifest of SHA-256 hashes). Session names follow the recordings, e.g.
-`cold_freiburg_a_seq2_night1` or `cid_apartment1_2`. Recordings reserved as
-final test data (`test_sessions` in `vts_core/config/toposigma.yaml`) are
-refused unless `--allow-test` is given, which requires a written protocol.
+   ```bash
+   nohup bash experiments/manuscript_gpu/run_all.sh > manuscript_gpu.log 2>&1 &
+   ```
 
-```bash
-toposigma frames list --check            # catalogue, roles, stores, odometry quality
-toposigma frames build --all-missing     # DINOv3 stores for every clean development recording
-toposigma map --all --jobs 6             # in-session baseline on every stored session
-toposigma evaluate loops                 # loop P/R/F1, split into aligned / opposed revisits
-toposigma evaluate revisits              # cross-session revisit types per session pair
-toposigma associate --kind mean_cosine --jobs 6
-toposigma evaluate cross --label mean_cosine__dinov3
-```
+2. **Test set** (62 traversals): downloads the data and extracts the descriptors, then evaluates
+   the frozen method once. The evaluation stops if the method code or its calibration differ from
+   the frozen version.
 
-Configuration lives in one YAML file, `vts_core/config/toposigma.yaml`;
-`--config my.yaml` is deep-merged over it. Outputs go to `output/toposigma/`,
-each with a run record (code hash, parameters, input manifests). Outside the
-container, point `TOPOSIGMA_DATA_ROOT` at the local `encoder/` directory.
+   ```bash
+   nohup bash experiments/manuscript_gpu/fetch_test_set.sh > fetch_test_set.log 2>&1 &
+   ```
 
-## ROS pipeline
+   ```bash
+   nohup bash experiments/manuscript_gpu/run_test.sh > manuscript_test.log 2>&1 &
+   ```
 
-```bash
-ros2 launch vts_bringup pipeline.launch.py sessions:=cold_freiburg_a_seq2_night1
-ros2 launch vts_bringup pipeline.launch.py mode:=command \
-  graph:=output/ros/cold_freiburg_a_seq2_night1/graph_0.npz query:="Go to the kitchen."
-```
+3. **Videos** (optional): renders the video above after step 1.
 
-The player replays a recording through the same adapters as the stores; the
-graph builder feeds the same engine as the offline replays. A robot or another
-dataset must publish:
+   ```bash
+   nohup bash experiments/manuscript_gpu/run_video.sh > manuscript_video.log 2>&1 &
+   ```
 
-| Topic | Message | Purpose |
-|---|---|---|
-| `/camera/image` | `sensor_msgs/Image` | BGR camera frame |
-| `/odom` | `nav_msgs/Odometry` | Planar pose; covariance fields carry the cumulative budget |
-| `/dataset/sequence_done` | `std_msgs/String` | End-of-run JSON event |
-| `/ground_truth_pose` | `geometry_msgs/PoseStamped` | Optional, evaluation only |
+The summaries are written to `experiments/manuscript_gpu/results/` (`summary.md` and
+`test_summary.md`). The maps of each traversal are saved under
+`vts_devcontainer/vts_ws/output/manuscript_gpu/replay/<traversal>/topo_debiased/`.
 
-Camera and odometry share a clock. The covariance must be the monotonic
-additive budget `path_length_budget_v1` (`vts_core.odometry.BudgetTracker`);
-ordinary pose marginals cannot be subtracted and are rejected. The player waits
-for an acknowledgement on `/mapping/frame_processed` before each frame.
-Language queries only suggest places; in topic mode a destination needs
-explicit confirmation (`{"query_id": ..., "confirm": <place>}` on
-`/language/command`).
+## Datasets
 
-## Tests
+The datasets are downloaded by the runners and are not redistributed here; their licenses remain
+with their authors.
 
-```bash
-cd /workspaces/topo_sigma/vts_devcontainer/vts_ws
-python3 -m pytest -q src
-cd .. && uvx ruff check vts_ws/src
-```
+- [COLD](https://www.cas.kth.se/COLD/): the CoSy Localization Database, recorded in three
+  laboratories in Freiburg, Saarbrücken and Ljubljana.
+- [CID-SIMS](https://doi.org/10.57760/sciencedb.ai.00003): the Complex Indoor Dataset with
+  Semantic Information and Multi-Sensor Data, with apartments and office floors.
 
-`vts_core/test/test_regression.py` checks that segments, decisions and loop
-counts on the seven manuscript sessions match the tagged code exactly (141
-places, 38 accepted revisits); it needs the development session stores.
+## Ongoing work
+
+[`vts_devcontainer/`](vts_devcontainer/README.md) holds a later rewrite of the engine for
+multi-session mapping, with a command line and ROS 2 packages. It does not produce the numbers of
+the paper.
 
 ## Citation
 
-If TopoSIGMA contributes to your work, please cite the accompanying paper.
-Machine-readable project metadata are provided in [`CITATION.cff`](CITATION.cff).
+The accompanying paper is under review. Until it is published, please cite the software with the
+metadata in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
-TopoSIGMA is released under the [MIT License](LICENSE). Dataset and pretrained
-model licenses remain with their respective authors.
+S2PRO2 is released under the [MIT License](LICENSE). Dataset and pretrained model licenses remain
+with their respective authors.
