@@ -16,7 +16,7 @@ export DATA_ROOT=${DATA_ROOT:-$REPO/encoder}
 ANYLOC_OUT=${ANYLOC_OUT:-$REPO/vts_devcontainer/vts_ws/output/anyloc_published}
 OUT=${OUT:-$REPO/vts_devcontainer/vts_ws/output/manuscript_gpu}
 JOBS=${JOBS:-6}
-FROZEN_CODE=2c7b6f932b6204481df4e97486249b610e91a2eb
+FROZEN_CODE=0beb22b2df107e3046437228a521fdfa76beb7a4
 FROZEN_FILES=(
   "results/calibration.json c5bf4295b52435c148a108244e8236ad142fec9029925cc2f0ab3776e383e375"
   "results/visual_likelihood.json 619a68a0ecf70be08506a3f92a1a93eadbc6b3973bdefa545529199d99c35f6e"
