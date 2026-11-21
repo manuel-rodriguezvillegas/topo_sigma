@@ -56,6 +56,8 @@ class MapStyle:
     loop_width: float
     trajectory_width: float
     legend: bool
+    axis_labels: bool = True
+    layout_pad: float = 1.08  # figure margin in multiples of the font size (matplotlib default)
     rc: dict = field(default_factory=dict)
 
 
@@ -159,11 +161,12 @@ def render_map(
             )
         ax.set_aspect("equal", adjustable="datalim")
         ax.grid(True, alpha=0.3)
-        ax.set_xlabel("x [m]")
-        ax.set_ylabel("y [m]")
+        if style.axis_labels:
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
         if title:
             ax.set_title(title)
-        fig.tight_layout()
+        fig.tight_layout(pad=style.layout_pad)
         fig.savefig(out_path, dpi=150, bbox_inches="tight" if style.legend else None)
         _save_latex_figure(fig, out_path)
     plt.close(fig)

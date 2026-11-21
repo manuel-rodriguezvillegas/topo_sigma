@@ -23,14 +23,10 @@ from vts_evaluation.map_viz import (LOOP_EDGE_COLOR, SEQUENTIAL_EDGE_COLOR, TRAJ
 
 HISTORICAL_SRC = HERE.parent / "anyloc_published" / "historical_src"
 TEXT_WIDTH_IN = 522.0 / 72.27
-MAP_WIDTH_IN = 0.245 * TEXT_WIDTH_IN
-PAPER_MAP_STYLE = MapStyle(
-    size_in=(MAP_WIDTH_IN, MAP_WIDTH_IN), node_area=9.0, node_edge_width=0.25, sequential_width=0.5,
-    loop_width=0.8, trajectory_width=0.5, legend=False,
-    rc={"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
-        "axes.formatter.use_mathtext": True, "font.size": 7, "axes.linewidth": 0.4,
-        "xtick.major.width": 0.4, "ytick.major.width": 0.4, "xtick.major.size": 2, "ytick.major.size": 2},
-)
+MAP_WIDTH_FRACTION = {"cold": 0.245, "cid": 0.32}  # of the text width; must match the subfigures
+PAPER_MAP_RC = {"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
+                "axes.formatter.use_mathtext": True, "font.size": 7, "axes.linewidth": 0.4,
+                "xtick.major.width": 0.4, "ytick.major.width": 0.4, "xtick.major.size": 2, "ytick.major.size": 2}
 NO_ROOM_LABEL = "No room label"
 MAP_VARIANT = "topo_debiased"
 RETRIEVAL_EXAMPLES = [
@@ -84,6 +80,13 @@ def map_legend(labels: set[str | None]) -> str:
     return "\\par\\smallskip{\\centering\\footnotesize\n" + "\\quad\n".join(entries) + "\\par}\n"
 
 
+def paper_map_style(dataset: str) -> MapStyle:
+    width = MAP_WIDTH_FRACTION[dataset] * TEXT_WIDTH_IN
+    return MapStyle(size_in=(width, width), node_area=9.0, node_edge_width=0.25, sequential_width=0.5,
+                    loop_width=0.8, trajectory_width=0.5, legend=False, axis_labels=False, layout_pad=0.2,
+                    rc=PAPER_MAP_RC)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
@@ -102,7 +105,7 @@ def main() -> None:
         graph = TopoGraph.load(str(run / "graph.pkl"))
         node_gt = {int(k): np.asarray(v[:2]) for k, v in json.loads((run / "node_gt.json").read_text()).items()}
         render_map(graph, str(figures / f"map_{seq.name}.pdf"), gt_xy=load_ground_truth_xy(str(seq.trajectory_gt)),
-                   node_gt=node_gt, style=PAPER_MAP_STYLE)
+                   node_gt=node_gt, style=paper_map_style(seq.dataset))
         labels |= {node.room_label for node in graph.nodes.values()}
     (figures / "map_legend.tex").write_text(map_legend(labels))
     retrieval_examples(args.out, figures)
