@@ -39,11 +39,11 @@ Loop closure at 2 m on 62 test traversals of COLD and CID-SIMS, none of them use
 
 | Configuration | Precision | Recall | $F_1$ |
 |---|---:|---:|---:|
-| **S2PRO2** | **0.900** | 0.780 | **0.836** |
-| AnyLoc VLAD descriptor, DINOv2 ViT-G/14 | 0.831 | 0.802 | 0.816 |
-| AnyLoc GeM descriptor, DINOv2 ViT-G/14 | 0.836 | 0.725 | 0.777 |
-| S2PRO2 without the drift correction | 0.837 | 0.621 | 0.713 |
-| χ² gate on the same covariance | 0.717 | 0.470 | 0.568 |
+| **S2PRO2** | **0.924** | 0.820 | **0.869** |
+| AnyLoc VLAD descriptor, DINOv2 ViT-G/14 | 0.873 | 0.864 | 0.868 |
+| AnyLoc GeM descriptor, DINOv2 ViT-G/14 | 0.878 | 0.803 | 0.839 |
+| S2PRO2 without the drift correction | 0.888 | 0.725 | 0.798 |
+| χ² gate on the same covariance | 0.815 | 0.498 | 0.619 |
 
 A small frozen descriptor performs as well as AnyLoc backbones about fifty times larger, while the
 odometry model matters most: four of every five revisits in these data are made in the opposite

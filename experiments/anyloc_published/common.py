@@ -203,7 +203,8 @@ def breakdown(graph, node_gt: dict[int, tuple], tolerance: float, aligned_deg: f
     for event in graph.loop_events:
         q = event.query_node_id
         qx, qy, qa = node_gt[q]
-        near = [j for j in ids if j < q - 2 and math.hypot(node_gt[j][0] - qx, node_gt[j][1] - qy) <= tolerance]
+        near = [j for j in ids if j < q - graph.loop_exclusion_nodes
+                and math.hypot(node_gt[j][0] - qx, node_gt[j][1] - qy) <= tolerance]
         kind = None
         if near:
             aligned = any(abs(wrap(node_gt[j][2] - qa)) < math.radians(aligned_deg) for j in near)
