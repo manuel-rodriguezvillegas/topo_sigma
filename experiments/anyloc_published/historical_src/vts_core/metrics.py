@@ -14,7 +14,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from vts_core.matching import fit_se2, median_spacing
-from vts_core.topo_graph import LOOP_TEMPORAL_EXCLUSION_NODES, TopoGraph
+from vts_core.topo_graph import TopoGraph
 
 
 @dataclass
@@ -202,7 +202,7 @@ def graph_metrics(
         prior_ids = [
             node_id
             for node_id in ids_sorted
-            if (node_id < query_id - LOOP_TEMPORAL_EXCLUSION_NODES and node_id in index_of)
+            if (node_id < query_id - graph.loop_exclusion_nodes and node_id in index_of)
         ]
         has_opportunity = any(
             float(np.linalg.norm(positions[query_index] - positions[index_of[node_id]]))

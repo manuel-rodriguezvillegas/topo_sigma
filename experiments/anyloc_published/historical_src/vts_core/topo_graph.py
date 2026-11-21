@@ -17,9 +17,9 @@ from dataclasses import dataclass, field, replace
 import numpy as np
 
 Pose2D = tuple[float, float, float]
-# Current node and this many immediate predecessors describe the local
-# traversal rather than a loop closure. Shared by mapping and evaluation.
-LOOP_TEMPORAL_EXCLUSION_NODES: int = 2
+# Most recent nodes left out of the loop-closure search; the immediate predecessor is
+# already joined by the sequential edge.
+LOOP_TEMPORAL_EXCLUSION_NODES: int = 1
 
 
 @dataclass
@@ -148,14 +148,19 @@ class TopoGraph:
         nodes: Mapping node_id -> TopoNode.
         adjacency: Mapping node_id -> set of neighbor node_ids.
         frame_id: Identifier of the run / coordinate frame this graph lives in.
+        loop_exclusion_nodes: Most recent nodes that were not loop-closure candidates
+            when a node was added; evaluation uses the same rule.
     """
 
-    def __init__(self, frame_id: str = "map") -> None:
+    def __init__(self, frame_id: str = "map", loop_exclusion_nodes: int = LOOP_TEMPORAL_EXCLUSION_NODES) -> None:
+        if loop_exclusion_nodes < 1:
+            raise ValueError("loop_exclusion_nodes must exclude at least the sequential predecessor")
         self.nodes: dict[int, TopoNode] = {}
         self.adjacency: dict[int, set[int]] = {}
         self.edge_types: dict[tuple[int, int], str] = {}
         self.loop_events: list[LoopClosureEvent] = []
         self.frame_id: str = frame_id
+        self.loop_exclusion_nodes: int = loop_exclusion_nodes
         self._next_id: int = 0
 
     # ------------------------------------------------------------------ #
@@ -230,7 +235,7 @@ class TopoGraph:
     # ------------------------------------------------------------------ #
     def without_images(self) -> TopoGraph:
         """A reloadable map retaining all matching, pose and topology state."""
-        compact = TopoGraph(self.frame_id)
+        compact = TopoGraph(self.frame_id, self.loop_exclusion_nodes)
         for node in self.nodes.values():
             compact.add_node(replace(node, views=[]))
         for a, b in self.edges():

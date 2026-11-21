@@ -20,7 +20,7 @@ from mapper_runs import PLACE_RADIUS_M, VISUAL_FILE, VISUAL_SCORES, geometric_so
 from stream import DESIGN
 from vts_core.mapper import TopologicalMapper
 from vts_core.motion import normalize_angle
-from vts_core.topo_graph import LOOP_TEMPORAL_EXCLUSION_NODES, TopoGraph
+from vts_core.topo_graph import TopoGraph
 
 ALIGNED_HEADING = np.pi / 4
 SCORES = {"vmf": TopologicalMapper._node_vmf_evidence, "cosine": TopologicalMapper._node_similarity}
@@ -32,7 +32,7 @@ def labelled_scores(run: Path, score: str) -> tuple[np.ndarray, np.ndarray]:
     ids = sorted(graph.nodes)
     values, labels = [], []
     for position, query in enumerate(ids):
-        for earlier in ids[: max(0, position - LOOP_TEMPORAL_EXCLUSION_NODES)]:
+        for earlier in ids[: max(0, position - graph.loop_exclusion_nodes)]:
             distance = np.hypot(*(truth[query][:2] - truth[earlier][:2]))
             aligned = abs(normalize_angle(truth[query][2] - truth[earlier][2])) < ALIGNED_HEADING
             if distance <= PLACE_RADIUS_M and not aligned:

@@ -8,9 +8,10 @@ stored in the nodes and used for loop-closure evidence.
   Every method then faces the same nodes and revisit opportunities, up to the
   representative frame chosen inside each segment.
 
-Reproduction checks on the manuscript sequences (must pass before anything else is read):
-- ``topo_mac`` (Mac descriptors, vMF) == submission TopoSIGMA, all radii.
-- ``paired_cosine_mac`` (Mac descriptors, cosine) == submission cosine ablation.
+Reproduction checks on the manuscript sequences (must pass before anything else is read), with
+the manuscript's loop-closure exclusion of the two most recent nodes and Mac descriptors:
+- ``manuscript`` (vMF) == submission TopoSIGMA, all radii.
+- ``manuscript_cosine`` (cosine) == submission cosine ablation.
 
 Run with BLAS limited to one thread per process (set by run_all.sh).
 """
@@ -28,10 +29,13 @@ import numpy as np
 
 from common import ALL, DEV, HELDOUT, HERE, MAPPER_OPTIONS, TOLERANCES, breakdown, frames, load_descriptors
 from vts_core.mapper import TopologicalMapper
+from vts_core.topo_graph import LOOP_TEMPORAL_EXCLUSION_NODES
 from vts_evaluation.tolerance_sweep import EvaluationCase, evaluate_case
 
 DUMMY_IMAGE = np.zeros((1, 1, 3), dtype=np.uint8)  # views are not scored; avoids decoding images
 ENCODERS_G = ["anyloc_gem_g224", "anyloc_gem_g", "anyloc_vlad_g"]
+MANUSCRIPT_LOOP_EXCLUSION_NODES = 2
+REPRODUCTION_VARIANTS = {"manuscript": "", "manuscript_cosine": "_cosine"}
 
 
 def variants(split: str) -> dict[str, dict]:
@@ -43,6 +47,8 @@ def variants(split: str) -> dict[str, dict]:
         "anyloc_gem_s224": dict(seg="anyloc_gem_s224", assoc="anyloc_gem_s224", visual_model="cosine", gate_mode="both"),
     }
     if split == "dev":
+        v["manuscript"] = dict(v["topo"], loop_exclusion_nodes=MANUSCRIPT_LOOP_EXCLUSION_NODES)
+        v["manuscript_cosine"] = dict(v["topo_cosine"], loop_exclusion_nodes=MANUSCRIPT_LOOP_EXCLUSION_NODES)
         v["topo_gpu"] = dict(seg="dinov2_s", assoc="dinov2_s", visual_model="vmf", gate_mode="both")
     for enc in ENCODERS_G:
         v[enc] = dict(seg=enc, assoc=enc, visual_model="cosine", gate_mode="both")
@@ -71,8 +77,10 @@ def run_one(job: tuple[str, str, dict, str]) -> dict:
     try:
         seg, seg_frames = load_descriptors(root, seq_name, spec["seg"])
         assoc, assoc_frames = load_descriptors(root, seq_name, spec["assoc"])
+        exclusion = spec.get("loop_exclusion_nodes", LOOP_TEMPORAL_EXCLUSION_NODES)
         mapper = TopologicalMapper(frame_id=seq_name, **{**MAPPER_OPTIONS, "gate_mode": spec["gate_mode"],
-                                                         "visual_model": spec["visual_model"]})
+                                                         "visual_model": spec["visual_model"],
+                                                         "loop_exclusion_nodes": exclusion})
         override = None
         if spec["seg"] != spec["assoc"]:
             override = _SegmentationOverride(mapper._monitor)
@@ -122,13 +130,13 @@ def check_reproduction(results: list[dict], sequences: list[str]) -> list[str]:
     problems = []
     done = {(r["sequence"], r["variant"]) for r in results}
     for name in sequences:
-        for variant in ("topo", "topo_cosine"):
+        for variant in REPRODUCTION_VARIANTS:
             if (name, variant) not in done:
                 problems.append(f"{name} {variant}: no result (see ERROR above)")
     for r in results:
-        if r.get("split") != "dev" or r["variant"] not in ("topo", "topo_cosine"):
+        if r.get("split") != "dev" or r["variant"] not in REPRODUCTION_VARIANTS:
             continue
-        key = r["sequence"] + ("" if r["variant"] == "topo" else "_cosine")
+        key = r["sequence"] + REPRODUCTION_VARIANTS[r["variant"]]
         for got, want in zip(r["metrics"], reference[key]):
             for f in ("n_nodes", "n_loop_edges", "loop_opportunities", "loop_tp", "loop_fp", "loop_fn"):
                 if got[f] != want[f]:
@@ -158,7 +166,7 @@ def main() -> None:
     if args.split == "dev":
         problems = check_reproduction([r for r in results if "error" not in r], seqs)
         status = "PASS" if not problems else "FAIL"
-        print(f"Reproduction of the manuscript (topo, topo_cosine): {status}")
+        print(f"Reproduction of the manuscript ({', '.join(REPRODUCTION_VARIANTS)}): {status}")
         for p in problems[:40]:
             print("  ", p)
         (args.out / "reproduction_dev.json").write_text(json.dumps({"status": status, "problems": problems}, indent=1))

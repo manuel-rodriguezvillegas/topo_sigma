@@ -7,7 +7,8 @@
 #      RUN_HELDOUT=1, the 12 held-out ones.
 #   3. GPU descriptors (DINOv2-S, AnyLoc-GeM S/G, AnyLoc-VLAD-G indoor vocabulary).
 #   4. Replay of the manuscript mapper. The development step must reproduce the
-#      manuscript exactly (25/2/23 at 2 m and the cosine ablation) or the script stops.
+#      manuscript exactly (25/2/23 at 2 m and the cosine ablation, with the manuscript's
+#      exclusion of the two most recent nodes) or the script stops.
 #   5. Summary in experiments/anyloc_published/results/ (small files: commit and push them).
 #
 # Usage, from the repository root (survives a dropped SSH/VS Code session):
@@ -91,7 +92,7 @@ cd "$HERE"
 DEV="freiburg_a freiburg_ext saarbruecken_a saarbruecken_ext cid_sims_apartment1_1 cid_sims_apartment2_1 cid_sims_apartment3_1"
 
 step "3. Reproduction gate (manuscript mapper, Mac descriptors; no GPU)"
-$PY replay.py --out "$OUT" --split dev --variants topo topo_cosine geometry_only --jobs "$JOBS"
+$PY replay.py --out "$OUT" --split dev --variants manuscript manuscript_cosine --jobs "$JOBS"
 grep -q '"PASS"' "$OUT/reproduction_dev.json" || { echo "Reproduction FAILED: stop and send anyloc_published.log"; exit 1; }
 
 step "4. GPU descriptors, development traversals"

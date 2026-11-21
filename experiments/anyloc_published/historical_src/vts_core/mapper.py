@@ -66,8 +66,6 @@ _VISUAL_OUTLIER_K: float = 2.0
 # Below this many nodes there is not enough evidence to judge an outlier;
 # stay conservative and do not close loops yet.
 _MIN_NODES_FOR_REVISIT: int = 5
-# Existing nodes this close in temporal order are traversal neighbours, not
-# loop-closure candidates. This structural exclusion adds no metric threshold.
 
 # Revisit gate ablation modes. "both" is the full system (visual outlier test
 # AND geometric gate must agree); "visual" and "geometric" disable one gate
@@ -118,6 +116,7 @@ class TopologicalMapper:
         place_radius: float = 2.0,
         visual_likelihood: VisualLikelihood | None = None,
         boundary: str = "minimum",
+        loop_exclusion_nodes: int = LOOP_TEMPORAL_EXCLUSION_NODES,
     ) -> None:
         """
         Args:
@@ -151,6 +150,7 @@ class TopologicalMapper:
             visual_likelihood: Visual likelihood ratio used by ``disk`` association
                 with ``gate_mode="both"``.
             boundary: One of :data:`BOUNDARIES`.
+            loop_exclusion_nodes: Most recent nodes left out of the loop-closure search.
         """
         if gate_mode not in GATE_MODES:
             raise ValueError(f"gate_mode must be one of {GATE_MODES}, got {gate_mode!r}")
@@ -173,7 +173,7 @@ class TopologicalMapper:
         numeric = [valley_k, valley_delta, visual_outlier_k, naive_threshold]
         if not np.isfinite(numeric).all() or min(valley_k, valley_delta, visual_outlier_k) < 0:
             raise ValueError("gate and detector parameters must be finite and nonnegative")
-        self.graph: TopoGraph = TopoGraph(frame_id=frame_id)
+        self.graph: TopoGraph = TopoGraph(frame_id=frame_id, loop_exclusion_nodes=loop_exclusion_nodes)
         self.current_node_id: int | None = None
         self._visual_outlier_k: float = visual_outlier_k
         self._gate_mode: str = gate_mode
@@ -646,7 +646,7 @@ class TopologicalMapper:
         or promote a geometrically implausible alias.
         """
         ids = sorted(self.graph.nodes)
-        eligible_count = len(ids) - LOOP_TEMPORAL_EXCLUSION_NODES
+        eligible_count = len(ids) - self.graph.loop_exclusion_nodes
         if self._association == "disk":
             if eligible_count < 1:
                 return RevisitDecision(None, None, None, None, "no_candidates")
