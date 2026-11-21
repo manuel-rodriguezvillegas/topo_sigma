@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from mapper_runs import TEST_VARIANTS
+from mapper_runs import TEST_REPRODUCTION_VARIANT, TEST_VARIANTS
 from report import by_route, load, loop_rows, split_section, table, unit_counts
 from stream import RESULTS, Sequence, readable_test
 from summarize import bootstrap, counts
@@ -42,8 +42,8 @@ PROTOCOLS = {
         Hypothesis("H4", "topo_debiased", "anyloc_gem_g", 0.0, ("H1", "H2", "H3")),
     ],
 }
-RECORDED_FIRST_EVALUATION_2M = {"topo": (144, 28, 88), "previous_system": (74, 30, 147),
-                                "anyloc_vlad_g": (146, 35, 81), "anyloc_gem_g": (112, 32, 92)}
+RECORDED_PREVIOUS_SYSTEM_2M = (74, 30, 147)
+LOOP_RULE_PROTOCOL = "docs/TEST_PROTOCOL_PREDECESSOR_EXCLUSION_2026-11-21.md"
 DOMAIN_SUBSETS = {
     "COLD": lambda s: s.dataset == "cold",
     "CID-SIMS": lambda s: s.dataset == "cid",
@@ -52,11 +52,11 @@ DOMAIN_SUBSETS = {
 
 
 def check_reproduction(results: dict, seqs: list[Sequence]) -> None:
-    for variant, recorded in RECORDED_FIRST_EVALUATION_2M.items():
-        total = sum(counts(results[(s.name, variant)], 2.0) for s in seqs)
-        if tuple(int(x) for x in total[:3]) != recorded:
-            raise SystemExit(f"{variant} does not reproduce the first evaluation: TP/FP/FN "
-                             f"{tuple(int(x) for x in total[:3])} instead of {recorded}")
+    total = sum(counts(results[(s.name, TEST_REPRODUCTION_VARIANT)], 2.0) for s in seqs)
+    got = tuple(int(x) for x in total[:3])
+    if got != RECORDED_PREVIOUS_SYSTEM_2M:
+        raise SystemExit(f"{TEST_REPRODUCTION_VARIANT} does not reproduce previous_system of the first evaluation: "
+                         f"TP/FP/FN {got} instead of {RECORDED_PREVIOUS_SYSTEM_2M}")
 
 
 def decisions(results: dict, seqs: list[Sequence]) -> tuple[list[str], dict]:
@@ -96,11 +96,12 @@ def main() -> None:
     args = parser.parse_args()
     seqs = readable_test()
     results = load(args.out, seqs)
-    missing = [(s.name, v) for s in seqs for v in TEST_VARIANTS if (s.name, v) not in results]
+    missing = [(s.name, v) for s in seqs for v in (*TEST_VARIANTS, TEST_REPRODUCTION_VARIANT)
+               if (s.name, v) not in results]
     if missing:
         raise SystemExit(f"{len(missing)} test runs are missing, for example {missing[:3]}")
     check_reproduction(results, seqs)
-    lines, data = ["# Test results", ""], {}
+    lines, data = ["# Test results", "", f"Loop-closure rule of {LOOP_RULE_PROTOCOL}.", ""], {}
     for name, (section, payload) in {
         "decisions": decisions(results, seqs),
         "test": split_section(results, seqs, f"Test traversals ({len(seqs)})", list(TEST_VARIANTS), by_route,

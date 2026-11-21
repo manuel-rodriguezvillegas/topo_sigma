@@ -22,6 +22,7 @@ from stream import (ALL, DEV, HELDOUT, RESULTS, Sequence, Stream, cumulative_cov
                     evaluated_trajectory, gates, heading_rate, load_stream, readable_test)
 from vts_core.matching import VisualLikelihood
 from common import breakdown, load_descriptors
+from replay import MANUSCRIPT_LOOP_EXCLUSION_NODES
 from vts_core.mapper import TopologicalMapper
 from vts_core.metrics import graph_metrics
 from vts_evaluation.tolerance_sweep import result_row
@@ -43,6 +44,7 @@ DEBIASED_ABLATIONS = ("anyloc_vlad_g", "anyloc_gem_g", "dinov2_s", "geometry_onl
 TEST_VARIANTS = ("topo", "topo_debiased", "anyloc_vlad_g", "anyloc_gem_g", "previous_system", "geometry_only", "vmf",
                  "isotropic_default", "isotropic_calibrated", "gate_propagated", "boundary_cut", "dinov2_s",
                  *(f"{name}_debiased" for name in DEBIASED_ABLATIONS))
+TEST_REPRODUCTION_VARIANT = "previous_system_two_node_exclusion"
 
 
 def _spec(gate=MAIN_GATE, encoder=DESCRIPTOR, association="disk", gate_mode="both", visual_model="cosine",
@@ -70,6 +72,10 @@ def variants(split: str) -> dict[str, dict]:
         v[geometric_source(encoder)] = _spec(encoder=encoder, gate_mode="geometric")
     v["geometry_only_debiased"] = _spec(gate=DEBIASED, gate_mode="geometric")
     v["gate_propagated_debiased"] = _spec(gate=DEBIASED, association="gate")
+    if split == "test":
+        v[TEST_REPRODUCTION_VARIANT] = _spec(gate="isotropic_default", encoder="dinov2_s", association="gate",
+                                             visual_model="vmf",
+                                             loop_exclusion_nodes=MANUSCRIPT_LOOP_EXCLUSION_NODES)
     return v
 
 
@@ -233,7 +239,7 @@ def main() -> None:
     if args.split == "test":
         split_seqs = readable_test()
         every = {**variants("test"), **visual_variants("test")}
-        specs = {v: every[v] for v in TEST_VARIANTS}
+        specs = {v: every[v] for v in (*TEST_VARIANTS, TEST_REPRODUCTION_VARIANT)}
     else:
         split_seqs = DEV if args.split == "dev" else HELDOUT
         specs = visual_variants(args.split) if args.visual else variants(args.split)

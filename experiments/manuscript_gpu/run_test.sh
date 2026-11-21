@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Evaluation of the frozen methods on the readable test traversals, on the university GPU: the first
-# protocol (topo) and the second (topo_debiased), each approved before its run.
+# Evaluation of the frozen methods on the readable test traversals, on the university GPU, with the
+# loop-closure rule of docs/TEST_PROTOCOL_PREDECESSOR_EXCLUSION_2026-11-21.md: the hypotheses of the
+# first protocol (topo) and the second (topo_debiased).
 #
 #   nohup bash experiments/manuscript_gpu/run_test.sh > manuscript_test.log 2>&1 &
 #
@@ -16,10 +17,10 @@ export DATA_ROOT=${DATA_ROOT:-$REPO/encoder}
 ANYLOC_OUT=${ANYLOC_OUT:-$REPO/vts_devcontainer/vts_ws/output/anyloc_published}
 OUT=${OUT:-$REPO/vts_devcontainer/vts_ws/output/manuscript_gpu}
 JOBS=${JOBS:-6}
-FROZEN_CODE=0beb22b2df107e3046437228a521fdfa76beb7a4
+FROZEN_CODE=32d2e406758fcbf62537d746ef749ee543e15d7d
 FROZEN_FILES=(
   "results/calibration.json c5bf4295b52435c148a108244e8236ad142fec9029925cc2f0ab3776e383e375"
-  "results/visual_likelihood.json 619a68a0ecf70be08506a3f92a1a93eadbc6b3973bdefa545529199d99c35f6e"
+  "results/visual_likelihood.json de070bffe16bffbf0b6b261dd0f638fc6e172078afe4925a46ef300db75d5f63"
   "results/odometry_bias.json 899eaf6dfa024d5106d09a8c25b3fd8fe43c14ae01613d15a31f82341b05af05"
 )
 METHOD_CODE=(
