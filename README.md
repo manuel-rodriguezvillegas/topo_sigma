@@ -136,7 +136,7 @@ the paper.
 
 ## Citation
 
-The accompanying paper is under review. Until it is published, please cite the software with the
+The accompanying paper will soon be submitted for publication. Until it is published, please cite the software with the
 metadata in [`CITATION.cff`](CITATION.cff).
 
 ## License

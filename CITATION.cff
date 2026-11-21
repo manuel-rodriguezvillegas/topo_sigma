@@ -3,7 +3,7 @@ message: "If you use S2PRO2, please cite this software and its accompanying pape
 title: "S2PRO2: Online Visual Topological Mapping with Spectral Segmentation and Probability of Proximity"
 type: software
 authors:
-  - family-names: "Rodriguez-Villegas"
+  - family-names: "Rodríguez-Villegas"
     given-names: "Manuel"
   - family-names: "Boal"
     given-names: "Jaime"
@@ -12,7 +12,7 @@ authors:
 repository-code: "https://github.com/manuel-rodriguezvillegas/s2pro2"
 license: MIT
 version: 1.0.0
-date-released: 2026-08-25
+date-released: 2026-11-23
 keywords:
   - visual topological mapping
   - loop closure
