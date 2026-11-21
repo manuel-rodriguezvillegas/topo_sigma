@@ -343,10 +343,10 @@
     }
   },
   "graph_sha256": {
-    "freiburg_a": "5c90270857b91b5d830eddb36b5b14e3cc5322187535f037bffbac56c2b6c1df",
-    "freiburg_ext": "3195c2ed5b60e2e5bb039a527c30faf28977775f27bd48e8fed398932c501b2a",
-    "saarbruecken_a": "d30a1156170e44fcbebb20bdb7fe99233c2c5ad3094d3507be5055285fac4148",
-    "saarbruecken_ext": "62da591ac6419298e436073ae54eef2f74fdd13e95a2eea4bd307f9eea48adcd"
+    "freiburg_a": "64cf0ff120d0698c864af6c6bdb49db337fab75c580c0112bfece6a792f42698",
+    "freiburg_ext": "35957bbd1746786cf2432d1a0c46df7634b8910cbb31a54da5d7ed07da7cd6bd",
+    "saarbruecken_a": "385a92c725457b360e511f0f0bdce125f28e3b281bfcdf10e1cf43e4eef02674",
+    "saarbruecken_ext": "1c0e96ef987d21e653074d6259b5b9b76efd9e038276e0b753f00474c9e77ca1"
   },
   "overall": {
     "absent": {
